@@ -1,24 +1,24 @@
 CC=g++
 SHAREDFLAGS=-fPIC -m32
-CFLAGS=$(SHAREDFLAGS) -c
-LDFLAGS=$(SHAREDFLAGS) -shared -ldl
-INCLUDES=
+CFLAGS=$(SHAREDFLAGS)
+LDFLAGS=$(SHAREDFLAGS) -ldl -lpthread -L/usr/lib/i386-linux-gnu -lQtCore -lQtNetwork
+INCLUDES= -I/usr/include/qt4/QtCore -I/usr/include/qt4/QtNetwork -I/usr/include/qt4/QtGui -I/usr/include/qt4
 
 all: clean main.o hook.o provider.o packet_handler.o thread.o message.o position.o
-	$(CC) $(LDFLAGS) $(INCLUDES) main.o hook.o provider.o packet_handler.o thread.o message.o position.o -o hook.so
+	$(CC) -shared $(LDFLAGS) main.o hook.o provider.o packet_handler.o thread.o message.o position.o -o hook.so
 main.o:
-	$(CC) $(CFLAGS) $(INCLUDES) main.cpp
+	$(CC) -c $(CFLAGS) $(INCLUDES) main.cpp
 hook.o:
-	$(CC) $(CFLAGS) $(INCLUDES) hook.cpp
+	$(CC) -c $(CFLAGS) $(INCLUDES) hook.cpp
 provider.o:
-	$(CC) $(CFLAGS) $(INCLUDES) provider.cpp
+	$(CC) -c $(CFLAGS) $(INCLUDES) provider.cpp
 packet_handler.o:
-	$(CC) $(CFLAGS) $(INCLUDES) packet_handler.cpp
+	$(CC) -c $(CFLAGS) $(INCLUDES) packet_handler.cpp
 thread.o:
-	$(CC) $(CFLAGS) $(INCLUDES) thread.cpp
+	$(CC) -c $(CFLAGS) $(INCLUDES) thread.cpp
 message.o:
-	$(CC) $(CFLAGS) $(INCLUDES) message.cpp
+	$(CC) -c $(CFLAGS) $(INCLUDES) message.cpp
 position.o:
-	$(CC) $(CFLAGS) $(INCLUDES) position.cpp
+	$(CC) -c $(CFLAGS) $(INCLUDES) position.cpp
 clean:
 	-rm hook.so *.o

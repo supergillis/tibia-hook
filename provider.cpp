@@ -11,6 +11,7 @@
 
 TcpServerProvider::TcpServerProvider(uint16_t port) :
 		Thread(), _running(false), _port(port), _max_connections(10) {
+	pthread_mutex_init(&_messages_lock, NULL);
 }
 
 void TcpServerProvider::run() {
@@ -39,27 +40,24 @@ void TcpServerProvider::run() {
 	while (!requested_stop()) {
 		int accept_socket = accept(listen_socket, NULL, NULL);
 		if (accept_socket > 0) {
-			TcpServerConnection* connection = new TcpServerConnection(accept_socket);
-			connection->start();
+			while (!requested_stop()) {
+				pthread_mutex_lock(&_messages_lock);
+				while (!messages.empty()) {
+					Message message = messages.front();
+					printf("parsing message with length %d\n", message.getBufferLength());
+					messages.pop();
+				}
+				pthread_mutex_unlock(&_messages_lock);
+			}
 		} else {
 			printf("error on accepting\n");
 		}
+		close(accept_socket);
 	}
 
 	close(listen_socket);
 }
 
-TcpServerConnection::TcpServerConnection(int socket) :
-		Thread(), _socket(socket) {
-}
-
-void TcpServerConnection::run() {
-	printf("connection on socket %d\n", _socket);
-
-	char buffer[256];
-	bzero(buffer, 256);
-	int length = __read(_socket, buffer, 255);
-	printf("received: %d bytes\n%s\n", length, buffer);
-
-	close(_socket);
+void TcpServerProvider::send(const Message& message) {
+	messages.push(message);
 }

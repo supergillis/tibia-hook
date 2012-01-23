@@ -24,9 +24,17 @@ Message::Message(const uint8_t* buffer, uint16_t length) {
 	memcpy(_buffer, buffer + 6, _length);
 }
 
+Message::Message(const Message& other) {
+	_length = other._length;
+	_checksum = other._checksum;
+	_position = other._position;
+	_needs_more = other._needs_more;
+	_buffer = new unsigned char[_length];
+	memcpy(_buffer, other._buffer, _length);
+}
+
 Message::~Message() {
-	if (_buffer)
-		delete _buffer;
+	delete _buffer;
 }
 
 bool Message::paste(const uint8_t* buffer, uint16_t length) {

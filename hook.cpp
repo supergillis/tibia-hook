@@ -27,6 +27,7 @@ ssize_t Hook::hookOutgoingPacket(int socket, const uint8_t* buffer, ssize_t leng
 		if (message.decrypt(_key)) {
 			if (message.canRead()) {
 				send = _outgoing.parse(message);
+				_provider->send(message);
 			}
 		} else {
 			printf("[Hook::hookOutgoingPacket] could not decrypt packet");

@@ -1,5 +1,9 @@
 #include "thread.h"
 
+Thread::~Thread() {
+	// What should happen when a thread is deleted?
+}
+
 void Thread::start() {
 	if (!_started)
 		_id = Thread::create(this);

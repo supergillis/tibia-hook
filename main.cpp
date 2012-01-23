@@ -1,5 +1,3 @@
-#define _GNU_SOURCE
-
 #include <dlfcn.h>
 #include <assert.h>
 #include <stdio.h>
@@ -8,8 +6,10 @@
 
 #include "main.h"
 #include "hook.h"
-#include "thread.h"
 #include "provider.h"
+
+#include <QDebug>
+#include <QString>
 
 void hook_constructor() __attribute__((constructor));
 void hook_destructor() __attribute__((destructor));
@@ -21,6 +21,8 @@ int x_socket = -1;
 int game_socket = -1;
 
 void hook_constructor() {
+	QString test("test");
+	printf("string %s\n", test.toAscii().data());
 	provider = new TcpServerProvider(7170);
 	provider->start();
 	hook = new Hook(provider);

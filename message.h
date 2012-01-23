@@ -9,8 +9,8 @@
 class Message
 {
 public:
-	Message();
 	Message(const uint8_t*, uint16_t);
+	Message(const Message&);
 	~Message();
 
 	bool decrypt(uint32_t[]);
