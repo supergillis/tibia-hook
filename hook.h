@@ -25,14 +25,15 @@
 #include <stdint.h>
 #include <string.h>
 
-#include "packet_handler.h"
+#include <QCoreApplication>
+
 #include "message.h"
 #include "provider.h"
 
-class Hook
+class Hook: public QCoreApplication
 {
 public:
-	Hook(TcpServerProvider*);
+	Hook();
 	~Hook();
 
 	void setLoggedIn(bool value) {_loggedIn = value;}
@@ -43,16 +44,14 @@ protected:
 	Hook(const Hook&);
 	Hook& operator=(const Hook&);
 
-	bool _initialized;
-	bool _pendingLogin;
-	bool _loggedIn;
+	Provider* _provider;
 
 	uint8_t _protocol;
 	uint32_t* _key;
 
-	TcpServerProvider* _provider;
-	IncomingPacketHandler _incoming;
-	OutgoingPacketHandler _outgoing;
+	bool _pendingLogin;
+	bool _loggedIn;
+
 };
 
 #endif

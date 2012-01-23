@@ -1,22 +1,22 @@
 #include <stdio.h>
-#include <dlfcn.h>
 #include <stdint.h>
 #include <string.h>
 
 #include "main.h"
 #include "hook.h"
 
-Hook::Hook(TcpServerProvider* provider) :
-		_provider(provider), _initialized(true), _loggedIn(false), _pendingLogin(false), _key((uint32_t*) XTEA_START), _incoming(this), _outgoing(this) {
-	printf("[MainHandler::initializing]\n");
+static int _argc = 0;
+
+Hook::Hook() :
+		QCoreApplication(_argc, NULL), _loggedIn(false), _pendingLogin(false), _key((uint32_t*) XTEA_START) {
+	_provider = new Provider();
+	_provider->listen(QHostAddress::Any, 7170);
 }
 
 Hook::~Hook() {
-	printf("[MainHandler::exiting]\n");
-
-	_initialized = false;
 	_loggedIn = false;
 	_pendingLogin = false;
+	delete _provider;
 }
 
 ssize_t Hook::hookOutgoingPacket(int socket, const uint8_t* buffer, ssize_t length) {
@@ -26,8 +26,7 @@ ssize_t Hook::hookOutgoingPacket(int socket, const uint8_t* buffer, ssize_t leng
 	if (_loggedIn) {
 		if (message.decrypt(_key)) {
 			if (message.canRead()) {
-				send = _outgoing.parse(message);
-				_provider->send(message);
+				// Do something with message
 			}
 		} else {
 			printf("[Hook::hookOutgoingPacket] could not decrypt packet");
@@ -59,9 +58,7 @@ ssize_t Hook::hookIncomingPacket(int socket, uint8_t* buffer, ssize_t length) {
 	}
 
 	if (_loggedIn) {
-		while (message.canRead() && _incoming.parse(message)) {
-			// do nothing
-		}
+		// Do something with message
 	} else if (_pendingLogin) {
 		uint8_t byte = message.getByte(true);
 		if (byte == 0x14 || byte == 0x16) {
@@ -74,9 +71,7 @@ ssize_t Hook::hookIncomingPacket(int socket, uint8_t* buffer, ssize_t length) {
 		} else {
 			_loggedIn = true;
 			_pendingLogin = false;
-			while (message.canRead() && _incoming.parse(message)) {
-				// do nothing
-			}
+			// Do something with message
 		}
 	}
 
