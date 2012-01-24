@@ -45,7 +45,7 @@ public:
 	ssize_t read(uint8_t*, ssize_t);
 
 	ssize_t write(const uint8_t*, ssize_t);
-	ssize_t write(const EncryptedMessage& message);
+	ssize_t write(const Message& message);
 
 	ssize_t hookOutgoingPacket(const uint8_t*, ssize_t);
 	ssize_t hookIncomingPacket(uint8_t*, ssize_t);
@@ -67,16 +67,16 @@ static const QEvent::Type OutgoingMessageEventType = QEvent::User;
 
 class OutgoingMessageEvent: public QEvent {
 public:
-	OutgoingMessageEvent(const EncryptedMessage& message): QEvent(OutgoingMessageEventType), _message(message) {
+	OutgoingMessageEvent(const Message& message): QEvent(OutgoingMessageEventType), _message(message) {
 		// Do nothing
 	}
 
-	const EncryptedMessage& message() {
+	const Message& message() {
 		return _message;
 	}
 
 private:
-	const EncryptedMessage _message;
+	const Message _message;
 };
 
 #endif

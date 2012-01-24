@@ -3,8 +3,8 @@
 
 #include <stdint.h>
 
-class DecryptedMessage;
-class EncryptedMessage {
+class Packet;
+class Message {
 	static const int HEADER_POSITION = 0;
 	static const int HEADER_LENGTH = 2;
 	static const int CHECKSUM_POSITION = HEADER_POSITION + HEADER_LENGTH;
@@ -12,10 +12,10 @@ class EncryptedMessage {
 	static const int DATA_POSITION = CHECKSUM_POSITION + CHECKSUM_LENGTH;
 
 public:
-	EncryptedMessage();
-	EncryptedMessage(const uint8_t*, uint16_t);
-	EncryptedMessage(const EncryptedMessage&);
-	~EncryptedMessage();
+	Message();
+	Message(const uint8_t*, uint16_t);
+	Message(const Message&);
+	~Message();
 
 	bool isValid() const;
 
@@ -25,10 +25,10 @@ public:
 	uint16_t rawLength() const;
 	const uint8_t* rawData() const;
 
-	static EncryptedMessage encrypt(const DecryptedMessage&, const uint32_t []);
+	static Message encrypt(const Packet&, const uint32_t []);
 
 private:
-	void operator=(const EncryptedMessage&);
+	void operator=(const Message&);
 
 	uint8_t* _raw;
 	uint16_t _rawLength;

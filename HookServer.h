@@ -5,8 +5,8 @@
 #include <QTcpServer>
 #include <QTcpSocket>
 
-#include "EncryptedMessage.h"
-#include "DecryptedMessage.h"
+#include "Message.h"
+#include "Packet.h"
 
 class Hook;
 class HookServer: public QTcpServer {
@@ -17,11 +17,11 @@ public:
 
 	bool event(QEvent*);
 
-	void handleOutgoingMessage(const EncryptedMessage&);
-	bool handleOutgoingMessageInternal(const EncryptedMessage&);
+	void handleOutgoingMessage(const Message&);
+	bool handleOutgoingMessageInternal(const Message&);
 
-	void handleIncomingMessage(const EncryptedMessage&);
-	bool handleIncomingMessageInternal(const EncryptedMessage&);
+	void handleIncomingMessage(const Message&);
+	bool handleIncomingMessageInternal(const Message&);
 
 private slots:
 	void acceptNewConnection();

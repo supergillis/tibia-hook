@@ -37,20 +37,20 @@ ssize_t Hook::write(const uint8_t* buffer, ssize_t length) {
 	return __write(_socket, buffer, length);
 }
 
-ssize_t Hook::write(const EncryptedMessage& message) {
+ssize_t Hook::write(const Message& message) {
 	return write(message.rawData(), message.rawLength());
 }
 
 ssize_t Hook::hookOutgoingPacket(const uint8_t* buffer, ssize_t length) {
 	if (_loggedIn) {
-		EncryptedMessage message(buffer, length);
+		Message message(buffer, length);
 		if (message.isValid()) {
 			QCoreApplication::postEvent(_hookServer, new OutgoingMessageEvent(message), Qt::HighEventPriority);
 			return length;
 		}
 	}
 	else {
-		DecryptedMessage message(buffer, length);
+		Packet packet(buffer, length);
 		/*uint8_t protocol = message.readByte();
 		uint16_t os = message.readU16();
 		uint16_t client = message.readU16();

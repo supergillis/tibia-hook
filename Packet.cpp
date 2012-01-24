@@ -1,14 +1,14 @@
 #include <string.h>
 
-#include "DecryptedMessage.h"
-#include "EncryptedMessage.h"
+#include "Packet.h"
+#include "Message.h"
 #include "Encryption.h"
 
-DecryptedMessage::DecryptedMessage() :
+Packet::Packet() :
 		_raw(NULL), _rawLength(0), _dataLength(0) {
 }
 
-DecryptedMessage::DecryptedMessage(const uint8_t* buffer, uint16_t length) {
+Packet::Packet(const uint8_t* buffer, uint16_t length) {
 	_rawLength = length;
 	_raw = new uint8_t[length];
 	memcpy(_raw, buffer, length);
@@ -16,7 +16,7 @@ DecryptedMessage::DecryptedMessage(const uint8_t* buffer, uint16_t length) {
 	_dataLength = *(uint16_t*) _raw;
 }
 
-DecryptedMessage::DecryptedMessage(const DecryptedMessage& other) {
+Packet::Packet(const Packet& other) {
 	_rawLength = other._rawLength;
 	_raw = new uint8_t[other._rawLength];
 	memcpy(_raw, other._raw, other._rawLength);
@@ -24,33 +24,33 @@ DecryptedMessage::DecryptedMessage(const DecryptedMessage& other) {
 	_dataLength = other._dataLength;
 }
 
-DecryptedMessage::~DecryptedMessage() {
+Packet::~Packet() {
 	if (_raw) {
 		delete[] _raw;
 	}
 }
 
-bool DecryptedMessage::isValid() const {
+bool Packet::isValid() const {
 	return _dataLength > 0;
 }
 
-uint16_t DecryptedMessage::length() const {
+uint16_t Packet::length() const {
 	return _dataLength;
 }
 
-const uint8_t* DecryptedMessage::data() const {
+const uint8_t* Packet::data() const {
 	return rawData() + DATA_POSITION;
 }
 
-uint16_t DecryptedMessage::rawLength() const {
+uint16_t Packet::rawLength() const {
 	return _rawLength;
 }
 
-const uint8_t* DecryptedMessage::rawData() const {
+const uint8_t* Packet::rawData() const {
 	return (const uint8_t*) _raw;
 }
 
-DecryptedMessage DecryptedMessage::decrypt(const EncryptedMessage& message, const uint32_t key[]) {
+Packet Packet::decrypt(const Message& message, const uint32_t key[]) {
 	if (message.isValid()) {
 		uint16_t length = message.length();
 		uint8_t data[length];
@@ -59,9 +59,9 @@ DecryptedMessage DecryptedMessage::decrypt(const EncryptedMessage& message, cons
 		if (Encryption::XTEA::decrypt(data, length, key)) {
 			uint16_t newLength = *(uint16_t*) data;
 			if (newLength <= length) {
-				return DecryptedMessage(data, HEADER_LENGTH + newLength);
+				return Packet(data, HEADER_LENGTH + newLength);
 			}
 		}
 	}
-	return DecryptedMessage();
+	return Packet();
 }

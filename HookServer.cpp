@@ -42,19 +42,19 @@ void HookServer::socketClosed() {
 	_currentSocket = NULL;
 }
 
-void HookServer::handleOutgoingMessage(const EncryptedMessage& message) {
+void HookServer::handleOutgoingMessage(const Message& message) {
 	if (!handleOutgoingMessageInternal(message)) {
 		_hook->write(message);
 	}
 }
 
-bool HookServer::handleOutgoingMessageInternal(const EncryptedMessage& message) {
+bool HookServer::handleOutgoingMessageInternal(const Message& message) {
 	return false;
 }
 
-void HookServer::handleIncomingMessage(const EncryptedMessage& message) {
+void HookServer::handleIncomingMessage(const Message& message) {
 }
 
-bool HookServer::handleIncomingMessageInternal(const EncryptedMessage& message) {
+bool HookServer::handleIncomingMessageInternal(const Message& message) {
 	return false;
 }

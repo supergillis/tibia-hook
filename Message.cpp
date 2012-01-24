@@ -1,14 +1,14 @@
 #include <string.h>
 
-#include "EncryptedMessage.h"
-#include "DecryptedMessage.h"
+#include "Message.h"
+#include "Packet.h"
 #include "Encryption.h"
 
-EncryptedMessage::EncryptedMessage() :
+Message::Message() :
 		_raw(NULL), _rawLength(0), _dataLength(0), _checksum(0), _needsMore(0) {
 }
 
-EncryptedMessage::EncryptedMessage(const uint8_t* buffer, uint16_t length) {
+Message::Message(const uint8_t* buffer, uint16_t length) {
 	_rawLength = length;
 	_raw = new uint8_t[length];
 	memcpy(_raw, buffer, length);
@@ -19,7 +19,7 @@ EncryptedMessage::EncryptedMessage(const uint8_t* buffer, uint16_t length) {
 	_needsMore = (_dataLength + DATA_POSITION) - _rawLength;
 }
 
-EncryptedMessage::EncryptedMessage(const EncryptedMessage& other) {
+Message::Message(const Message& other) {
 	_rawLength = other._rawLength;
 	_raw = new uint8_t[other._rawLength];
 	memcpy(_raw, other._raw, other._rawLength);
@@ -29,29 +29,29 @@ EncryptedMessage::EncryptedMessage(const EncryptedMessage& other) {
 	_needsMore = other._needsMore;
 }
 
-EncryptedMessage::~EncryptedMessage() {
+Message::~Message() {
 	if (_raw) {
 		delete[] _raw;
 	}
 }
 
-bool EncryptedMessage::isValid() const {
+bool Message::isValid() const {
 	return _dataLength > 0 && _needsMore == 0;
 }
 
-uint16_t EncryptedMessage::length() const {
+uint16_t Message::length() const {
 	return _dataLength;
 }
 
-const uint8_t* EncryptedMessage::data() const {
+const uint8_t* Message::data() const {
 	return rawData() + DATA_POSITION;
 }
 
-uint16_t EncryptedMessage::rawLength() const {
+uint16_t Message::rawLength() const {
 	return _rawLength;
 }
 
-const uint8_t* EncryptedMessage::rawData() const {
+const uint8_t* Message::rawData() const {
 	return _raw;
 }
 
@@ -65,21 +65,21 @@ const uint8_t* EncryptedMessage::rawData() const {
  * And finally we replace our buffer with the encrypted buffer and we also
  * replace our length with the new buffer length.
  */
-EncryptedMessage EncryptedMessage::encrypt(const DecryptedMessage& message, const uint32_t key[]) {
-	if (message.isValid()) {
-		uint16_t length = message.rawLength();
+Message Message::encrypt(const Packet& packet, const uint32_t key[]) {
+	if (packet.isValid()) {
+		uint16_t length = packet.rawLength();
 		if (length % 8 != 0) {
 			length += 8 - (length % 8);
 		}
 
 		uint8_t data[length + DATA_POSITION];
-		memcpy(data + DATA_POSITION, message.rawData(), message.rawLength());
+		memcpy(data + DATA_POSITION, packet.rawData(), packet.rawLength());
 
 		if (Encryption::XTEA::encrypt(data + DATA_POSITION, length, key)) {
 			*(uint16_t*) (data + HEADER_POSITION) = length + CHECKSUM_LENGTH;
 			*(uint32_t*) (data + CHECKSUM_POSITION) = Encryption::Adler::checksum(data + DATA_POSITION, length);
-			return EncryptedMessage(data, length + DATA_POSITION);
+			return Message(data, length + DATA_POSITION);
 		}
 	}
-	return EncryptedMessage();
+	return Message();
 }

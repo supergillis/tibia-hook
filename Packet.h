@@ -3,17 +3,17 @@
 
 #include <stdint.h>
 
-class EncryptedMessage;
-class DecryptedMessage {
+class Message;
+class Packet {
 	static const int HEADER_POSITION = 0;
 	static const int HEADER_LENGTH = 2;
 	static const int DATA_POSITION = HEADER_POSITION + HEADER_LENGTH;
 
 public:
-	DecryptedMessage();
-	DecryptedMessage(const uint8_t* buffer, uint16_t length);
-	DecryptedMessage(const DecryptedMessage&);
-	~DecryptedMessage();
+	Packet();
+	Packet(const uint8_t* buffer, uint16_t length);
+	Packet(const Packet&);
+	~Packet();
 
 	bool isValid() const;
 
@@ -23,10 +23,10 @@ public:
 	uint16_t rawLength() const;
 	const uint8_t* rawData() const;
 
-	static DecryptedMessage decrypt(const EncryptedMessage&, const uint32_t []);
+	static Packet decrypt(const Message&, const uint32_t []);
 
 private:
-	void operator=(const DecryptedMessage&);
+	void operator=(const Packet&);
 
 	uint8_t* _raw;
 	uint16_t _rawLength;
