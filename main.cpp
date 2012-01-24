@@ -1,5 +1,6 @@
 #include <assert.h>
 #include <dlfcn.h>
+#include <pthread.h>
 
 #include "main.h"
 #include "hook.h"
@@ -31,22 +32,25 @@ int x_socket = -1;
 int game_socket = -1;
 
 int connect(int socket, const struct sockaddr* address, socklen_t length) {
-	if (x_socket == -1)
+	if (x_socket == -1) {
 		x_socket = socket;
-	else
+	}
+	else {
 		game_socket = socket;
+		hook->setSocket(game_socket);
+	}
 	return __connect(socket, address, length);
 }
 
 ssize_t read(int socket, void* buffer, size_t length) {
-	if (game_socket == socket && length > 0)
-		return hook->hookIncomingPacket(socket, (uint8_t*) buffer, length);
+	if (hook->socket() == socket && length > 0)
+		return hook->hookIncomingPacket((uint8_t*) buffer, length);
 	return __read(socket, buffer, length);
 }
 
 ssize_t write(int socket, const void* buffer, size_t length) {
-	if (game_socket == socket && length > 0)
-		return hook->hookOutgoingPacket(socket, (const uint8_t*) buffer, length);
+	if (hook->socket() == socket && length > 0)
+		return hook->hookOutgoingPacket((const uint8_t*) buffer, length);
 	return __write(socket, buffer, length);
 }
 
