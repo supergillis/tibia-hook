@@ -4,6 +4,7 @@
 
 #include "main.h"
 #include "hook.h"
+#include "encryption.h"
 
 static int _argc = 0;
 
@@ -33,15 +34,42 @@ ssize_t Hook::write(const uint8_t* buffer, ssize_t length) {
 	return __write(_socket, buffer, length);
 }
 
+void print_buffer(const uint8_t* buffer, uint16_t length) {
+	while (length-- > 0) {
+		qDebug() << hex << *buffer++;
+	}
+}
+
+ssize_t Hook::write(const Message& message) {
+	qDebug() << "write1";
+	Message encrypt = message;
+	encrypt.encrypt(_key);
+	uint16_t length = encrypt.length();
+	qDebug() << "write2" << length;
+	uint32_t checksum = Encryption::Adler::checksum(encrypt.byteArray());
+	qDebug() << "write3";
+	uint8_t buffer[length + 6];
+	*(uint16_t*) (buffer) = length + 4;
+	*(uint32_t*) (buffer + 2) = checksum;
+	qDebug() << "write4";
+	memcpy(buffer + 6, encrypt.data(), length);
+	qDebug() << "write5";
+	qDebug() << "output";
+	print_buffer(buffer, length + 6);
+	return write(buffer, length + 6);
+}
+
 ssize_t Hook::hookOutgoingPacket(const uint8_t* buffer, ssize_t length) {
 	Message message(buffer, length);
 
 	if (_loggedIn) {
 		if (message.decrypt(_key)) {
 			if (message.canRead()) {
-				/*QCoreApplication::postEvent(_provider, new OutgoingMessageEvent(message), Qt::HighEventPriority);
-				 return length;*/
-				message.encrypt(_key);
+				qDebug() << "input";
+				print_buffer(buffer, length);
+
+				QCoreApplication::postEvent(_provider, new OutgoingMessageEvent(message), Qt::HighEventPriority);
+				return length;
 			}
 		}
 	}

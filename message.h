@@ -11,7 +11,8 @@ public:
 	Message(const uint8_t*, uint16_t);
 
 	uint8_t* data();
-	const uint8_t* constData() const;
+	const uint8_t* data() const;
+	const QByteArray& byteArray() const;
 
 	bool decrypt(uint32_t[]);
 	bool encrypt(uint32_t[]);

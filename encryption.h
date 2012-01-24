@@ -8,9 +8,12 @@
 namespace Encryption {
 	class XTEA {
 	public:
-		static QByteArray decrypt(QByteArray&, uint32_t []);
-		static QByteArray encrypt(QByteArray&, uint32_t []);
-		static uint32_t checksum(QByteArray&);
+		static bool decrypt(QByteArray&, uint32_t []);
+		static bool encrypt(QByteArray&, uint32_t []);
+	};
+	class Adler {
+	public:
+		static uint32_t checksum(const QByteArray&);
 	};
 };
 

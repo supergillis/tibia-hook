@@ -29,8 +29,12 @@ uint8_t* Message::data() {
 	return (uint8_t*) _buffer.data();
 }
 
-const uint8_t* Message::constData() const {
+const uint8_t* Message::data() const {
 	return (const uint8_t*) _buffer.constData();
+}
+
+const QByteArray& Message::byteArray() const {
+	return _buffer;
 }
 
 bool Message::decrypt(uint32_t key[]) {
@@ -38,19 +42,17 @@ bool Message::decrypt(uint32_t key[]) {
 		qWarning() << Q_FUNC_INFO << "we need" << _needs_more << "more bytes";
 		return false;
 	}
-	QByteArray decrypted = Encryption::XTEA::decrypt(_buffer, key);
-	if (decrypted.length() == 0) {
+	if (!Encryption::XTEA::decrypt(_buffer, key)) {
 		qWarning() << Q_FUNC_INFO << "unable to decrypt message";
 		return false;
 	}
-	uint16_t decrypted_length = (uint16_t) (decrypted.at(0) | decrypted.at(1) << 8);
+	uint16_t decrypted_length = (uint16_t) (_buffer.at(0) | _buffer.at(1) << 8);
 	if (decrypted_length > _length) {
 		qWarning() << Q_FUNC_INFO << "decrypted length > original length";
 		return false;
 	}
+	_buffer = _buffer.mid(2, decrypted_length);
 	_length = decrypted_length;
-	_position = 0;
-	_buffer = decrypted.mid(2, decrypted_length);
 	return true;
 }
 
@@ -58,19 +60,17 @@ bool Message::encrypt(uint32_t key[]) {
 	QByteArray encrypted = _buffer;
 	encrypted.prepend((char) _length >> 8);
 	encrypted.prepend((char) _length);
-	encrypted = Encryption::XTEA::encrypt(encrypted, key);
-	if (encrypted.length() == 0) {
+	if (encrypted.length() % 8 != 0) {
+		int extra = 8 - (encrypted.length() % 8);
+		while (extra-- > 0)
+			encrypted.append((char) 0);
+	}
+	if (!Encryption::XTEA::encrypt(encrypted, key)) {
 		qWarning() << Q_FUNC_INFO << "unable to encrypt message";
 		return false;
 	}
-	uint32_t checksum = Encryption::XTEA::checksum(encrypted);
-	encrypted.prepend((char) checksum >> 24);
-	encrypted.prepend((char) checksum >> 16);
-	encrypted.prepend((char) checksum >> 8);
-	encrypted.prepend((char) checksum);
-	uint16_t length = encrypted.length();
-	encrypted.prepend((char) length >> 8);
-	encrypted.prepend((char) length);
+	_buffer = encrypted;
+	_length = encrypted.length();
 	return true;
 }
 

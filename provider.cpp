@@ -16,9 +16,8 @@ Provider::Provider(Hook* hook) :
 
 bool Provider::event(QEvent* event) {
 	if (event->type() == OutgoingMessageEventType) {
-		qDebug() << "OutgoingMessageEventType";
-		OutgoingMessageEvent* event = (OutgoingMessageEvent*) event;
-		handleOutgoingMessage(event->message());
+		OutgoingMessageEvent* outputMessageEvent = (OutgoingMessageEvent*) event;
+		handleOutgoingMessage(outputMessageEvent->message());
 		return true;
 	}
 	return QTcpServer::event(event);
@@ -34,7 +33,6 @@ void Provider::acceptNewConnection() {
 	else {
 		connection->close();
 	}
-	qDebug() << Q_FUNC_INFO << "done";
 }
 
 void Provider::socketClosed() {
@@ -45,7 +43,8 @@ void Provider::socketClosed() {
 
 void Provider::handleOutgoingMessage(const Message& message) {
 	//if(!handleOutgoingMessageInternal(socket, message))
-	_hook->write(message.constData(), message.length());
+	qDebug() << "handleOutgoingMessage" << message.length();
+	_hook->write(message);
 }
 
 bool Provider::handleOutgoingMessageInternal(const Message& message) {
@@ -54,7 +53,7 @@ bool Provider::handleOutgoingMessageInternal(const Message& message) {
 		return false;
 	}
 
-	_currentSocket->write((char*) message.constData());
+	_currentSocket->write((const char*) message.data());
 	_currentSocket->flush();
 
 	if (!_currentSocket->waitForReadyRead(50)) {
