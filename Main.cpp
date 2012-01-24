@@ -2,8 +2,8 @@
 #include <dlfcn.h>
 #include <pthread.h>
 
-#include "main.h"
-#include "hook.h"
+#include "Main.h"
+#include "Hook.h"
 
 void hook_constructor() __attribute__((constructor));
 void hook_destructor() __attribute__((destructor));

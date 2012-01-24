@@ -1,11 +1,11 @@
-#include "encryption.h"
+#include "Encryption.h"
 
-#include <QDebug>
+bool Encryption::XTEA::decrypt(QByteArray& encrypted, const uint32_t key[]) {
+	return decrypt((uint8_t*) encrypted.data(), encrypted.length(), key);
+}
 
-bool Encryption::XTEA::decrypt(QByteArray& encrypted, uint32_t key[]) {
-	int length = encrypted.length();
+bool Encryption::XTEA::decrypt(uint8_t* buffer, uint16_t length, const uint32_t key[]) {
 	if (length % 8 == 0) {
-		uint8_t* buffer = (uint8_t*) encrypted.data();
 		unsigned int position = 0;
 		unsigned int buffer_32_length = length / 4;
 		unsigned int* buffer_32 = (unsigned int*) buffer;
@@ -27,10 +27,12 @@ bool Encryption::XTEA::decrypt(QByteArray& encrypted, uint32_t key[]) {
 	return false;
 }
 
-bool Encryption::XTEA::encrypt(QByteArray& decrypted, uint32_t key[]) {
-	int length = decrypted.length();
+bool Encryption::XTEA::encrypt(QByteArray& decrypted, const uint32_t key[]) {
+	return encrypt((uint8_t*) decrypted.data(), decrypted.length(), key);
+}
+
+bool Encryption::XTEA::encrypt(uint8_t* buffer, uint16_t length, const uint32_t key[]) {
 	if (length % 8 == 0) {
-		uint8_t* buffer = (uint8_t*) decrypted.data();
 		unsigned int position = 0;
 		unsigned int buffer_32_length = length / 4;
 		unsigned int* buffer_32 = (unsigned int*) buffer;
@@ -52,12 +54,11 @@ bool Encryption::XTEA::encrypt(QByteArray& decrypted, uint32_t key[]) {
 	return false;
 }
 
-uint32_t Encryption::Adler::checksum(const QByteArray& data) {
-	qDebug() << "adler1";
-	const uint8_t* buffer = (const uint8_t*) data.constData();
-	qDebug() << "adler2";
-	uint16_t length = data.length();
-	qDebug() << "adler3" << length;
+uint32_t Encryption::Adler::checksum(const QByteArray& bytes) {
+	return checksum((const uint8_t*) bytes.data(), bytes.length());
+}
+
+uint32_t Encryption::Adler::checksum(const uint8_t* buffer, uint16_t length) {
 	uint32_t a = 1, b = 0;
 	while (length > 0) {
 		size_t tlen = length > 5552 ? 5552 : length;
@@ -70,6 +71,5 @@ uint32_t Encryption::Adler::checksum(const QByteArray& data) {
 		a %= 65521;
 		b %= 65521;
 	}
-	qDebug() << "adler4";
 	return (b << 16) | a;
 }
