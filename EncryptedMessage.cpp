@@ -5,28 +5,28 @@
 #include "Encryption.h"
 
 EncryptedMessage::EncryptedMessage() :
-		_raw(NULL), _raw_length(0), _data_length(0), _checksum(0), _needs_more(0) {
+		_raw(NULL), _rawLength(0), _dataLength(0), _checksum(0), _needsMore(0) {
 }
 
 EncryptedMessage::EncryptedMessage(const uint8_t* buffer, uint16_t length) {
-	_raw_length = length;
+	_rawLength = length;
 	_raw = new uint8_t[length];
 	memcpy(_raw, buffer, length);
 
-	_data_length = *(uint16_t*) (_raw + HEADER_POSITION);
-	_data_length -= CHECKSUM_LENGTH;
+	_dataLength = *(uint16_t*) (_raw + HEADER_POSITION);
+	_dataLength -= CHECKSUM_LENGTH;
 	_checksum = *(uint32_t*) (_raw + CHECKSUM_POSITION);
-	_needs_more = (_data_length + DATA_POSITION) - _raw_length;
+	_needsMore = (_dataLength + DATA_POSITION) - _rawLength;
 }
 
 EncryptedMessage::EncryptedMessage(const EncryptedMessage& other) {
-	_raw_length = other._raw_length;
-	_raw = new uint8_t[other._raw_length];
-	memcpy(_raw, other._raw, other._raw_length);
+	_rawLength = other._rawLength;
+	_raw = new uint8_t[other._rawLength];
+	memcpy(_raw, other._raw, other._rawLength);
 
-	_data_length = other._data_length;
+	_dataLength = other._dataLength;
 	_checksum = other._checksum;
-	_needs_more = other._needs_more;
+	_needsMore = other._needsMore;
 }
 
 EncryptedMessage::~EncryptedMessage() {
@@ -36,11 +36,11 @@ EncryptedMessage::~EncryptedMessage() {
 }
 
 bool EncryptedMessage::isValid() const {
-	return _data_length > 0 && _needs_more == 0;
+	return _dataLength > 0 && _needsMore == 0;
 }
 
 uint16_t EncryptedMessage::length() const {
-	return _data_length;
+	return _dataLength;
 }
 
 const uint8_t* EncryptedMessage::data() const {
@@ -48,7 +48,7 @@ const uint8_t* EncryptedMessage::data() const {
 }
 
 uint16_t EncryptedMessage::rawLength() const {
-	return _raw_length;
+	return _rawLength;
 }
 
 const uint8_t* EncryptedMessage::rawData() const {

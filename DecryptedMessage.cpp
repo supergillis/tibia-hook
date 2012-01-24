@@ -5,23 +5,23 @@
 #include "Encryption.h"
 
 DecryptedMessage::DecryptedMessage() :
-		_raw(NULL), _raw_length(0), _data_length(0) {
+		_raw(NULL), _rawLength(0), _dataLength(0) {
 }
 
 DecryptedMessage::DecryptedMessage(const uint8_t* buffer, uint16_t length) {
-	_raw_length = length;
+	_rawLength = length;
 	_raw = new uint8_t[length];
 	memcpy(_raw, buffer, length);
 
-	_data_length = *(uint16_t*) _raw;
+	_dataLength = *(uint16_t*) _raw;
 }
 
 DecryptedMessage::DecryptedMessage(const DecryptedMessage& other) {
-	_raw_length = other._raw_length;
-	_raw = new uint8_t[other._raw_length];
-	memcpy(_raw, other._raw, other._raw_length);
+	_rawLength = other._rawLength;
+	_raw = new uint8_t[other._rawLength];
+	memcpy(_raw, other._raw, other._rawLength);
 
-	_data_length = other._data_length;
+	_dataLength = other._dataLength;
 }
 
 DecryptedMessage::~DecryptedMessage() {
@@ -31,11 +31,11 @@ DecryptedMessage::~DecryptedMessage() {
 }
 
 bool DecryptedMessage::isValid() const {
-	return _data_length > 0;
+	return _dataLength > 0;
 }
 
 uint16_t DecryptedMessage::length() const {
-	return _data_length;
+	return _dataLength;
 }
 
 const uint8_t* DecryptedMessage::data() const {
@@ -43,7 +43,7 @@ const uint8_t* DecryptedMessage::data() const {
 }
 
 uint16_t DecryptedMessage::rawLength() const {
-	return _raw_length;
+	return _rawLength;
 }
 
 const uint8_t* DecryptedMessage::rawData() const {

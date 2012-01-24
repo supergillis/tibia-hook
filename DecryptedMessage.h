@@ -29,8 +29,8 @@ private:
 	void operator=(const DecryptedMessage&);
 
 	uint8_t* _raw;
-	uint16_t _raw_length;
-	uint16_t _data_length;
+	uint16_t _rawLength;
+	uint16_t _dataLength;
 };
 
 #endif /* DECRYPTEDMESSAGE_H_ */

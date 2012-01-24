@@ -31,10 +31,10 @@ private:
 	void operator=(const EncryptedMessage&);
 
 	uint8_t* _raw;
-	uint16_t _raw_length;
-	uint16_t _data_length;
+	uint16_t _rawLength;
+	uint16_t _dataLength;
 	uint32_t _checksum;
-	uint16_t _needs_more;
+	uint16_t _needsMore;
 };
 
 #endif /* ENCRYPTEDMESSAGE_H_ */
