@@ -8,9 +8,6 @@
 #include "HookServer.h"
 #include "Hook.h"
 
-#include <QDebug>
-#include <QString>
-
 HookServer::HookServer(Hook* hook) :
 		QTcpServer(hook), _hook(hook), _currentSocket(NULL) {
 	connect(this, SIGNAL(newConnection()), this, SLOT(acceptNewConnection()));
@@ -46,8 +43,9 @@ void HookServer::socketClosed() {
 }
 
 void HookServer::handleOutgoingMessage(const EncryptedMessage& message) {
-	if (!handleOutgoingMessageInternal(message))
+	if (!handleOutgoingMessageInternal(message)) {
 		_hook->write(message);
+	}
 }
 
 bool HookServer::handleOutgoingMessageInternal(const EncryptedMessage& message) {

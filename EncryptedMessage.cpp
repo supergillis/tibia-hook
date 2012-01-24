@@ -68,8 +68,9 @@ const uint8_t* EncryptedMessage::rawData() const {
 EncryptedMessage EncryptedMessage::encrypt(const DecryptedMessage& message, const uint32_t key[]) {
 	if (message.isValid()) {
 		uint16_t length = message.rawLength();
-		if (length % 8 != 0)
+		if (length % 8 != 0) {
 			length += 8 - (length % 8);
+		}
 
 		uint8_t data[length + DATA_POSITION];
 		memcpy(data + DATA_POSITION, message.rawData(), message.rawLength());

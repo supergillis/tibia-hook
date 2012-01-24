@@ -50,42 +50,18 @@ ssize_t Hook::hookOutgoingPacket(const uint8_t* buffer, ssize_t length) {
 		}
 	}
 	else {
+		DecryptedMessage message(buffer, length);
 		/*uint8_t protocol = message.readByte();
-		 uint16_t os = message.readU16();
-		 uint16_t client = message.readU16();
-		 if (protocol == 0x0A) {
-		 _protocol = protocol;
-		 _pendingLogin = true;
-		 }*/
+		uint16_t os = message.readU16();
+		uint16_t client = message.readU16();
+		if (protocol == 0x0A) {
+			_protocol = protocol;
+			_pendingLogin = true;
+		}*/
 	}
 	return write(buffer, length);
 }
 
 ssize_t Hook::hookIncomingPacket(uint8_t* buffer, ssize_t length) {
-	ssize_t read_length = read(buffer, length);
-
-	/*Message message(buffer, read_length);
-
-	 if (!message.decrypt(_key)) {
-	 printf("[Hook::hookIncomingPacket] the packet could not be decrypted\n");
-	 return read_length;
-	 }
-
-	 if (_loggedIn) {
-	 // Do something with message
-	 } else if (_pendingLogin) {
-	 uint8_t byte = message.getByte();
-	 if (byte == 0x14 || byte == 0x16) {
-	 printf("Error while logging in!\n");
-	 _pendingLogin = false;
-	 } else {
-	 // Rewind read byte
-	 message.skipBytes(-1);
-	 _loggedIn = true;
-	 _pendingLogin = false;
-	 // Do something with message
-	 }
-	 }*/
-
-	return read_length;
+	return read(buffer, length);
 }
