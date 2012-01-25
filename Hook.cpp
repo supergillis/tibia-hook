@@ -41,7 +41,7 @@ ssize_t Hook::write(const Message& message) {
 	return write(message.rawData(), message.rawLength());
 }
 
-ssize_t Hook::hookOutgoingPacket(const uint8_t* buffer, ssize_t length) {
+ssize_t Hook::hookOutgoingMessage(const uint8_t* buffer, ssize_t length) {
 	if (_loggedIn) {
 		Message message(buffer, length);
 		if (message.isValid()) {
@@ -52,16 +52,16 @@ ssize_t Hook::hookOutgoingPacket(const uint8_t* buffer, ssize_t length) {
 	else {
 		Packet packet(buffer, length);
 		/*uint8_t protocol = message.readByte();
-		uint16_t os = message.readU16();
-		uint16_t client = message.readU16();
-		if (protocol == 0x0A) {
-			_protocol = protocol;
-			_pendingLogin = true;
-		}*/
+		 uint16_t os = message.readU16();
+		 uint16_t client = message.readU16();
+		 if (protocol == 0x0A) {
+		 _protocol = protocol;
+		 _pendingLogin = true;
+		 }*/
 	}
 	return write(buffer, length);
 }
 
-ssize_t Hook::hookIncomingPacket(uint8_t* buffer, ssize_t length) {
+ssize_t Hook::hookIncomingMessage(uint8_t* buffer, ssize_t length) {
 	return read(buffer, length);
 }

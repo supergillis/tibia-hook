@@ -47,8 +47,8 @@ public:
 	ssize_t write(const uint8_t*, ssize_t);
 	ssize_t write(const Message& message);
 
-	ssize_t hookOutgoingPacket(const uint8_t*, ssize_t);
-	ssize_t hookIncomingPacket(uint8_t*, ssize_t);
+	ssize_t hookOutgoingMessage(const uint8_t*, ssize_t);
+	ssize_t hookIncomingMessage(uint8_t*, ssize_t);
 
 private:
 	Hook(const Hook&);
