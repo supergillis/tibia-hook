@@ -4,15 +4,17 @@
 
 #include "Hook.h"
 #include "Main.h"
+#include "Handler.h"
 #include "ServerHandler.h"
+#include "ScriptHandler.h"
 
 static int _argc = 0;
 
 Hook::Hook() :
 		QCoreApplication(_argc, NULL), _socket(-1), _loggedIn(true), _pendingLogin(false), _key((uint32_t*) XTEA_START), _protocol(0) {
-	ServerHandler* serverHandler = new ServerHandler(this);
-	serverHandler->listen(QHostAddress::Any, 7170);
-	_handler = serverHandler;
+	//ServerHandler* serverHandler = new ServerHandler(this);
+	//serverHandler->listen(QHostAddress::Any, 7170);
+	_handler = new ScriptHandler(this);
 }
 
 Hook::~Hook() {
@@ -52,7 +54,7 @@ ssize_t Hook::hookOutgoingMessage(const uint8_t* buffer, ssize_t length) {
 		}
 	}
 	else {
-		DecryptedMessage packet(buffer, length);
+		DecryptedMessage message(buffer, length);
 		/*uint8_t protocol = message.readByte();
 		 uint16_t os = message.readU16();
 		 uint16_t client = message.readU16();

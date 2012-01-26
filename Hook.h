@@ -9,18 +9,6 @@
 #define XTEA_START 0x85d8830
 #define XTEA_LENGTH 0x04
 
-/* 8.62 addresses
- #define XTEA_START 0x859bcd0
- #define XTEA_LENGTH 0x04*/
-
-/* 8.52 addresses
- #define XTEA_START 0x856f450
- #define XTEA_LENGTH 0x04 */
-
-/* 8.53 addresses
- #define XTEA_START 0x85715f0
- #define XTEA_LENGTH 0x04 */
-
 #include <unistd.h>
 #include <stdint.h>
 #include <string.h>
@@ -28,9 +16,9 @@
 #include <QCoreApplication>
 #include <QEvent>
 
-#include "Handler.h"
 #include "EncryptedMessage.h"
 
+class Handler;
 class Hook: public QCoreApplication {
 	Q_OBJECT
 

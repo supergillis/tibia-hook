@@ -18,8 +18,6 @@ public:
 
 	bool listen(const QHostAddress& = QHostAddress::Any, quint16 = 0);
 
-	bool event(QEvent*);
-
 	void handleOutgoingMessage(const EncryptedMessage&);
 	bool handleOutgoingMessageInternal(const EncryptedMessage&);
 
@@ -31,7 +29,6 @@ private slots:
 	void socketClosed();
 
 private:
-	Hook* _hook;
 	QTcpServer* _server;
 	QTcpSocket* _currentSocket;
 };
