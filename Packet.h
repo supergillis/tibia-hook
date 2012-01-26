@@ -3,6 +3,8 @@
 
 #include <stdint.h>
 
+#include <QByteArray>
+
 class Message;
 class Packet {
 	static const int HEADER_POSITION = 0;
@@ -11,9 +13,7 @@ class Packet {
 
 public:
 	Packet();
-	Packet(const uint8_t* buffer, uint16_t length);
-	Packet(const Packet&);
-	~Packet();
+	Packet(const uint8_t*, uint16_t);
 
 	bool isValid() const;
 
@@ -26,10 +26,7 @@ public:
 	static Packet decrypt(const Message&, const uint32_t []);
 
 private:
-	void operator=(const Packet&);
-
-	uint8_t* _raw;
-	uint16_t _rawLength;
+	QByteArray _raw;
 	uint16_t _dataLength;
 };
 

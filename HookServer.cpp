@@ -44,6 +44,7 @@ void HookServer::socketClosed() {
 
 void HookServer::handleOutgoingMessage(const Message& message) {
 	if (!handleOutgoingMessageInternal(message)) {
+		qDebug() << "message:" << message.length();
 		_hook->write(message);
 	}
 }

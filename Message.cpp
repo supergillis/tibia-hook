@@ -5,34 +5,15 @@
 #include "Encryption.h"
 
 Message::Message() :
-		_raw(NULL), _rawLength(0), _dataLength(0), _checksum(0), _needsMore(0) {
+		_raw(), _dataLength(0), _checksum(0), _needsMore(0) {
 }
 
 Message::Message(const uint8_t* buffer, uint16_t length) {
-	_rawLength = length;
-	_raw = new uint8_t[length];
-	memcpy(_raw, buffer, length);
-
-	_dataLength = *(uint16_t*) (_raw + HEADER_POSITION);
+	_dataLength = *(uint16_t*) (buffer + HEADER_POSITION);
 	_dataLength -= CHECKSUM_LENGTH;
-	_checksum = *(uint32_t*) (_raw + CHECKSUM_POSITION);
-	_needsMore = (_dataLength + DATA_POSITION) - _rawLength;
-}
-
-Message::Message(const Message& other) {
-	_rawLength = other._rawLength;
-	_raw = new uint8_t[other._rawLength];
-	memcpy(_raw, other._raw, other._rawLength);
-
-	_dataLength = other._dataLength;
-	_checksum = other._checksum;
-	_needsMore = other._needsMore;
-}
-
-Message::~Message() {
-	if (_raw) {
-		delete[] _raw;
-	}
+	_checksum = *(uint32_t*) (buffer + CHECKSUM_POSITION);
+	_needsMore = (_dataLength + DATA_POSITION) - length;
+	_raw = QByteArray((const char*) buffer, length);
 }
 
 bool Message::isValid() const {
@@ -48,11 +29,11 @@ const uint8_t* Message::data() const {
 }
 
 uint16_t Message::rawLength() const {
-	return _rawLength;
+	return _raw.length();
 }
 
 const uint8_t* Message::rawData() const {
-	return _raw;
+	return (const uint8_t*) _raw.constData();
 }
 
 /**

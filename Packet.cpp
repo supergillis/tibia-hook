@@ -5,29 +5,12 @@
 #include "Encryption.h"
 
 Packet::Packet() :
-		_raw(NULL), _rawLength(0), _dataLength(0) {
+		_raw(), _dataLength(0) {
 }
 
 Packet::Packet(const uint8_t* buffer, uint16_t length) {
-	_rawLength = length;
-	_raw = new uint8_t[length];
-	memcpy(_raw, buffer, length);
-
-	_dataLength = *(uint16_t*) _raw;
-}
-
-Packet::Packet(const Packet& other) {
-	_rawLength = other._rawLength;
-	_raw = new uint8_t[other._rawLength];
-	memcpy(_raw, other._raw, other._rawLength);
-
-	_dataLength = other._dataLength;
-}
-
-Packet::~Packet() {
-	if (_raw) {
-		delete[] _raw;
-	}
+	_dataLength = *(uint16_t*) buffer;
+	_raw = QByteArray((const char*) buffer, length);
 }
 
 bool Packet::isValid() const {
@@ -43,11 +26,11 @@ const uint8_t* Packet::data() const {
 }
 
 uint16_t Packet::rawLength() const {
-	return _rawLength;
+	return _raw.length();
 }
 
 const uint8_t* Packet::rawData() const {
-	return (const uint8_t*) _raw;
+	return (const uint8_t*) _raw.constData();
 }
 
 Packet Packet::decrypt(const Message& message, const uint32_t key[]) {
