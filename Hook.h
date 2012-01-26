@@ -28,7 +28,7 @@
 #include <QCoreApplication>
 #include <QEvent>
 
-#include "HookServer.h"
+#include "ServerHandler.h"
 
 class Hook: public QCoreApplication {
 	Q_OBJECT
@@ -56,7 +56,7 @@ private:
 
 	int _socket;
 
-	HookServer* _hookServer;
+	ServerHandler* _handler;
 	bool _loggedIn;
 	bool _pendingLogin;
 	uint32_t* _key;

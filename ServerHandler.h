@@ -5,15 +5,16 @@
 #include <QTcpServer>
 #include <QTcpSocket>
 
+#include "Handler.h"
 #include "Message.h"
 #include "Packet.h"
 
 class Hook;
-class HookServer: public QTcpServer {
+class ServerHandler: public QTcpServer, public Handler {
 	Q_OBJECT
 
 public:
-	HookServer(Hook*);
+	ServerHandler(Hook*);
 
 	bool event(QEvent*);
 

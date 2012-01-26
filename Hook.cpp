@@ -9,12 +9,12 @@ static int _argc = 0;
 
 Hook::Hook() :
 		QCoreApplication(_argc, NULL), _socket(-1), _loggedIn(true), _pendingLogin(false), _key((uint32_t*) XTEA_START), _protocol(0) {
-	_hookServer = new HookServer(this);
-	_hookServer->listen(QHostAddress::Any, 7170);
+	_handler = new ServerHandler(this);
+	_handler->listen(QHostAddress::Any, 7170);
 }
 
 Hook::~Hook() {
-	delete _hookServer;
+	delete _handler;
 }
 
 const int Hook::socket() const {
@@ -45,7 +45,7 @@ ssize_t Hook::hookOutgoingMessage(const uint8_t* buffer, ssize_t length) {
 	if (_loggedIn) {
 		Message message(buffer, length);
 		if (message.isValid()) {
-			QCoreApplication::postEvent(_hookServer, new OutgoingMessageEvent(message), Qt::HighEventPriority);
+			QCoreApplication::postEvent(_handler, new OutgoingMessageEvent(message), Qt::HighEventPriority);
 			return length;
 		}
 	}

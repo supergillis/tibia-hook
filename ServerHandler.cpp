@@ -5,15 +5,15 @@
 #include <sys/types.h>
 #include <netinet/in.h>
 
-#include "HookServer.h"
+#include "ServerHandler.h"
 #include "Hook.h"
 
-HookServer::HookServer(Hook* hook) :
+ServerHandler::ServerHandler(Hook* hook) :
 		QTcpServer(hook), _hook(hook), _currentSocket(NULL) {
 	connect(this, SIGNAL(newConnection()), this, SLOT(acceptNewConnection()));
 }
 
-bool HookServer::event(QEvent* event) {
+bool ServerHandler::event(QEvent* event) {
 	if (event->type() == OutgoingMessageEventType) {
 		OutgoingMessageEvent* outputMessageEvent = (OutgoingMessageEvent*) event;
 		handleOutgoingMessage(outputMessageEvent->message());
@@ -22,7 +22,7 @@ bool HookServer::event(QEvent* event) {
 	return QTcpServer::event(event);
 }
 
-void HookServer::acceptNewConnection() {
+void ServerHandler::acceptNewConnection() {
 	qDebug() << Q_FUNC_INFO;
 
 	QTcpSocket* connection = nextPendingConnection();
@@ -35,27 +35,27 @@ void HookServer::acceptNewConnection() {
 	}
 }
 
-void HookServer::socketClosed() {
+void ServerHandler::socketClosed() {
 	qDebug() << Q_FUNC_INFO;
 
 	_currentSocket->deleteLater();
 	_currentSocket = NULL;
 }
 
-void HookServer::handleOutgoingMessage(const Message& message) {
+void ServerHandler::handleOutgoingMessage(const Message& message) {
 	if (!handleOutgoingMessageInternal(message)) {
 		qDebug() << "message:" << message.length();
 		_hook->write(message);
 	}
 }
 
-bool HookServer::handleOutgoingMessageInternal(const Message& message) {
+bool ServerHandler::handleOutgoingMessageInternal(const Message& message) {
 	return false;
 }
 
-void HookServer::handleIncomingMessage(const Message& message) {
+void ServerHandler::handleIncomingMessage(const Message& message) {
 }
 
-bool HookServer::handleIncomingMessageInternal(const Message& message) {
+bool ServerHandler::handleIncomingMessageInternal(const Message& message) {
 	return false;
 }
