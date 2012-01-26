@@ -1,5 +1,4 @@
 #include <stdio.h>
-#include <stdint.h>
 #include <string.h>
 
 #include "Hook.h"
@@ -7,11 +6,12 @@
 #include "Handler.h"
 #include "ServerHandler.h"
 #include "ScriptHandler.h"
+#include "Encryption.h"
 
 static int _argc = 0;
 
 Hook::Hook() :
-		QCoreApplication(_argc, NULL), _socket(-1), _loggedIn(true), _pendingLogin(false), _key((uint32_t*) XTEA_START), _protocol(0) {
+		QCoreApplication(_argc, NULL), _socket(-1), _loggedIn(true), _pendingLogin(false), _protocol(0) {
 	//ServerHandler* serverHandler = new ServerHandler(this);
 	//serverHandler->listen(QHostAddress::Any, 7170);
 	_handler = new ScriptHandler(this);
@@ -29,15 +29,11 @@ void Hook::setSocket(const int socket) {
 	_socket = socket;
 }
 
-const uint32_t* Hook::key() const {
-	return _key;
-}
-
-ssize_t Hook::read(uint8_t* buffer, ssize_t length) {
+ssize_t Hook::read(quint8* buffer, ssize_t length) {
 	return __read(_socket, buffer, length);
 }
 
-ssize_t Hook::write(const uint8_t* buffer, ssize_t length) {
+ssize_t Hook::write(const quint8* buffer, ssize_t length) {
 	return __write(_socket, buffer, length);
 }
 
@@ -45,7 +41,7 @@ ssize_t Hook::write(const EncryptedMessage& message) {
 	return write(message.rawData(), message.rawLength());
 }
 
-ssize_t Hook::hookOutgoingMessage(const uint8_t* buffer, ssize_t length) {
+ssize_t Hook::hookOutgoingMessage(const quint8* buffer, ssize_t length) {
 	if (_loggedIn) {
 		EncryptedMessage message(buffer, length);
 		if (message.isValid()) {
@@ -66,6 +62,6 @@ ssize_t Hook::hookOutgoingMessage(const uint8_t* buffer, ssize_t length) {
 	return write(buffer, length);
 }
 
-ssize_t Hook::hookIncomingMessage(uint8_t* buffer, ssize_t length) {
+ssize_t Hook::hookIncomingMessage(quint8* buffer, ssize_t length) {
 	return read(buffer, length);
 }

@@ -1,11 +1,10 @@
 #ifndef DECRYPTEDMESSAGE_H_
 #define DECRYPTEDMESSAGE_H_
 
-#include <stdint.h>
-
 #include <QByteArray>
 
 #include "Message.h"
+#include "Encryption.h"
 
 class EncryptedMessage;
 class DecryptedMessage: public Message {
@@ -15,17 +14,17 @@ class DecryptedMessage: public Message {
 
 public:
 	DecryptedMessage();
-	DecryptedMessage(const uint8_t*, uint16_t);
+	DecryptedMessage(const quint8*, quint16);
 
 	bool isValid() const;
 
-	uint16_t length() const;
-	const uint8_t* data() const;
+	quint16 length() const;
+	const quint8* data() const;
 
-	static DecryptedMessage decrypt(const EncryptedMessage&, const uint32_t []);
+	static DecryptedMessage decrypt(const EncryptedMessage&, const quint32 []);
 
 private:
-	uint16_t _dataLength;
+	quint16 _dataLength;
 };
 
 #endif /* DECRYPTEDMESSAGE_H_ */

@@ -2,37 +2,36 @@
 
 #include "DecryptedMessage.h"
 #include "EncryptedMessage.h"
-#include "Encryption.h"
 
 DecryptedMessage::DecryptedMessage() :
 		Message(), _dataLength(0) {
 }
 
-DecryptedMessage::DecryptedMessage(const uint8_t* buffer, uint16_t length) :
+DecryptedMessage::DecryptedMessage(const quint8* buffer, quint16 length) :
 		Message(buffer, length) {
-	_dataLength = *(uint16_t*) buffer;
+	_dataLength = *(quint16*) buffer;
 }
 
 bool DecryptedMessage::isValid() const {
 	return _dataLength > 0;
 }
 
-uint16_t DecryptedMessage::length() const {
+quint16 DecryptedMessage::length() const {
 	return _dataLength;
 }
 
-const uint8_t* DecryptedMessage::data() const {
+const quint8* DecryptedMessage::data() const {
 	return rawData() + DATA_POSITION;
 }
 
-DecryptedMessage DecryptedMessage::decrypt(const EncryptedMessage& message, const uint32_t key[]) {
+DecryptedMessage DecryptedMessage::decrypt(const EncryptedMessage& message, const quint32 key[]) {
 	if (message.isValid()) {
-		uint16_t length = message.length();
-		uint8_t data[length];
+		quint16 length = message.length();
+		quint8 data[length];
 		memcpy(data, message.data(), length);
 
 		if (Encryption::XTEA::decrypt(data, length, key)) {
-			uint16_t newLength = *(uint16_t*) data;
+			quint16 newLength = *(quint16*) data;
 			if (newLength <= length) {
 				return DecryptedMessage(data, HEADER_LENGTH + newLength);
 			}

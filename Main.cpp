@@ -44,13 +44,13 @@ int connect(int socket, const struct sockaddr* address, socklen_t length) {
 
 ssize_t read(int socket, void* buffer, size_t length) {
 	if (hook && hook->socket() == socket && length > 0)
-		return hook->hookIncomingMessage((uint8_t*) buffer, length);
+		return hook->hookIncomingMessage((quint8*) buffer, length);
 	return __read(socket, buffer, length);
 }
 
 ssize_t write(int socket, const void* buffer, size_t length) {
 	if (hook && hook->socket() == socket && length > 0)
-		return hook->hookOutgoingMessage((const uint8_t*) buffer, length);
+		return hook->hookOutgoingMessage((const quint8*) buffer, length);
 	return __write(socket, buffer, length);
 }
 

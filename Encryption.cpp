@@ -1,10 +1,12 @@
 #include "Encryption.h"
 
-bool Encryption::XTEA::decrypt(QByteArray& encrypted, const uint32_t key[]) {
-	return decrypt((uint8_t*) encrypted.data(), encrypted.length(), key);
+const quint32* Encryption::XTEA::TIBIA_KEY = (quint32*) XTEA_START;
+
+bool Encryption::XTEA::decrypt(QByteArray& encrypted, const quint32 key[]) {
+	return decrypt((quint8*) encrypted.data(), encrypted.length(), key);
 }
 
-bool Encryption::XTEA::decrypt(uint8_t* buffer, uint16_t length, const uint32_t key[]) {
+bool Encryption::XTEA::decrypt(quint8* buffer, quint16 length, const quint32 key[]) {
 	if (length % 8 == 0) {
 		unsigned int position = 0;
 		unsigned int buffer_32_length = length / 4;
@@ -27,11 +29,11 @@ bool Encryption::XTEA::decrypt(uint8_t* buffer, uint16_t length, const uint32_t 
 	return false;
 }
 
-bool Encryption::XTEA::encrypt(QByteArray& decrypted, const uint32_t key[]) {
-	return encrypt((uint8_t*) decrypted.data(), decrypted.length(), key);
+bool Encryption::XTEA::encrypt(QByteArray& decrypted, const quint32 key[]) {
+	return encrypt((quint8*) decrypted.data(), decrypted.length(), key);
 }
 
-bool Encryption::XTEA::encrypt(uint8_t* buffer, uint16_t length, const uint32_t key[]) {
+bool Encryption::XTEA::encrypt(quint8* buffer, quint16 length, const quint32 key[]) {
 	if (length % 8 == 0) {
 		unsigned int position = 0;
 		unsigned int buffer_32_length = length / 4;
@@ -54,12 +56,12 @@ bool Encryption::XTEA::encrypt(uint8_t* buffer, uint16_t length, const uint32_t 
 	return false;
 }
 
-uint32_t Encryption::Adler::checksum(const QByteArray& bytes) {
-	return checksum((const uint8_t*) bytes.data(), bytes.length());
+quint32 Encryption::Adler::checksum(const QByteArray& bytes) {
+	return checksum((const quint8*) bytes.data(), bytes.length());
 }
 
-uint32_t Encryption::Adler::checksum(const uint8_t* buffer, uint16_t length) {
-	uint32_t a = 1, b = 0;
+quint32 Encryption::Adler::checksum(const quint8* buffer, quint16 length) {
+	quint32 a = 1, b = 0;
 	while (length > 0) {
 		size_t tlen = length > 5552 ? 5552 : length;
 		length -= tlen;

@@ -1,21 +1,20 @@
 #ifndef MESSAGE_H_
 #define MESSAGE_H_
 
-#include <stdint.h>
 #include <QByteArray>
 
 class Message {
 public:
 	Message();
-	Message(const uint8_t*, uint16_t);
+	Message(const quint8*, quint16);
 
 	virtual bool isValid() const = 0;
 
-	virtual uint16_t length() const = 0;
-	virtual const uint8_t* data() const = 0;
+	virtual quint16 length() const = 0;
+	virtual const quint8* data() const = 0;
 
-	uint16_t rawLength() const;
-	const uint8_t* rawData() const;
+	quint16 rawLength() const;
+	const quint8* rawData() const;
 
 private:
 	QByteArray _raw;

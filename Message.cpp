@@ -3,14 +3,14 @@
 Message::Message() {
 }
 
-Message::Message(const uint8_t* buffer, uint16_t length) {
+Message::Message(const quint8* buffer, quint16 length) {
 	_raw = QByteArray((const char*) buffer, length);
 }
 
-uint16_t Message::rawLength() const {
+quint16 Message::rawLength() const {
 	return _raw.length();
 }
 
-const uint8_t* Message::rawData() const {
-	return (const uint8_t*) _raw.constData();
+const quint8* Message::rawData() const {
+	return (const quint8*) _raw.constData();
 }

@@ -1,16 +1,7 @@
 #ifndef MAIN_HANDLER_H
 #define MAIN_HANDLER_H
 
-#define BATTLELIST_START 0x855e6c0
-#define BATTLELIST_LENGTH 160
-#define BATTLELIST_COUNT 250
-
-/* 9.44 addresses */
-#define XTEA_START 0x85d8830
-#define XTEA_LENGTH 0x04
-
 #include <unistd.h>
-#include <stdint.h>
 #include <string.h>
 
 #include <QCoreApplication>
@@ -29,15 +20,13 @@ public:
 	const int socket() const;
 	void setSocket(const int);
 
-	const uint32_t* key() const;
+	ssize_t read(quint8*, ssize_t);
 
-	ssize_t read(uint8_t*, ssize_t);
-
-	ssize_t write(const uint8_t*, ssize_t);
+	ssize_t write(const quint8*, ssize_t);
 	ssize_t write(const EncryptedMessage& message);
 
-	ssize_t hookOutgoingMessage(const uint8_t*, ssize_t);
-	ssize_t hookIncomingMessage(uint8_t*, ssize_t);
+	ssize_t hookOutgoingMessage(const quint8*, ssize_t);
+	ssize_t hookIncomingMessage(quint8*, ssize_t);
 
 private:
 	Hook(const Hook&);
@@ -48,8 +37,7 @@ private:
 	Handler* _handler;
 	bool _loggedIn;
 	bool _pendingLogin;
-	uint32_t* _key;
-	uint8_t _protocol;
+	quint8 _protocol;
 };
 
 static const QEvent::Type OutgoingMessageEventType = QEvent::User;

@@ -1,23 +1,27 @@
 #ifndef ENCRYPTION_H_
 #define ENCRYPTION_H_
 
-#include <stdint.h>
+/* 9.44 addresses */
+#define XTEA_START 0x85d8830
+#define XTEA_LENGTH 0x04
 
 #include <QByteArray>
 
 namespace Encryption {
 	class XTEA {
 	public:
-		static bool decrypt(uint8_t*, uint16_t, const uint32_t []);
-		static bool decrypt(QByteArray&, const uint32_t []);
+		static const quint32* TIBIA_KEY;
 
-		static bool encrypt(uint8_t*, uint16_t, const uint32_t []);
-		static bool encrypt(QByteArray&, const uint32_t []);
+		static bool decrypt(quint8*, quint16, const quint32 []);
+		static bool decrypt(QByteArray&, const quint32 []);
+
+		static bool encrypt(quint8*, quint16, const quint32 []);
+		static bool encrypt(QByteArray&, const quint32 []);
 	};
 	class Adler {
 	public:
-		static uint32_t checksum(const uint8_t*, uint16_t);
-		static uint32_t checksum(const QByteArray&);
+		static quint32 checksum(const quint8*, quint16);
+		static quint32 checksum(const QByteArray&);
 	};
 };
 
