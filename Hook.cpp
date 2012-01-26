@@ -4,16 +4,13 @@
 #include "Hook.h"
 #include "Main.h"
 #include "Handler.h"
-#include "ServerHandler.h"
+#include "Packet.h"
 #include "ScriptHandler.h"
-#include "Encryption.h"
 
 static int _argc = 0;
 
 Hook::Hook() :
 		QCoreApplication(_argc, NULL), _socket(-1), _loggedIn(true), _pendingLogin(false), _protocol(0) {
-	//ServerHandler* serverHandler = new ServerHandler(this);
-	//serverHandler->listen(QHostAddress::Any, 7170);
 	_handler = new ScriptHandler(this);
 }
 
@@ -51,13 +48,14 @@ ssize_t Hook::hookOutgoingMessage(const quint8* buffer, ssize_t length) {
 	}
 	else {
 		DecryptedMessage message(buffer, length);
-		/*uint8_t protocol = message.readByte();
-		 uint16_t os = message.readU16();
-		 uint16_t client = message.readU16();
-		 if (protocol == 0x0A) {
-		 _protocol = protocol;
-		 _pendingLogin = true;
-		 }*/
+		Packet packet(message);
+		quint8 protocol = packet.readU8();
+		quint16 os = packet.readU16();
+		quint16 client = packet.readU16();
+		if (protocol == 0x0A) {
+			_protocol = protocol;
+			_pendingLogin = true;
+		}
 	}
 	return write(buffer, length);
 }

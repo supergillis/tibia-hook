@@ -5,6 +5,7 @@
 #include <string.h>
 
 #include <QCoreApplication>
+#include <QDebug>
 #include <QEvent>
 
 #include "EncryptedMessage.h"
@@ -23,7 +24,7 @@ public:
 	ssize_t read(quint8*, ssize_t);
 
 	ssize_t write(const quint8*, ssize_t);
-	ssize_t write(const EncryptedMessage& message);
+	ssize_t write(const EncryptedMessage&);
 
 	ssize_t hookOutgoingMessage(const quint8*, ssize_t);
 	ssize_t hookIncomingMessage(quint8*, ssize_t);

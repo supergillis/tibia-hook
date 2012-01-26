@@ -7,6 +7,8 @@
 
 #include "DecryptedMessage.h"
 
+#define PACKET_END_OF_FILE "reached the end of the buffer"
+
 class Packet: public QObject {
 	Q_OBJECT
 
@@ -15,6 +17,8 @@ public:
 	Packet(const DecryptedMessage&);
 
 public slots:
+	bool has(quint16);
+
 	quint8 readU8();
 	quint16 readU16();
 	quint32 readU32();
@@ -23,6 +27,7 @@ public slots:
 
 private:
 	QByteArray _data;
+	quint16 _length;
 	quint16 _position;
 };
 

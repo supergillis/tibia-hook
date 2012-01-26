@@ -29,19 +29,16 @@ void ScriptHandler::handleOutgoingMessage(const EncryptedMessage& message) {
 
 bool ScriptHandler::handleOutgoingMessageInternal(const EncryptedMessage& message) {
 	QScriptValue handler = _handler.property("handleOutgoingPacket");
-	if (!handler.isFunction()) {
-		qDebug() << "handleOutgoingPacket is not a function";
-		return false;
+	if (handler.isFunction()) {
+		DecryptedMessage decrypted = DecryptedMessage::decrypt(message, Encryption::XTEA::TIBIA_KEY);
+		if (decrypted.isValid()) {
+			QScriptValue packet = _engine.newQObject(new Packet(decrypted), QScriptEngine::ScriptOwnership);
+			QScriptValueList args;
+			QScriptValue result = handler.call(_handler, args << packet);
+			return result.isBool() ? result.toBool() : false;
+		}
 	}
-	DecryptedMessage decrypted = DecryptedMessage::decrypt(message, Encryption::XTEA::TIBIA_KEY);
-	if (!decrypted.isValid()) {
-		qDebug() << "could not decrypt the message";
-		return false;
-	}
-	QScriptValue packet = _engine.newQObject(new Packet(decrypted), QScriptEngine::ScriptOwnership);
-	QScriptValueList args;
-	QScriptValue result = handler.call(_handler, args << packet);
-	return result.isBool() ? result.toBool() : false;
+	return false;
 }
 
 void ScriptHandler::handleIncomingMessage(const EncryptedMessage& message) {
@@ -62,7 +59,7 @@ ScriptEngineAgent::ScriptEngineAgent(QScriptEngine* engine) :
 
 void ScriptEngineAgent::exceptionThrow(qint64 scriptId, const QScriptValue& exception, bool hasHandler) {
 	if (!hasHandler) {
-		qDebug() << "unhandled exception";
-		qDebug() << exception.toString();
+		qWarning() << "unhandled exception";
+		qWarning() << exception.toString().toAscii();
 	}
 }
