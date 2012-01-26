@@ -4,13 +4,15 @@
 
 #include "Hook.h"
 #include "Main.h"
+#include "ServerHandler.h"
 
 static int _argc = 0;
 
 Hook::Hook() :
 		QCoreApplication(_argc, NULL), _socket(-1), _loggedIn(true), _pendingLogin(false), _key((uint32_t*) XTEA_START), _protocol(0) {
-	_handler = new ServerHandler(this);
-	_handler->listen(QHostAddress::Any, 7170);
+	ServerHandler* serverHandler = new ServerHandler(this);
+	serverHandler->listen(QHostAddress::Any, 7170);
+	_handler = serverHandler;
 }
 
 Hook::~Hook() {
@@ -37,20 +39,20 @@ ssize_t Hook::write(const uint8_t* buffer, ssize_t length) {
 	return __write(_socket, buffer, length);
 }
 
-ssize_t Hook::write(const Message& message) {
+ssize_t Hook::write(const EncryptedMessage& message) {
 	return write(message.rawData(), message.rawLength());
 }
 
 ssize_t Hook::hookOutgoingMessage(const uint8_t* buffer, ssize_t length) {
 	if (_loggedIn) {
-		Message message(buffer, length);
+		EncryptedMessage message(buffer, length);
 		if (message.isValid()) {
 			QCoreApplication::postEvent(_handler, new OutgoingMessageEvent(message), Qt::HighEventPriority);
 			return length;
 		}
 	}
 	else {
-		Packet packet(buffer, length);
+		DecryptedMessage packet(buffer, length);
 		/*uint8_t protocol = message.readByte();
 		 uint16_t os = message.readU16();
 		 uint16_t client = message.readU16();

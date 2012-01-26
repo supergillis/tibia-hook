@@ -28,7 +28,8 @@
 #include <QCoreApplication>
 #include <QEvent>
 
-#include "ServerHandler.h"
+#include "Handler.h"
+#include "EncryptedMessage.h"
 
 class Hook: public QCoreApplication {
 	Q_OBJECT
@@ -45,7 +46,7 @@ public:
 	ssize_t read(uint8_t*, ssize_t);
 
 	ssize_t write(const uint8_t*, ssize_t);
-	ssize_t write(const Message& message);
+	ssize_t write(const EncryptedMessage& message);
 
 	ssize_t hookOutgoingMessage(const uint8_t*, ssize_t);
 	ssize_t hookIncomingMessage(uint8_t*, ssize_t);
@@ -56,7 +57,7 @@ private:
 
 	int _socket;
 
-	ServerHandler* _handler;
+	Handler* _handler;
 	bool _loggedIn;
 	bool _pendingLogin;
 	uint32_t* _key;
@@ -67,16 +68,16 @@ static const QEvent::Type OutgoingMessageEventType = QEvent::User;
 
 class OutgoingMessageEvent: public QEvent {
 public:
-	OutgoingMessageEvent(const Message& message): QEvent(OutgoingMessageEventType), _message(message) {
+	OutgoingMessageEvent(const EncryptedMessage& message): QEvent(OutgoingMessageEventType), _message(message) {
 		// Do nothing
 	}
 
-	const Message& message() {
+	const EncryptedMessage& message() {
 		return _message;
 	}
 
 private:
-	const Message _message;
+	const EncryptedMessage _message;
 };
 
 #endif

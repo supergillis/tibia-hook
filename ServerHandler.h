@@ -6,23 +6,25 @@
 #include <QTcpSocket>
 
 #include "Handler.h"
-#include "Message.h"
-#include "Packet.h"
+#include "EncryptedMessage.h"
+#include "DecryptedMessage.h"
 
 class Hook;
-class ServerHandler: public QTcpServer, public Handler {
+class ServerHandler: public Handler {
 	Q_OBJECT
 
 public:
 	ServerHandler(Hook*);
 
+	bool listen(const QHostAddress& = QHostAddress::Any, quint16 = 0);
+
 	bool event(QEvent*);
 
-	void handleOutgoingMessage(const Message&);
-	bool handleOutgoingMessageInternal(const Message&);
+	void handleOutgoingMessage(const EncryptedMessage&);
+	bool handleOutgoingMessageInternal(const EncryptedMessage&);
 
-	void handleIncomingMessage(const Message&);
-	bool handleIncomingMessageInternal(const Message&);
+	void handleIncomingMessage(const EncryptedMessage&);
+	bool handleIncomingMessageInternal(const EncryptedMessage&);
 
 private slots:
 	void acceptNewConnection();
@@ -30,6 +32,7 @@ private slots:
 
 private:
 	Hook* _hook;
+	QTcpServer* _server;
 	QTcpSocket* _currentSocket;
 };
 

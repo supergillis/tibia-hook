@@ -9,8 +9,12 @@
 #include "Hook.h"
 
 ServerHandler::ServerHandler(Hook* hook) :
-		QTcpServer(hook), _hook(hook), _currentSocket(NULL) {
-	connect(this, SIGNAL(newConnection()), this, SLOT(acceptNewConnection()));
+		_hook(hook), _server(new QTcpServer(_hook)), _currentSocket(NULL) {
+	connect(_server, SIGNAL(newConnection()), this, SLOT(acceptNewConnection()));
+}
+
+bool ServerHandler::listen(const QHostAddress& address, quint16 port) {
+	return _server->listen(address, port);
 }
 
 bool ServerHandler::event(QEvent* event) {
@@ -19,13 +23,13 @@ bool ServerHandler::event(QEvent* event) {
 		handleOutgoingMessage(outputMessageEvent->message());
 		return true;
 	}
-	return QTcpServer::event(event);
+	return QObject::event(event);
 }
 
 void ServerHandler::acceptNewConnection() {
 	qDebug() << Q_FUNC_INFO;
 
-	QTcpSocket* connection = nextPendingConnection();
+	QTcpSocket* connection = _server->nextPendingConnection();
 	if (_currentSocket == NULL) {
 		_currentSocket = connection;
 		connect(_currentSocket, SIGNAL(disconnected()), this, SLOT(socketClosed()));
@@ -42,20 +46,20 @@ void ServerHandler::socketClosed() {
 	_currentSocket = NULL;
 }
 
-void ServerHandler::handleOutgoingMessage(const Message& message) {
+void ServerHandler::handleOutgoingMessage(const EncryptedMessage& message) {
 	if (!handleOutgoingMessageInternal(message)) {
 		qDebug() << "message:" << message.length();
 		_hook->write(message);
 	}
 }
 
-bool ServerHandler::handleOutgoingMessageInternal(const Message& message) {
+bool ServerHandler::handleOutgoingMessageInternal(const EncryptedMessage& message) {
 	return false;
 }
 
-void ServerHandler::handleIncomingMessage(const Message& message) {
+void ServerHandler::handleIncomingMessage(const EncryptedMessage& message) {
 }
 
-bool ServerHandler::handleIncomingMessageInternal(const Message& message) {
+bool ServerHandler::handleIncomingMessageInternal(const EncryptedMessage& message) {
 	return false;
 }
