@@ -1,11 +1,9 @@
 #ifndef PACKET_H_
 #define PACKET_H_
 
+#include <QDebug>
 #include <QObject>
-#include <QByteArray>
 #include <QString>
-
-#include "DecryptedMessage.h"
 
 #define PACKET_END_OF_FILE "reached the end of the buffer"
 
@@ -14,10 +12,17 @@ class Packet: public QObject {
 
 public:
 	Packet();
-	Packet(const DecryptedMessage&);
 
 public slots:
-	bool has(quint16);
+	virtual quint16 length() const = 0;
+	virtual const quint8* data() const = 0;
+
+	quint16 position() const;
+	void setPosition(quint16);
+
+	void skip(quint16 = 1);
+
+	bool has(quint16) const;
 
 	quint8 readU8();
 	quint16 readU16();
@@ -25,10 +30,9 @@ public slots:
 	quint64 readU64();
 	QString readString();
 
-private:
-	QByteArray _data;
-	quint16 _length;
+protected:
 	quint16 _position;
+
 };
 
 #endif /* PACKET_H_ */

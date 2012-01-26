@@ -1,5 +1,7 @@
 #include "ScriptHandler.h"
-#include "Packet.h"
+#include "DecryptedMessage.h"
+#include "ReadWritePacket.h"
+#include "ReadOnlyPacket.h"
 
 #include <QDebug>
 #include <QFile>
@@ -32,7 +34,7 @@ bool ScriptHandler::handleOutgoingMessageInternal(const EncryptedMessage& messag
 	if (handler.isFunction()) {
 		DecryptedMessage decrypted = DecryptedMessage::decrypt(message, Encryption::XTEA::TIBIA_KEY);
 		if (decrypted.isValid()) {
-			QScriptValue packet = _engine.newQObject(new Packet(decrypted), QScriptEngine::ScriptOwnership);
+			QScriptValue packet = _engine.newQObject(new ReadOnlyPacket(decrypted), QScriptEngine::ScriptOwnership);
 			QScriptValueList args;
 			QScriptValue result = handler.call(_handler, args << packet);
 			return result.isBool() ? result.toBool() : false;
@@ -50,7 +52,7 @@ bool ScriptHandler::handleIncomingMessageInternal(const EncryptedMessage& messag
 }
 
 QScriptValue ScriptHandler::packetConstructor(QScriptContext* context, QScriptEngine* engine) {
-	return engine->newQObject(new Packet(), QScriptEngine::ScriptOwnership);
+	return engine->newQObject(new ReadWritePacket(), QScriptEngine::ScriptOwnership);
 }
 
 ScriptEngineAgent::ScriptEngineAgent(QScriptEngine* engine) :

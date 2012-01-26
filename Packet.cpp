@@ -1,22 +1,28 @@
 #include "Packet.h"
 
-#include <QDebug>
-
 Packet::Packet() :
-		QObject() {
+		QObject(), _position(0) {
 }
 
-Packet::Packet(const DecryptedMessage& message) :
-		QObject(), _data((const char*) message.data(), message.length()), _length(message.length()), _position(0) {
+quint16 Packet::position() const {
+	return _position;
 }
 
-bool Packet::has(quint16 count) {
-	return _length - _position >= count;
+void Packet::setPosition(quint16 position) {
+	_position = position;
+}
+
+void Packet::skip(quint16 count) {
+	_position += count;
+}
+
+bool Packet::has(quint16 count) const {
+	return length() - _position >= count;
 }
 
 quint8 Packet::readU8() {
 	if (has(1)) {
-		quint8 value = *(_data.constData() + _position);
+		quint8 value = *(data() + _position);
 		_position += 1;
 		return value;
 	}
@@ -26,7 +32,7 @@ quint8 Packet::readU8() {
 
 quint16 Packet::readU16() {
 	if (has(2)) {
-		quint16 value = *(quint16*) (_data.constData() + _position);
+		quint16 value = *(quint16*) (data() + _position);
 		_position += 2;
 		return value;
 	}
@@ -36,7 +42,7 @@ quint16 Packet::readU16() {
 
 quint32 Packet::readU32() {
 	if (has(2)) {
-		quint32 value = *(quint32*) (_data.constData() + _position);
+		quint32 value = *(quint32*) (data() + _position);
 		_position += 4;
 		return value;
 	}
@@ -46,7 +52,7 @@ quint32 Packet::readU32() {
 
 quint64 Packet::readU64() {
 	if (has(2)) {
-		quint64 value = *(quint64*) (_data.constData() + _position);
+		quint64 value = *(quint64*) (data() + _position);
 		_position += 8;
 		return value;
 	}
@@ -56,8 +62,9 @@ quint64 Packet::readU64() {
 
 QString Packet::readString() {
 	quint16 length = readU16();
+	qDebug() << "readString" << length;
 	if (has(length)) {
-		QString value = QString::fromAscii(_data.constData() + _position, length);
+		QString value = QString::fromAscii((const char*) (data() + _position), length);
 		_position += length;
 		return value;
 	}

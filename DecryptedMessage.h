@@ -15,6 +15,7 @@ class DecryptedMessage: public Message {
 public:
 	DecryptedMessage();
 	DecryptedMessage(const quint8*, quint16);
+	DecryptedMessage(const EncryptedMessage&);
 
 	bool isValid() const;
 

@@ -19,6 +19,16 @@ SPEAK_CHANNEL_R2 = 0x11, // Talk red anonymously on chat - #d
 SPEAK_MONSTER_SAY = 0x13, // Talk orange
 SPEAK_MONSTER_YELL = 0x14
 
+packet = new Packet();
+packet.writeU8(0x05);
+packet.writeString("test");
+
+packet.setPosition(0);
+print("js " + packet.readU8());
+print("js " + packet.readString());
+print("js " + packet.readU8());
+print("js " + packet.readU8());
+
 OutgoingPacketHandler = {}
 
 OutgoingPacketHandler.parseSay = function(packet) {

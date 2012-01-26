@@ -4,7 +4,8 @@
 #include "Hook.h"
 #include "Main.h"
 #include "Handler.h"
-#include "Packet.h"
+#include "DecryptedMessage.h"
+#include "ReadOnlyPacket.h"
 #include "ScriptHandler.h"
 
 static int _argc = 0;
@@ -48,7 +49,7 @@ ssize_t Hook::hookOutgoingMessage(const quint8* buffer, ssize_t length) {
 	}
 	else {
 		DecryptedMessage message(buffer, length);
-		Packet packet(message);
+		ReadOnlyPacket packet(message);
 		quint8 protocol = packet.readU8();
 		quint16 os = packet.readU16();
 		quint16 client = packet.readU16();
