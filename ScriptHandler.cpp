@@ -5,24 +5,25 @@
 #include "Hook.h"
 
 #include <QDebug>
+#include <QDir>
 #include <QFile>
 
 ScriptHandler::ScriptHandler() :
-		Handler(), _engine(this), _engineAgent(&_engine), _handler(_engine.newObject()), _hook(_engine.newObject()) {
+		Handler(), _engine(this), _handler(_engine.newObject()), _hook(_engine.newObject()) {
 	QScriptValue packetConstructor = _engine.newFunction(ScriptHandler::packetConstructor);
 	QScriptValue packetMetaObject = _engine.newQMetaObject(&Packet::staticMetaObject, packetConstructor);
 
 	_hook.setProperty("write", _engine.newFunction(ScriptHandler::hookWrite));
 
-	_engine.setAgent(&_engineAgent);
+	_engine.globalObject().setProperty("require", _engine.newFunction(ScriptHandler::require));
 	_engine.globalObject().setProperty("Hook", _hook);
 	_engine.globalObject().setProperty("Packet", packetMetaObject);
 	_engine.globalObject().setProperty("Handler", _handler);
 
-	QFile script("/home/gillis/projects/tibia-hook/main.js");
-	if (script.open(QFile::ReadOnly)) {
-		_engine.evaluate(script.readAll());
-	}
+	QDir current = QDir::current();
+	QString main = current.absoluteFilePath("main.js");
+
+	_engine.require(main);
 }
 
 void ScriptHandler::handleOutgoingMessage(const EncryptedMessage& message) {
@@ -53,8 +54,23 @@ bool ScriptHandler::handleIncomingMessageInternal(const EncryptedMessage& messag
 	return false;
 }
 
+QScriptValue ScriptHandler::require(QScriptContext* context, QScriptEngine* engine) {
+	if (context->argumentCount() == 1) {
+		QScriptValue value = context->argument(0);
+		ScriptEngine* scriptEngine = qobject_cast<ScriptEngine*>(engine);
+		if (value.isString() && scriptEngine) {
+			QString required = value.toString();
+			return scriptEngine->require(required);
+		}
+	}
+	return context->throwError("import(String) only accepts one argument");
+}
+
 QScriptValue ScriptHandler::packetConstructor(QScriptContext* context, QScriptEngine* engine) {
-	return engine->newQObject(new ReadWritePacket(), QScriptEngine::ScriptOwnership);
+	if (context->argumentCount() == 0) {
+		return engine->newQObject(new ReadWritePacket(), QScriptEngine::ScriptOwnership);
+	}
+	return context->throwError("Packet() only accepts no arguments");
 }
 
 QScriptValue ScriptHandler::hookWrite(QScriptContext* context, QScriptEngine* engine) {
@@ -67,16 +83,5 @@ QScriptValue ScriptHandler::hookWrite(QScriptContext* context, QScriptEngine* en
 			return QScriptValue(true);
 		}
 	}
-	return context->throwError("write accepts only one argument");
-}
-
-ScriptEngineAgent::ScriptEngineAgent(QScriptEngine* engine) :
-		QScriptEngineAgent(engine) {
-}
-
-void ScriptEngineAgent::exceptionThrow(qint64 scriptId, const QScriptValue& exception, bool hasHandler) {
-	if (!hasHandler) {
-		qWarning() << "unhandled exception";
-		qWarning() << exception.toString().toAscii();
-	}
+	return context->throwError("write(Packet) only accepts one argument");
 }

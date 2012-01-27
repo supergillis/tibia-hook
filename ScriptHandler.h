@@ -3,17 +3,10 @@
 
 #include "Handler.h"
 #include "EncryptedMessage.h"
+#include "ScriptEngine.h"
 
 #include <QScriptEngine>
-#include <QScriptEngineAgent>
 #include <QScriptContext>
-
-class ScriptEngineAgent: public QScriptEngineAgent {
-public:
-	ScriptEngineAgent(QScriptEngine*);
-
-	void exceptionThrow(qint64, const QScriptValue&, bool);
-};
 
 class ScriptHandler: public Handler {
 	Q_OBJECT
@@ -28,11 +21,11 @@ public:
 	bool handleIncomingMessageInternal(const EncryptedMessage&);
 
 private:
+	static QScriptValue require(QScriptContext*, QScriptEngine*);
 	static QScriptValue packetConstructor(QScriptContext*, QScriptEngine*);
 	static QScriptValue hookWrite(QScriptContext*, QScriptEngine*);
 
-	QScriptEngine _engine;
-	ScriptEngineAgent _engineAgent;
+	ScriptEngine _engine;
 	QScriptValue _handler;
 	QScriptValue _hook;
 };
