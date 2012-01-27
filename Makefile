@@ -6,7 +6,7 @@ LDFLAGS=-m32 -ldl -lpthread -L/usr/lib/i386-linux-gnu -lQtCore -lQtNetwork -lQtS
 INCLUDES= -I/usr/include/qt4/QtCore -I/usr/include/qt4/QtNetwork -I/usr/include/qt4/QtScript -I/usr/include/qt4
 
 MOCS=$(patsubst %.h, %.moc.cpp, $(shell grep -l Q_OBJECT *.h))
-SOURCES=Main.cpp Hook.cpp Message.cpp EncryptedMessage.cpp DecryptedMessage.cpp Packet.cpp ReadOnlyPacket.cpp ReadWritePacket.cpp Encryption.cpp ServerHandler.cpp ScriptHandler.cpp $(MOCS)
+SOURCES=Main.cpp Hook.cpp Message.cpp EncryptedMessage.cpp DecryptedMessage.cpp Packet.cpp ReadOnlyPacket.cpp ReadWritePacket.cpp Encryption.cpp ScriptHandler.cpp $(MOCS)
 OBJECTS=$(SOURCES:.cpp=.o)
 LIBRARY=hook.so
 

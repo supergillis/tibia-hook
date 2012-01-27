@@ -3,7 +3,7 @@
 Message::Message() {
 }
 
-Message::Message(const quint8* buffer, quint16 length) {
+void Message::initialize(const quint8* buffer, quint16 length) {
 	_raw = QByteArray((const char*) buffer, length);
 }
 

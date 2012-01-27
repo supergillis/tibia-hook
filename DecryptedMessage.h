@@ -5,6 +5,7 @@
 
 #include "Message.h"
 #include "Encryption.h"
+#include "Packet.h"
 
 class EncryptedMessage;
 class DecryptedMessage: public Message {
@@ -15,14 +16,16 @@ class DecryptedMessage: public Message {
 public:
 	DecryptedMessage();
 	DecryptedMessage(const quint8*, quint16);
-	DecryptedMessage(const EncryptedMessage&);
+	DecryptedMessage(const Packet*);
+	DecryptedMessage(const EncryptedMessage*);
 
 	bool isValid() const;
 
 	quint16 length() const;
 	const quint8* data() const;
 
-	static DecryptedMessage decrypt(const EncryptedMessage&, const quint32 []);
+protected:
+	void initialize(const quint8*, quint16);
 
 private:
 	quint16 _dataLength;

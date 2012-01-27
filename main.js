@@ -19,16 +19,6 @@ SPEAK_CHANNEL_R2 = 0x11, // Talk red anonymously on chat - #d
 SPEAK_MONSTER_SAY = 0x13, // Talk orange
 SPEAK_MONSTER_YELL = 0x14
 
-packet = new Packet();
-packet.writeU8(0x05);
-packet.writeString("test");
-
-packet.setPosition(0);
-print("js " + packet.readU8());
-print("js " + packet.readString());
-print("js " + packet.readU8());
-print("js " + packet.readU8());
-
 OutgoingPacketHandler = {}
 
 OutgoingPacketHandler.parseSay = function(packet) {
@@ -46,11 +36,27 @@ OutgoingPacketHandler.parseSay = function(packet) {
 		case SPEAK_CHANNEL_R2:
 			channel = packet.readU16();
 			break;
-		default:
-			break;
 	}
 	message = packet.readString();
 	print("parseSay: " + message);
+	hooked = new Packet();
+	hooked.writeU8(0x96);
+	hooked.writeU8(type);
+	switch (type) {
+		case SPEAK_PRIVATE:
+		case SPEAK_PRIVATE_RED:
+		case SPEAK_RVR_ANSWER:
+			hooked.writeString(receiver);
+			break;
+		case SPEAK_CHANNEL_Y:
+		case SPEAK_CHANNEL_R1:
+		case SPEAK_CHANNEL_R2:
+			hooked.writeU16(channel);
+			break;
+	}
+	hooked.writeString("lol");
+	Hook.write(hooked);
+	return true;
 }
 
 Handler.handleOutgoingPacket = function(packet) {
@@ -59,12 +65,10 @@ Handler.handleOutgoingPacket = function(packet) {
 
 	switch (type) {
 		case 0x96:
-			OutgoingPacketHandler.parseSay(packet);
+			return OutgoingPacketHandler.parseSay(packet);
 			break;
-		default:
-			return false;
 	}
-	return true;
+	return false;
 }
 
 Handler.handleIncomingPacket = function(packet) {

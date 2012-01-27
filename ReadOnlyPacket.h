@@ -13,6 +13,8 @@ public:
 	ReadOnlyPacket();
 	ReadOnlyPacket(const DecryptedMessage&);
 
+	const DecryptedMessage& message() const;
+
 public slots:
 	quint16 length() const;
 	const quint8* data() const;

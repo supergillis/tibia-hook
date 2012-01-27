@@ -17,13 +17,15 @@ class EncryptedMessage: public Message {
 public:
 	EncryptedMessage();
 	EncryptedMessage(const quint8*, quint16);
+	EncryptedMessage(const DecryptedMessage*);
 
 	bool isValid() const;
 
 	quint16 length() const;
 	const quint8* data() const;
 
-	static EncryptedMessage encrypt(const DecryptedMessage&, const quint32 []);
+protected:
+	void initialize(const quint8*, quint16);
 
 private:
 	QByteArray _raw;

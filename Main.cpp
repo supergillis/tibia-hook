@@ -8,11 +8,10 @@
 void hook_constructor() __attribute__((constructor));
 void hook_destructor() __attribute__((destructor));
 
-Hook* hook;
 pthread_t hook_id;
 
 void* hook_thread(void*) {
-	hook = new Hook();
+	Hook* hook = Hook::initialize();
 	hook->exec();
 	return NULL;
 }
@@ -37,18 +36,20 @@ int connect(int socket, const struct sockaddr* address, socklen_t length) {
 	}
 	else {
 		game_socket = socket;
-		hook->setSocket(game_socket);
+		Hook::getInstance()->setSocket(game_socket);
 	}
 	return __connect(socket, address, length);
 }
 
 ssize_t read(int socket, void* buffer, size_t length) {
+	Hook* hook = Hook::getInstance();
 	if (hook && hook->socket() == socket && length > 0)
 		return hook->hookIncomingMessage((quint8*) buffer, length);
 	return __read(socket, buffer, length);
 }
 
 ssize_t write(int socket, const void* buffer, size_t length) {
+	Hook* hook = Hook::getInstance();
 	if (hook && hook->socket() == socket && length > 0)
 		return hook->hookOutgoingMessage((const quint8*) buffer, length);
 	return __write(socket, buffer, length);

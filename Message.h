@@ -6,7 +6,6 @@
 class Message {
 public:
 	Message();
-	Message(const quint8*, quint16);
 
 	virtual bool isValid() const = 0;
 
@@ -15,6 +14,9 @@ public:
 
 	quint16 rawLength() const;
 	const quint8* rawData() const;
+
+protected:
+	virtual void initialize(const quint8*, quint16);
 
 private:
 	QByteArray _raw;

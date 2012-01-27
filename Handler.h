@@ -11,7 +11,7 @@ class Handler: public QObject {
 	Q_OBJECT
 
 public:
-	Handler(Hook* hook) : QObject(hook), _hook(hook) {
+	Handler() : QObject() {
 	}
 
 	bool event(QEvent* event) {
@@ -23,15 +23,8 @@ public:
 		return QObject::event(event);
 	}
 
-	inline Hook* hook() {
-		return _hook;
-	}
-
 	virtual void handleOutgoingMessage(const EncryptedMessage&) = 0;
 	virtual void handleIncomingMessage(const EncryptedMessage&) = 0;
-
-private:
-	Hook* _hook;
 };
 
 #endif /* HANDLER_H_ */

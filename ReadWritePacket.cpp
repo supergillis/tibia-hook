@@ -15,8 +15,9 @@ const quint8* ReadWritePacket::data() const {
 }
 
 void ReadWritePacket::reserve(quint16 size) {
-	if (_data.length() < _position + size) {
-		_data.resize(_position + size);
+	quint16 newSize = _position + size;
+	if (_data.length() < newSize) {
+		_data.resize(newSize);
 	}
 }
 

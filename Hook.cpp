@@ -4,15 +4,15 @@
 #include "Hook.h"
 #include "Main.h"
 #include "Handler.h"
-#include "DecryptedMessage.h"
-#include "ReadOnlyPacket.h"
 #include "ScriptHandler.h"
+
+Hook* Hook::_instance = NULL;
 
 static int _argc = 0;
 
 Hook::Hook() :
 		QCoreApplication(_argc, NULL), _socket(-1), _loggedIn(true), _pendingLogin(false), _protocol(0) {
-	_handler = new ScriptHandler(this);
+	_handler = new ScriptHandler();
 }
 
 Hook::~Hook() {
@@ -37,6 +37,11 @@ ssize_t Hook::write(const quint8* buffer, ssize_t length) {
 
 ssize_t Hook::write(const EncryptedMessage& message) {
 	return write(message.rawData(), message.rawLength());
+}
+
+ssize_t Hook::write(const DecryptedMessage& message) {
+	EncryptedMessage encrypted(&message);
+	return encrypted.isValid() ? write(encrypted) : 0;
 }
 
 ssize_t Hook::hookOutgoingMessage(const quint8* buffer, ssize_t length) {

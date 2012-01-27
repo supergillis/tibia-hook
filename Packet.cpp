@@ -62,7 +62,6 @@ quint64 Packet::readU64() {
 
 QString Packet::readString() {
 	quint16 length = readU16();
-	qDebug() << "readString" << length;
 	if (has(length)) {
 		QString value = QString::fromAscii((const char*) (data() + _position), length);
 		_position += length;

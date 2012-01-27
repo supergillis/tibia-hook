@@ -2,7 +2,6 @@
 #define SCRIPTHANDLER_H_
 
 #include "Handler.h"
-#include "Hook.h"
 #include "EncryptedMessage.h"
 
 #include <QScriptEngine>
@@ -20,7 +19,7 @@ class ScriptHandler: public Handler {
 	Q_OBJECT
 
 public:
-	ScriptHandler(Hook*);
+	ScriptHandler();
 
 	void handleOutgoingMessage(const EncryptedMessage&);
 	bool handleOutgoingMessageInternal(const EncryptedMessage&);
@@ -30,10 +29,12 @@ public:
 
 private:
 	static QScriptValue packetConstructor(QScriptContext*, QScriptEngine*);
+	static QScriptValue hookWrite(QScriptContext*, QScriptEngine*);
 
 	QScriptEngine _engine;
 	ScriptEngineAgent _engineAgent;
 	QScriptValue _handler;
+	QScriptValue _hook;
 };
 
 #endif /* SCRIPTHANDLER_H_ */
