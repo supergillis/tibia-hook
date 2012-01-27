@@ -3,23 +3,31 @@
 #include "ReadWritePacket.h"
 #include "ReadOnlyPacket.h"
 #include "Hook.h"
+#include "Memory.h"
 
+#include <QScriptContextInfo>
 #include <QDebug>
 #include <QDir>
-#include <QFile>
 
 ScriptHandler::ScriptHandler() :
-		Handler(), _engine(this), _handler(_engine.newObject()) {
-	QScriptValue packetConstructor = _engine.newFunction(ScriptHandler::packetConstructor);
-	QScriptValue packetMetaObject = _engine.newQMetaObject(&ReadWritePacket::staticMetaObject, packetConstructor);
+		Handler(), _engine(this), _handlerObject(_engine.newObject()) {
+	QScriptValue packetObject = _engine.newQMetaObject(&ReadWritePacket::staticMetaObject, _engine.newFunction(Handlers::Packet::constructor));
 
-	QScriptValue hookWrapper(_engine.newObject());
-	hookWrapper.setProperty("write", _engine.newFunction(ScriptHandler::hookWrite));
+	QScriptValue hookObject(_engine.newObject());
+	hookObject.setProperty("write", _engine.newFunction(Handlers::Hook::write));
 
-	_engine.globalObject().setProperty("require", _engine.newFunction(ScriptHandler::require));
-	_engine.globalObject().setProperty("Hook", hookWrapper);
-	_engine.globalObject().setProperty("Packet", packetMetaObject);
-	_engine.globalObject().setProperty("Handler", _handler);
+	QScriptValue memoryObject(_engine.newObject());
+	memoryObject.setProperty("readU8", _engine.newFunction(Handlers::Memory::readU8));
+	memoryObject.setProperty("readU16", _engine.newFunction(Handlers::Memory::readU16));
+	memoryObject.setProperty("readU32", _engine.newFunction(Handlers::Memory::readU32));
+	memoryObject.setProperty("readString", _engine.newFunction(Handlers::Memory::readString));
+
+	_engine.globalObject().setProperty("Hook", hookObject);
+	_engine.globalObject().setProperty("Memory", memoryObject);
+	_engine.globalObject().setProperty("Packet", packetObject);
+	_engine.globalObject().setProperty("Handler", _handlerObject);
+
+	_engine.globalObject().setProperty("require", _engine.newFunction(Handlers::Global::require));
 
 	QDir current = QDir::current();
 	QString main = current.absoluteFilePath("main.js");
@@ -34,13 +42,13 @@ void ScriptHandler::handleOutgoingMessage(const EncryptedMessage* message) {
 }
 
 bool ScriptHandler::handleOutgoingMessageInternal(const EncryptedMessage* message) {
-	QScriptValue handler = _handler.property("handleOutgoingPacket");
+	QScriptValue handler = _handlerObject.property("handleOutgoingPacket");
 	if (handler.isFunction()) {
 		DecryptedMessage decrypted(message);
 		if (decrypted.isValid()) {
 			QScriptValue packet = _engine.newQObject(new ReadOnlyPacket(decrypted), QScriptEngine::ScriptOwnership);
 			QScriptValueList args;
-			QScriptValue result = handler.call(_handler, args << packet);
+			QScriptValue result = handler.call(_handlerObject, args << packet);
 			return result.isBool() ? result.toBool() : false;
 		}
 	}
@@ -55,7 +63,7 @@ bool ScriptHandler::handleIncomingMessageInternal(const EncryptedMessage* messag
 	return false;
 }
 
-QScriptValue ScriptHandler::require(QScriptContext* context, QScriptEngine* engine) {
+QScriptValue Handlers::Global::require(QScriptContext* context, QScriptEngine* engine) {
 	if (context->argumentCount() == 1) {
 		QScriptValue value = context->argument(0);
 		ScriptEngine* scriptEngine = qobject_cast<ScriptEngine*>(engine);
@@ -67,22 +75,62 @@ QScriptValue ScriptHandler::require(QScriptContext* context, QScriptEngine* engi
 	return context->throwError("import(String) only accepts one argument");
 }
 
-QScriptValue ScriptHandler::packetConstructor(QScriptContext* context, QScriptEngine* engine) {
+QScriptValue Handlers::Packet::constructor(QScriptContext* context, QScriptEngine* engine) {
 	if (context->argumentCount() == 0) {
 		return engine->newQObject(new ReadWritePacket(), QScriptEngine::ScriptOwnership);
 	}
 	return context->throwError("Packet() only accepts no arguments");
 }
 
-QScriptValue ScriptHandler::hookWrite(QScriptContext* context, QScriptEngine* engine) {
+QScriptValue Handlers::Hook::write(QScriptContext* context, QScriptEngine* engine) {
 	if (context->argumentCount() == 1) {
 		QScriptValue value = context->argument(0);
 		ReadWritePacket* packet = qobject_cast<ReadWritePacket*>(value.toQObject());
 		if (packet) {
 			DecryptedMessage message(packet);
-			Hook::getInstance()->write(&message);
+			::Hook::getInstance()->write(&message);
 			return QScriptValue(true);
 		}
 	}
 	return context->throwError("write(Packet) only accepts one argument");
+}
+
+QScriptValue Handlers::Memory::readU8(QScriptContext* context, QScriptEngine* engine) {
+	if (context->argumentCount() == 1) {
+		QScriptValue address = context->argument(0);
+		if (address.isNumber()) {
+			return ::Memory::readU8(address.toUInt32());
+		}
+	}
+	return context->throwError("readU8(Address) only accepts one argument");
+}
+
+QScriptValue Handlers::Memory::readU16(QScriptContext* context, QScriptEngine* engine) {
+	if (context->argumentCount() == 1) {
+		QScriptValue address = context->argument(0);
+		if (address.isNumber()) {
+			return ::Memory::readU16(address.toUInt32());
+		}
+	}
+	return context->throwError("readU16(Address) only accepts one argument");
+}
+
+QScriptValue Handlers::Memory::readU32(QScriptContext* context, QScriptEngine* engine) {
+	if (context->argumentCount() == 1) {
+		QScriptValue address = context->argument(0);
+		if (address.isNumber()) {
+			return ::Memory::readU32(address.toUInt32());
+		}
+	}
+	return context->throwError("readU32(Address) only accepts one argument");
+}
+
+QScriptValue Handlers::Memory::readString(QScriptContext* context, QScriptEngine* engine) {
+	if (context->argumentCount() == 1) {
+		QScriptValue address = context->argument(0);
+		if (address.isNumber()) {
+			return ::Memory::readString(address.toUInt32());
+		}
+	}
+	return context->throwError("readU32(Address) only accepts one argument");
 }

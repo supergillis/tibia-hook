@@ -68,5 +68,6 @@ ssize_t Hook::hookOutgoingMessage(const quint8* buffer, ssize_t length) {
 }
 
 ssize_t Hook::hookIncomingMessage(quint8* buffer, ssize_t length) {
-	return read(buffer, length);
+	ssize_t result = read(buffer, length);
+	return result;
 }

@@ -21,12 +21,29 @@ public:
 	bool handleIncomingMessageInternal(const EncryptedMessage*);
 
 private:
-	static QScriptValue require(QScriptContext*, QScriptEngine*);
-	static QScriptValue packetConstructor(QScriptContext*, QScriptEngine*);
-	static QScriptValue hookWrite(QScriptContext*, QScriptEngine*);
-
 	ScriptEngine _engine;
-	QScriptValue _handler;
+	QScriptValue _handlerObject;
+};
+
+namespace Handlers {
+	namespace Global {
+		static QScriptValue require(QScriptContext*, QScriptEngine*);
+	};
+
+	namespace Packet {
+		static QScriptValue constructor(QScriptContext*, QScriptEngine*);
+	};
+
+	namespace Hook {
+		static QScriptValue write(QScriptContext*, QScriptEngine*);
+	};
+
+	namespace Memory {
+		static QScriptValue readU8(QScriptContext*, QScriptEngine*);
+		static QScriptValue readU16(QScriptContext*, QScriptEngine*);
+		static QScriptValue readU32(QScriptContext*, QScriptEngine*);
+		static QScriptValue readString(QScriptContext*, QScriptEngine*);
+	};
 };
 
 #endif /* SCRIPTHANDLER_H_ */

@@ -19,7 +19,7 @@ QScriptValue ScriptEngine::require(const QString& path) {
 		return QScriptValue(false);
 	}
 
-	evaluate(file.readAll());
+	evaluate(file.readAll(), path);
 	required << path;
 
 	return QScriptValue(true);
@@ -29,5 +29,6 @@ void ScriptEngine::exceptionThrow(qint64 scriptId, const QScriptValue& exception
 	if (!hasHandler) {
 		qWarning() << "unhandled exception";
 		qWarning() << exception.toString().toAscii();
+		qWarning() << uncaughtExceptionBacktrace();
 	}
 }

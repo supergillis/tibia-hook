@@ -2,6 +2,19 @@ require("class.js");
 require("packet_type.js");
 require("enum.js");
 
+BattleList = Class.extend({
+	Address: 0x844d40c,
+	Length: 2
+});
+
+BattleListEntry = Class.extend({
+	Length: 250,
+	IdOffset: 0,
+	IdLength: 4,
+	NameOffset: 4,
+	NameLength: 32
+});
+
 OutgoingHandler = Class.extend();
 
 (function() {
@@ -42,7 +55,7 @@ OutgoingHandler = Class.extend();
 	};
 
 	OutgoingHandler.instance.handle = function(packet) {
-		type = packet.readU8();
+		var type = packet.readU8();
 		switch (type) {
 			case OutgoingMessageType.Speak:
 				return this.parseSpeak(packet);
@@ -52,7 +65,7 @@ OutgoingHandler = Class.extend();
 	};
 
 	OutgoingHandler.instance.parseSpeak = function(packet) {
-		speak = PacketSpeak.deserialize(packet);
+		var speak = PacketSpeak.deserialize(packet);
 		if (speak.message == "lol") {
 			hooked = new Packet();
 			hooked.writeU8(PacketSpeak.type);
@@ -63,6 +76,16 @@ OutgoingHandler = Class.extend();
 			double.message = "lolol";
 			double.serialize(hooked);
 			Hook.write(hooked);
+			return true;
+		}
+		else if (speak.message == "battle") {
+			var counter;
+			for (counter = 0; counter < BattleList.Length; counter++) {
+				var address = BatteList.Address + counter * BattleListEntry.Length;
+				var nameAddress = address + BattleListEntry.NameOffset;
+				var name = Memory.readString(nameAddress);
+				print(name);
+			}
 			return true;
 		}
 		return false;
