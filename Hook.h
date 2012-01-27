@@ -38,39 +38,23 @@ public:
 	ssize_t read(quint8*, ssize_t);
 
 	ssize_t write(const quint8*, ssize_t);
-	ssize_t write(const EncryptedMessage&);
-	ssize_t write(const DecryptedMessage&);
+	ssize_t write(const EncryptedMessage*);
+	ssize_t write(const DecryptedMessage*);
 
 private:
 	Hook();
 	Hook(const Hook&);
-	Hook& operator=(const Hook&);
 	~Hook();
+
+	Hook& operator=(const Hook&);
 
 	static Hook* _instance;
 
 	int _socket;
-
 	Handler* _handler;
 	bool _loggedIn;
 	bool _pendingLogin;
 	quint8 _protocol;
-};
-
-static const QEvent::Type OutgoingMessageEventType = QEvent::User;
-
-class OutgoingMessageEvent: public QEvent {
-public:
-	OutgoingMessageEvent(const EncryptedMessage& message): QEvent(OutgoingMessageEventType), _message(message) {
-		// Do nothing
-	}
-
-	const EncryptedMessage& message() {
-		return _message;
-	}
-
-private:
-	const EncryptedMessage _message;
 };
 
 #endif

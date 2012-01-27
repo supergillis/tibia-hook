@@ -14,11 +14,11 @@ class ScriptHandler: public Handler {
 public:
 	ScriptHandler();
 
-	void handleOutgoingMessage(const EncryptedMessage&);
-	bool handleOutgoingMessageInternal(const EncryptedMessage&);
+	void handleOutgoingMessage(const EncryptedMessage*);
+	bool handleOutgoingMessageInternal(const EncryptedMessage*);
 
-	void handleIncomingMessage(const EncryptedMessage&);
-	bool handleIncomingMessageInternal(const EncryptedMessage&);
+	void handleIncomingMessage(const EncryptedMessage*);
+	bool handleIncomingMessageInternal(const EncryptedMessage*);
 
 private:
 	static QScriptValue require(QScriptContext*, QScriptEngine*);
@@ -27,7 +27,6 @@ private:
 
 	ScriptEngine _engine;
 	QScriptValue _handler;
-	QScriptValue _hook;
 };
 
 #endif /* SCRIPTHANDLER_H_ */

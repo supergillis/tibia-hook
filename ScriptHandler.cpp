@@ -9,14 +9,15 @@
 #include <QFile>
 
 ScriptHandler::ScriptHandler() :
-		Handler(), _engine(this), _handler(_engine.newObject()), _hook(_engine.newObject()) {
+		Handler(), _engine(this), _handler(_engine.newObject()) {
 	QScriptValue packetConstructor = _engine.newFunction(ScriptHandler::packetConstructor);
-	QScriptValue packetMetaObject = _engine.newQMetaObject(&Packet::staticMetaObject, packetConstructor);
+	QScriptValue packetMetaObject = _engine.newQMetaObject(&ReadWritePacket::staticMetaObject, packetConstructor);
 
-	_hook.setProperty("write", _engine.newFunction(ScriptHandler::hookWrite));
+	QScriptValue hookWrapper(_engine.newObject());
+	hookWrapper.setProperty("write", _engine.newFunction(ScriptHandler::hookWrite));
 
 	_engine.globalObject().setProperty("require", _engine.newFunction(ScriptHandler::require));
-	_engine.globalObject().setProperty("Hook", _hook);
+	_engine.globalObject().setProperty("Hook", hookWrapper);
 	_engine.globalObject().setProperty("Packet", packetMetaObject);
 	_engine.globalObject().setProperty("Handler", _handler);
 
@@ -26,16 +27,16 @@ ScriptHandler::ScriptHandler() :
 	_engine.require(main);
 }
 
-void ScriptHandler::handleOutgoingMessage(const EncryptedMessage& message) {
+void ScriptHandler::handleOutgoingMessage(const EncryptedMessage* message) {
 	if (!handleOutgoingMessageInternal(message)) {
 		Hook::getInstance()->write(message);
 	}
 }
 
-bool ScriptHandler::handleOutgoingMessageInternal(const EncryptedMessage& message) {
+bool ScriptHandler::handleOutgoingMessageInternal(const EncryptedMessage* message) {
 	QScriptValue handler = _handler.property("handleOutgoingPacket");
 	if (handler.isFunction()) {
-		DecryptedMessage decrypted(&message);
+		DecryptedMessage decrypted(message);
 		if (decrypted.isValid()) {
 			QScriptValue packet = _engine.newQObject(new ReadOnlyPacket(decrypted), QScriptEngine::ScriptOwnership);
 			QScriptValueList args;
@@ -46,11 +47,11 @@ bool ScriptHandler::handleOutgoingMessageInternal(const EncryptedMessage& messag
 	return false;
 }
 
-void ScriptHandler::handleIncomingMessage(const EncryptedMessage& message) {
+void ScriptHandler::handleIncomingMessage(const EncryptedMessage* message) {
 	// Do nothing yet
 }
 
-bool ScriptHandler::handleIncomingMessageInternal(const EncryptedMessage& message) {
+bool ScriptHandler::handleIncomingMessageInternal(const EncryptedMessage* message) {
 	return false;
 }
 
@@ -79,7 +80,7 @@ QScriptValue ScriptHandler::hookWrite(QScriptContext* context, QScriptEngine* en
 		ReadWritePacket* packet = qobject_cast<ReadWritePacket*>(value.toQObject());
 		if (packet) {
 			DecryptedMessage message(packet);
-			Hook::getInstance()->write(message);
+			Hook::getInstance()->write(&message);
 			return QScriptValue(true);
 		}
 	}

@@ -2,6 +2,7 @@
 #include <string.h>
 
 #include "Hook.h"
+#include "HookMessageEvent.h"
 #include "Main.h"
 #include "Handler.h"
 #include "ScriptHandler.h"
@@ -35,20 +36,20 @@ ssize_t Hook::write(const quint8* buffer, ssize_t length) {
 	return __write(_socket, buffer, length);
 }
 
-ssize_t Hook::write(const EncryptedMessage& message) {
-	return write(message.rawData(), message.rawLength());
+ssize_t Hook::write(const EncryptedMessage* message) {
+	return write(message->rawData(), message->rawLength());
 }
 
-ssize_t Hook::write(const DecryptedMessage& message) {
-	EncryptedMessage encrypted(&message);
-	return encrypted.isValid() ? write(encrypted) : 0;
+ssize_t Hook::write(const DecryptedMessage* message) {
+	EncryptedMessage encrypted(message);
+	return encrypted.isValid() ? write(&encrypted) : 0;
 }
 
 ssize_t Hook::hookOutgoingMessage(const quint8* buffer, ssize_t length) {
 	if (_loggedIn) {
 		EncryptedMessage message(buffer, length);
 		if (message.isValid()) {
-			QCoreApplication::postEvent(_handler, new OutgoingMessageEvent(message), Qt::HighEventPriority);
+			QCoreApplication::postEvent(_handler, new HookMessageEvent(HookMessageEvent::Outgoing, &message), Qt::HighEventPriority);
 			return length;
 		}
 	}
