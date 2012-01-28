@@ -1,26 +1,37 @@
 #include "ScriptEngine.h"
 
 #include <QDebug>
+#include <QDir>
 
 ScriptEngine::ScriptEngine(QObject* parent) :
 		QScriptEngine(parent), QScriptEngineAgent(this) {
 	setAgent(this);
 }
 
+void ScriptEngine::clearRequiredFiles() {
+	_required.clear();
+}
+
 QScriptValue ScriptEngine::require(const QString& path) {
-	if (required.contains(path)) {
+	QDir scripts = QDir::current();
+	if (!scripts.cd("scripts")) {
+		qDebug() << "could not find scripts directory" << path;
+		return QScriptValue(false);
+	}
+
+	if (_required.contains(path)) {
 		qDebug() << "already required" << path;
 		return QScriptValue(false);
 	}
 
-	QFile file(path);
+	QFile file(scripts.absoluteFilePath(path));
 	if (!file.open(QFile::ReadOnly)) {
 		qDebug() << "could not require" << path;
 		return QScriptValue(false);
 	}
 
 	evaluate(file.readAll(), path);
-	required << path;
+	_required << path;
 
 	return QScriptValue(true);
 }

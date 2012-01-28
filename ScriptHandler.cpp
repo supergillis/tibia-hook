@@ -7,7 +7,6 @@
 
 #include <QScriptContextInfo>
 #include <QDebug>
-#include <QDir>
 
 ScriptHandler::ScriptHandler() :
 		Handler(), _engine(this), _handlerObject(_engine.newObject()) {
@@ -22,17 +21,27 @@ ScriptHandler::ScriptHandler() :
 	memoryObject.setProperty("readU32", _engine.newFunction(Handlers::Memory::readU32));
 	memoryObject.setProperty("readString", _engine.newFunction(Handlers::Memory::readString));
 
+	QScriptValue environmentObject(_engine.newObject());
+	QScriptValue reloadFunction = _engine.newFunction(Handlers::Environment::reload);
+	reloadFunction.setData(_engine.newQObject(this));
+
+	environmentObject.setProperty("reload", reloadFunction);
+	environmentObject.setProperty("require", _engine.newFunction(Handlers::Environment::require));
+
 	_engine.globalObject().setProperty("Hook", hookObject);
 	_engine.globalObject().setProperty("Memory", memoryObject);
 	_engine.globalObject().setProperty("Packet", packetObject);
+	_engine.globalObject().setProperty("Environment", environmentObject);
 	_engine.globalObject().setProperty("Handler", _handlerObject);
 
-	_engine.globalObject().setProperty("require", _engine.newFunction(Handlers::Global::require));
+	reload();
+}
 
-	QDir current = QDir::current();
-	QString main = current.absoluteFilePath("main.js");
-
-	_engine.require(main);
+void ScriptHandler::reload() {
+	_engine.pushContext();
+	_engine.clearRequiredFiles();
+	_engine.require("main.js");
+	_engine.popContext();
 }
 
 void ScriptHandler::handleOutgoingMessage(const EncryptedMessage* message) {
@@ -63,7 +72,19 @@ bool ScriptHandler::handleIncomingMessageInternal(const EncryptedMessage* messag
 	return false;
 }
 
-QScriptValue Handlers::Global::require(QScriptContext* context, QScriptEngine* engine) {
+QScriptValue Handlers::Environment::reload(QScriptContext* context, QScriptEngine* engine) {
+	if (context->argumentCount() == 0) {
+		QScriptValue value = context->callee().data();
+		ScriptHandler* handler = qobject_cast<ScriptHandler*>(value.toQObject());
+		if (handler) {
+			handler->reload();
+			return QScriptValue(true);
+		}
+	}
+	return context->throwError("reload() accepts no arguments");
+}
+
+QScriptValue Handlers::Environment::require(QScriptContext* context, QScriptEngine* engine) {
 	if (context->argumentCount() == 1) {
 		QScriptValue value = context->argument(0);
 		ScriptEngine* scriptEngine = qobject_cast<ScriptEngine*>(engine);

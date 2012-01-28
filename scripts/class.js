@@ -57,18 +57,6 @@ Class = null;
 		return object;
 	};
 
-	ClassPrototype.mixin = function(mixin) {
-		var key, keys, index;
-		for (index in (keys = Object.keys(mixin))) {
-			key = keys[index];
-			this[key] = mixin[key];
-		}
-		for (index in (keys = Object.keys(mixin.instance))) {
-			key = keys[index];
-			this.instance[key] = mixin.instance[key];
-		}
-	};
-
 	ClassPrototype.extended = function() {
 		// Do nothing by default
 	};

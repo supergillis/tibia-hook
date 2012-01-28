@@ -2,8 +2,8 @@ OutgoingMessageType = {
 	Speak: 0x96,
 	TurnNorth: 0x6F,
 	TurnEast: 0x70,
-	TurnWest: 0x71,
-	TurnSouth: 0x72
+	TurnSouth: 0x71,
+	TurnWest: 0x72
 };
 
 SpeakType = {

@@ -16,10 +16,12 @@ public:
 
 	QScriptValue require(const QString&);
 
+	void clearRequiredFiles();
+
 	void exceptionThrow(qint64, const QScriptValue&, bool);
 
 private:
-	QStringList required;
+	QStringList _required;
 };
 
 #endif /* SCRIPTENGINE_H_ */

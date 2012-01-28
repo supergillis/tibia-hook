@@ -20,13 +20,16 @@ public:
 	void handleIncomingMessage(const EncryptedMessage*);
 	bool handleIncomingMessageInternal(const EncryptedMessage*);
 
+	void reload();
+
 private:
 	ScriptEngine _engine;
 	QScriptValue _handlerObject;
 };
 
 namespace Handlers {
-	namespace Global {
+	namespace Environment {
+		static QScriptValue reload(QScriptContext*, QScriptEngine*);
 		static QScriptValue require(QScriptContext*, QScriptEngine*);
 	};
 
