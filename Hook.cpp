@@ -12,7 +12,7 @@ Hook* Hook::_instance = NULL;
 static int _argc = 0;
 
 Hook::Hook() :
-		QCoreApplication(_argc, NULL), _socket(-1), _loggedIn(true), _pendingLogin(false), _protocol(0) {
+		QCoreApplication(_argc, NULL), _socket(-1), _display(NULL), _loggedIn(true), _pendingLogin(false), _protocol(0) {
 	_handler = new ScriptHandler();
 }
 
@@ -24,8 +24,54 @@ const int Hook::socket() const {
 	return _socket;
 }
 
-void Hook::setSocket(const int socket) {
+void Hook::setSocket(int socket) {
+	qDebug() << "set socket";
 	_socket = socket;
+}
+
+const Display* Hook::display() const {
+	return _display;
+}
+
+void Hook::setDisplay(Display* display) {
+	qDebug() << "set display";
+	_display = display;
+}
+
+const Window Hook::window() const {
+	return _window;
+}
+
+void Hook::setWindow(Window window) {
+	qDebug() << "set window";
+	_window = window;
+}
+
+XKeyEvent createKeyEvent(Display* display, Window& win, Window& root, bool press, int keycode, int modifiers) {
+	XKeyEvent event;
+	event.display = display;
+	event.window = win;
+	event.root = root;
+	event.subwindow = None;
+	event.time = CurrentTime;
+	event.x = 1;
+	event.y = 1;
+	event.x_root = 1;
+	event.y_root = 1;
+	event.same_screen = True;
+	event.keycode = XKeysymToKeycode(display, keycode);
+	event.state = modifiers;
+	event.type = press ? KeyPress : KeyRelease;
+	return event;
+}
+
+void Hook::sendKeyPress(int keycode) {
+	Window root = XDefaultRootWindow(_display);
+	XKeyEvent event = createKeyEvent(_display, _window, root, true, keycode, 0);
+	XSendEvent(event.display, event.window, True, KeyPressMask, (XEvent*) &event);
+
+	event = createKeyEvent(_display, _window, root, false, keycode, 0);
+	XSendEvent(event.display, event.window, True, KeyPressMask, (XEvent*) &event);
 }
 
 ssize_t Hook::read(quint8* buffer, ssize_t length) {

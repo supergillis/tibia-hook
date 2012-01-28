@@ -14,6 +14,7 @@ ScriptHandler::ScriptHandler() :
 
 	QScriptValue hookObject(_engine.newObject());
 	hookObject.setProperty("write", _engine.newFunction(Handlers::Hook::write));
+	hookObject.setProperty("sendKeyPress", _engine.newFunction(Handlers::Hook::sendKeyPress));
 
 	QScriptValue memoryObject(_engine.newObject());
 	memoryObject.setProperty("readU8", _engine.newFunction(Handlers::Memory::readU8));
@@ -114,6 +115,21 @@ QScriptValue Handlers::Hook::write(QScriptContext* context, QScriptEngine* engin
 		}
 	}
 	return context->throwError("write(Packet) only accepts one argument");
+}
+
+QScriptValue Handlers::Hook::sendKeyPress(QScriptContext* context, QScriptEngine* engine) {
+	if (context->argumentCount() == 1) {
+		QScriptValue value = context->argument(0);
+		if (value.isNumber()) {
+			::Hook::getInstance()->sendKeyPress(value.toInt32());
+			return true;
+		}
+		else {
+			qWarning() << "not a number";
+		}
+	}
+	qWarning() << "wrong usage of sendKeyPress(Number)";
+	return false;
 }
 
 QScriptValue Handlers::Memory::readU8(QScriptContext* context, QScriptEngine* engine) {

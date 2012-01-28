@@ -51,3 +51,17 @@ SpeakType = {
 	HotkeyUse: 0x25,
 	TutorialHint: 0x26
 }
+
+Keys = {
+	XK_Home: 0xff50,
+	XK_Left: 0xff51,  /* Move left, left arrow */
+	XK_Up: 0xff52,  /* Move up, up arrow */
+	XK_Right: 0xff53,  /* Move right, right arrow */
+	XK_Down: 0xff54,  /* Move down, down arrow */
+	XK_Prior: 0xff55,  /* Prior, previous */
+	XK_Page_Up: 0xff55,
+	XK_Next: 0xff56,  /* Next */
+	XK_Page_Down: 0xff56,
+	XK_End: 0xff57,  /* EOL */
+	XK_Begin: 0xff58,  /* BOL */
+}

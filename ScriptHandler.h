@@ -39,6 +39,7 @@ namespace Handlers {
 
 	namespace Hook {
 		static QScriptValue write(QScriptContext*, QScriptEngine*);
+		static QScriptValue sendKeyPress(QScriptContext*, QScriptEngine*);
 	};
 
 	namespace Memory {

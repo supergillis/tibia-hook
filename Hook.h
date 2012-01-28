@@ -1,12 +1,18 @@
 #ifndef HOOK_H
 #define HOOK_H
 
-#include <unistd.h>
-#include <string.h>
-
 #include <QCoreApplication>
 #include <QDebug>
 #include <QEvent>
+
+#include <unistd.h>
+#include <string.h>
+
+#include <X11/Xlib.h>
+#include <X11/keysym.h>
+
+/* Including  <X11/Xlib.h> gives an error with Qt. Undefining Bool fixes that. */
+#undef Bool
 
 #include "EncryptedMessage.h"
 #include "DecryptedMessage.h"
@@ -30,7 +36,13 @@ public:
 	}
 
 	const int socket() const;
-	void setSocket(const int);
+	void setSocket(int);
+
+	const Display* display() const;
+	void setDisplay(Display*);
+
+	const Window window() const;
+	void setWindow(Window);
 
 	ssize_t hookOutgoingMessage(const quint8*, ssize_t);
 	ssize_t hookIncomingMessage(quint8*, ssize_t);
@@ -40,6 +52,8 @@ public:
 	ssize_t write(const quint8*, ssize_t);
 	ssize_t write(const EncryptedMessage*);
 	ssize_t write(const DecryptedMessage*);
+
+	void sendKeyPress(int);
 
 private:
 	Hook();
@@ -51,6 +65,9 @@ private:
 	static Hook* _instance;
 
 	int _socket;
+	Display* _display;
+	Window _window;
+
 	Handler* _handler;
 	bool _loggedIn;
 	bool _pendingLogin;
