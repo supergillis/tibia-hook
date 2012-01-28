@@ -36,7 +36,6 @@ int connect(int socket, const struct sockaddr* address, socklen_t length) {
 	}
 	else {
 		game_socket = socket;
-		Hook::getInstance()->setSocket(game_socket);
 	}
 	return __connect(socket, address, length);
 }
