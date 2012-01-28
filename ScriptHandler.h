@@ -7,6 +7,7 @@
 
 #include <QScriptEngine>
 #include <QScriptContext>
+#include <QScriptClass>
 
 class ScriptHandler: public Handler {
 	Q_OBJECT
@@ -14,17 +15,17 @@ class ScriptHandler: public Handler {
 public:
 	ScriptHandler();
 
-	void handleOutgoingMessage(const EncryptedMessage*);
-	bool handleOutgoingMessageInternal(const EncryptedMessage*);
+	void receiveFromClient(const EncryptedMessage*);
+	bool receiveFromClientInternal(const EncryptedMessage*);
 
-	void handleIncomingMessage(const EncryptedMessage*);
-	bool handleIncomingMessageInternal(const EncryptedMessage*);
+	void receiveFromServer(const EncryptedMessage*);
+	bool receiveFromServerInternal(const EncryptedMessage*);
 
 	void reload();
 
 private:
 	ScriptEngine _engine;
-	QScriptValue _handlerObject;
+	QScriptValue _networkObject;
 };
 
 namespace Handlers {
@@ -33,13 +34,18 @@ namespace Handlers {
 		static QScriptValue require(QScriptContext*, QScriptEngine*);
 	};
 
-	namespace Packet {
-		static QScriptValue constructor(QScriptContext*, QScriptEngine*);
+	namespace Network {
+		static QScriptValue sendToServer(QScriptContext*, QScriptEngine*);
+		static QScriptValue sendToClient(QScriptContext*, QScriptEngine*);
 	};
 
-	namespace Hook {
-		static QScriptValue write(QScriptContext*, QScriptEngine*);
+	namespace Client {
+		static QScriptValue sendPacket(QScriptContext*, QScriptEngine*);
 		static QScriptValue sendKeyPress(QScriptContext*, QScriptEngine*);
+	};
+
+	namespace Packet {
+		static QScriptValue constructor(QScriptContext*, QScriptEngine*);
 	};
 
 	namespace Memory {

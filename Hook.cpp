@@ -2,7 +2,7 @@
 #include <string.h>
 
 #include "Hook.h"
-#include "HookMessageEvent.h"
+#include "ReceivingMessageEvent.h"
 #include "Main.h"
 #include "Handler.h"
 #include "ScriptHandler.h"
@@ -74,28 +74,24 @@ void Hook::sendKeyPress(int keycode) {
 	XSendEvent(event.display, event.window, True, KeyPressMask, (XEvent*) &event);
 }
 
-ssize_t Hook::read(quint8* buffer, ssize_t length) {
-	return __read(_socket, buffer, length);
-}
-
-ssize_t Hook::write(const quint8* buffer, ssize_t length) {
+ssize_t Hook::sendToServer(const quint8* buffer, ssize_t length) {
 	return __write(_socket, buffer, length);
 }
 
-ssize_t Hook::write(const EncryptedMessage* message) {
-	return write(message->rawData(), message->rawLength());
+ssize_t Hook::sendToServer(const EncryptedMessage* message) {
+	return sendToServer(message->rawData(), message->rawLength());
 }
 
-ssize_t Hook::write(const DecryptedMessage* message) {
+ssize_t Hook::sendToServer(const DecryptedMessage* message) {
 	EncryptedMessage encrypted(message);
-	return encrypted.isValid() ? write(&encrypted) : 0;
+	return encrypted.isValid() ? sendToServer(&encrypted) : 0;
 }
 
-ssize_t Hook::hookOutgoingMessage(const quint8* buffer, ssize_t length) {
+ssize_t Hook::receiveFromClient(const quint8* buffer, ssize_t length) {
 	if (_loggedIn) {
 		EncryptedMessage message(buffer, length);
 		if (message.isValid()) {
-			QCoreApplication::postEvent(_handler, new HookMessageEvent(HookMessageEvent::Outgoing, &message), Qt::HighEventPriority);
+			QCoreApplication::postEvent(_handler, new ReceivingMessageEvent(ReceivingMessageEvent::Client, &message), Qt::HighEventPriority);
 			return length;
 		}
 	}
@@ -110,10 +106,9 @@ ssize_t Hook::hookOutgoingMessage(const quint8* buffer, ssize_t length) {
 			_pendingLogin = true;
 		}
 	}
-	return write(buffer, length);
+	return sendToServer(buffer, length);
 }
 
-ssize_t Hook::hookIncomingMessage(quint8* buffer, ssize_t length) {
-	ssize_t result = read(buffer, length);
-	return result;
+ssize_t Hook::receiveFromServer(quint8* buffer, ssize_t length) {
+	return __read(_socket, buffer, length);
 }

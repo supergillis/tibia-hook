@@ -46,7 +46,7 @@ int connect(int socket, const struct sockaddr* address, socklen_t length) {
 ssize_t read(int socket, void* buffer, size_t length) {
 	Hook* hook = Hook::getInstance();
 	if (hook && hook->socket() == socket && length > 0) {
-		return hook->hookIncomingMessage((quint8*) buffer, length);
+		return hook->receiveFromServer((quint8*) buffer, length);
 	}
 	return __read(socket, buffer, length);
 }
@@ -54,7 +54,7 @@ ssize_t read(int socket, void* buffer, size_t length) {
 ssize_t write(int socket, const void* buffer, size_t length) {
 	Hook* hook = Hook::getInstance();
 	if (hook && hook->socket() == socket && length > 0) {
-		return hook->hookOutgoingMessage((const quint8*) buffer, length);
+		return hook->receiveFromClient((const quint8*) buffer, length);
 	}
 	return __write(socket, buffer, length);
 }

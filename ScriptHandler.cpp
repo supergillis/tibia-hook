@@ -5,16 +5,19 @@
 #include "Hook.h"
 #include "Memory.h"
 
-#include <QScriptContextInfo>
 #include <QDebug>
 
 ScriptHandler::ScriptHandler() :
-		Handler(), _engine(this), _handlerObject(_engine.newObject()) {
+		Handler(), _engine(this) {
 	QScriptValue packetObject = _engine.newQMetaObject(&ReadWritePacket::staticMetaObject, _engine.newFunction(Handlers::Packet::constructor));
 
-	QScriptValue hookObject(_engine.newObject());
-	hookObject.setProperty("write", _engine.newFunction(Handlers::Hook::write));
-	hookObject.setProperty("sendKeyPress", _engine.newFunction(Handlers::Hook::sendKeyPress));
+	_networkObject = _engine.newObject();
+	_networkObject.setProperty("sendToServer", _engine.newFunction(Handlers::Network::sendToServer));
+	_networkObject.setProperty("sendToClient", _engine.newFunction(Handlers::Network::sendToClient));
+
+	QScriptValue clientObject(_engine.newObject());
+	clientObject.setProperty("sendPacket", _engine.newFunction(Handlers::Client::sendPacket));
+	clientObject.setProperty("sendKeyPress", _engine.newFunction(Handlers::Client::sendKeyPress));
 
 	QScriptValue memoryObject(_engine.newObject());
 	memoryObject.setProperty("readU8", _engine.newFunction(Handlers::Memory::readU8));
@@ -22,18 +25,18 @@ ScriptHandler::ScriptHandler() :
 	memoryObject.setProperty("readU32", _engine.newFunction(Handlers::Memory::readU32));
 	memoryObject.setProperty("readString", _engine.newFunction(Handlers::Memory::readString));
 
-	QScriptValue environmentObject(_engine.newObject());
 	QScriptValue reloadFunction = _engine.newFunction(Handlers::Environment::reload);
 	reloadFunction.setData(_engine.newQObject(this));
 
+	QScriptValue environmentObject(_engine.newObject());
 	environmentObject.setProperty("reload", reloadFunction);
 	environmentObject.setProperty("require", _engine.newFunction(Handlers::Environment::require));
 
-	_engine.globalObject().setProperty("Hook", hookObject);
-	_engine.globalObject().setProperty("Memory", memoryObject);
-	_engine.globalObject().setProperty("Packet", packetObject);
-	_engine.globalObject().setProperty("Environment", environmentObject);
-	_engine.globalObject().setProperty("Handler", _handlerObject);
+	_engine.globalObject().setProperty("Network", _networkObject, QScriptValue::ReadOnly | QScriptValue::Undeletable);
+	_engine.globalObject().setProperty("Client", clientObject, QScriptValue::ReadOnly | QScriptValue::Undeletable);
+	_engine.globalObject().setProperty("Memory", memoryObject, QScriptValue::ReadOnly | QScriptValue::Undeletable);
+	_engine.globalObject().setProperty("Packet", packetObject, QScriptValue::ReadOnly | QScriptValue::Undeletable);
+	_engine.globalObject().setProperty("Environment", environmentObject, QScriptValue::ReadOnly | QScriptValue::Undeletable);
 
 	reload();
 }
@@ -45,31 +48,42 @@ void ScriptHandler::reload() {
 	_engine.popContext();
 }
 
-void ScriptHandler::handleOutgoingMessage(const EncryptedMessage* message) {
-	if (!handleOutgoingMessageInternal(message)) {
-		Hook::getInstance()->write(message);
+void ScriptHandler::receiveFromClient(const EncryptedMessage* message) {
+	if (!receiveFromClientInternal(message)) {
+		Hook::getInstance()->sendToServer(message);
 	}
 }
 
-bool ScriptHandler::handleOutgoingMessageInternal(const EncryptedMessage* message) {
-	QScriptValue handler = _handlerObject.property("handleOutgoingPacket");
-	if (handler.isFunction()) {
+bool ScriptHandler::receiveFromClientInternal(const EncryptedMessage* message) {
+	QScriptValue callback = _networkObject.property("receiveFromClient");
+	if (callback.isFunction()) {
 		DecryptedMessage decrypted(message);
 		if (decrypted.isValid()) {
 			QScriptValue packet = _engine.newQObject(new ReadOnlyPacket(decrypted), QScriptEngine::ScriptOwnership);
 			QScriptValueList args;
-			QScriptValue result = handler.call(_handlerObject, args << packet);
+			QScriptValue result = callback.call(_networkObject, args << packet);
 			return result.isBool() ? result.toBool() : false;
 		}
 	}
 	return false;
 }
 
-void ScriptHandler::handleIncomingMessage(const EncryptedMessage* message) {
-	// Do nothing yet
+void ScriptHandler::receiveFromServer(const EncryptedMessage* message) {
 }
 
-bool ScriptHandler::handleIncomingMessageInternal(const EncryptedMessage* message) {
+bool ScriptHandler::receiveFromServerInternal(const EncryptedMessage* message) {
+	QScriptValue callback = _networkObject.property("receiveFromServer");
+	if (callback.isFunction()) {
+		qDebug() << "received message from server";
+	}
+	return false;
+}
+
+static QScriptValue Handlers::Network::sendToServer(QScriptContext*, QScriptEngine*) {
+	return false;
+}
+
+static QScriptValue Handlers::Network::sendToClient(QScriptContext*, QScriptEngine*) {
 	return false;
 }
 
@@ -104,20 +118,20 @@ QScriptValue Handlers::Packet::constructor(QScriptContext* context, QScriptEngin
 	return context->throwError("Packet() only accepts no arguments");
 }
 
-QScriptValue Handlers::Hook::write(QScriptContext* context, QScriptEngine* engine) {
+QScriptValue Handlers::Client::sendPacket(QScriptContext* context, QScriptEngine* engine) {
 	if (context->argumentCount() == 1) {
 		QScriptValue value = context->argument(0);
 		ReadWritePacket* packet = qobject_cast<ReadWritePacket*>(value.toQObject());
 		if (packet) {
 			DecryptedMessage message(packet);
-			::Hook::getInstance()->write(&message);
+			::Hook::getInstance()->sendToServer(&message);
 			return QScriptValue(true);
 		}
 	}
 	return context->throwError("write(Packet) only accepts one argument");
 }
 
-QScriptValue Handlers::Hook::sendKeyPress(QScriptContext* context, QScriptEngine* engine) {
+QScriptValue Handlers::Client::sendKeyPress(QScriptContext* context, QScriptEngine* engine) {
 	if (context->argumentCount() == 1) {
 		QScriptValue value = context->argument(0);
 		if (value.isNumber()) {

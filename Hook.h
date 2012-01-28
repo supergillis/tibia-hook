@@ -44,14 +44,12 @@ public:
 	const Window window() const;
 	void setWindow(Window);
 
-	ssize_t hookOutgoingMessage(const quint8*, ssize_t);
-	ssize_t hookIncomingMessage(quint8*, ssize_t);
+	ssize_t receiveFromClient(const quint8*, ssize_t);
+	ssize_t receiveFromServer(quint8*, ssize_t);
 
-	ssize_t read(quint8*, ssize_t);
-
-	ssize_t write(const quint8*, ssize_t);
-	ssize_t write(const EncryptedMessage*);
-	ssize_t write(const DecryptedMessage*);
+	ssize_t sendToServer(const quint8*, ssize_t);
+	ssize_t sendToServer(const EncryptedMessage*);
+	ssize_t sendToServer(const DecryptedMessage*);
 
 	void sendKeyPress(int);
 

@@ -3,10 +3,10 @@ MOC=moc
 
 CFLAGS=-fPIC -m32
 LDFLAGS=-m32 -ldl -lpthread -L/usr/lib/i386-linux-gnu -lQtCore -lQtNetwork -lQtScript
-INCLUDES= -I/usr/include/qt4/QtCore -I/usr/include/qt4/QtNetwork -I/usr/include/qt4/QtScript -I/usr/include/qt4
+INCLUDES= -I/usr/include/qt4/QtCore -I/usr/include/qt4/QtScript -I/usr/include/qt4
 
 MOCS=$(patsubst %.h, %.moc.cpp, $(shell grep -l Q_OBJECT *.h))
-SOURCES=Main.cpp Memory.cpp Hook.cpp HookMessageEvent.cpp Message.cpp EncryptedMessage.cpp DecryptedMessage.cpp Packet.cpp ReadOnlyPacket.cpp ReadWritePacket.cpp Encryption.cpp ScriptHandler.cpp ScriptEngine.cpp $(MOCS)
+SOURCES=Main.cpp Memory.cpp Hook.cpp ReceivingMessageEvent.cpp Handler.cpp Message.cpp EncryptedMessage.cpp DecryptedMessage.cpp Packet.cpp ReadOnlyPacket.cpp ReadWritePacket.cpp Encryption.cpp ScriptHandler.cpp ScriptEngine.cpp $(MOCS)
 OBJECTS=$(SOURCES:.cpp=.o)
 LIBRARY=hook.so
 
