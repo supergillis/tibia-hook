@@ -20,17 +20,17 @@ public:
 	void receiveFromServer(const EncryptedMessage*);
 
 	QScriptValue createClassPrototype();
-	QScriptValue createClass();
 	QScriptValue createClass(QScriptValue);
+	QScriptValue createClass(QScriptValue, QScriptValue);
 	QScriptValue createInstancePrototype();
-	QScriptValue createInstance(QScriptValue);
+	QScriptValue createInstance(QScriptValue, QScriptValue);
 
 private:
-	void initializePacketObject();
+	void initializeEnvironmentObject();
 	void initializeClientObject();
 	void initializeMemoryObject();
-	void initializeEnvironmentObject();
 	void initializeNetworkObject();
+	void initializePacketObject();
 
 	bool receiveFromClientInternal(const EncryptedMessage*);
 
@@ -81,6 +81,10 @@ namespace Handlers {
 
 	namespace PacketWrite {
 		static QScriptValue constructor(QScriptContext*, QScriptEngine*);
+		static QScriptValue writeU8(QScriptContext*, QScriptEngine*);
+		static QScriptValue writeU16(QScriptContext*, QScriptEngine*);
+		static QScriptValue writeU32(QScriptContext*, QScriptEngine*);
+		static QScriptValue writeString(QScriptContext*, QScriptEngine*);
 	}
 
 	namespace Memory {
