@@ -38,7 +38,7 @@ BattleListEntry.IsBlockingOffset = 168;
 CommandPlugin.Commands = {};
 
 CommandPlugin.Commands["lol"] = function(speak, arguments) {
-	var packet = new Packet();
+	var packet = Packet.create();
 	packet.writeU8(MessageSpeak.type);
 	double = MessageSpeak.create();
 	double.type = speak.type;
@@ -63,7 +63,7 @@ CommandPlugin.Commands["battle"] = function(speak, arguments) {
 };
 
 CommandPlugin.Commands["fake"] = function(speak, arguments) {
-	var packet = new Packet();
+	var packet = Packet.create();
 	packet.writeU8(MessageText.type);
 	message = MessageText.create();
 	message.type = 17;

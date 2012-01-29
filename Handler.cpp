@@ -9,11 +9,13 @@ Handler::Handler() :
 bool Handler::event(QEvent* event) {
 	if (event->type() == ReceivingMessageEvent::EventType) {
 		ReceivingMessageEvent* hookEvent = (ReceivingMessageEvent*) event;
-		if (hookEvent->messageType() == ReceivingMessageEvent::Client) {
-			receiveFromClient(hookEvent->message());
-		}
-		else {
-			receiveFromServer(hookEvent->message());
+		switch (hookEvent->messageType()) {
+			case ReceivingMessageEvent::Client:
+				receiveFromClient(hookEvent->message());
+				break;
+			case ReceivingMessageEvent::Server:
+				receiveFromServer(hookEvent->message());
+				break;
 		}
 		return true;
 	}

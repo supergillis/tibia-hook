@@ -1,5 +1,6 @@
 #include "ScriptHandler.h"
 #include "DecryptedMessage.h"
+#include "Packet.h"
 #include "ReadWritePacket.h"
 #include "ReadOnlyPacket.h"
 #include "Hook.h"
@@ -9,36 +10,75 @@
 
 ScriptHandler::ScriptHandler() :
 		Handler(), _engine(this) {
-	QScriptValue packetObject = _engine.newQMetaObject(&ReadWritePacket::staticMetaObject, _engine.newFunction(Handlers::Packet::constructor));
+	_instanceHandle = _engine.toStringHandle("instance");
+	_constructorHandle = _engine.toStringHandle("constructor");
+	_extendHandle = _engine.toStringHandle("extend");
+	_createHandle = _engine.toStringHandle("create");
+	_extendedHandle = _engine.toStringHandle("extended");
 
-	_networkObject = _engine.newObject();
-	_networkObject.setProperty("sendToServer", _engine.newFunction(Handlers::Network::sendToServer));
-	_networkObject.setProperty("sendToClient", _engine.newFunction(Handlers::Network::sendToClient));
+	_receiveFromClientHandle = _engine.toStringHandle("receiveFromClient");
+	_receiveFromServerHandle = _engine.toStringHandle("receiveFromServer");
 
-	QScriptValue clientObject(_engine.newObject());
+	_rootClassObject = createClass();
+	_engine.globalObject().setProperty("Class", _rootClassObject, QScriptValue::ReadOnly | QScriptValue::Undeletable);
+
+	initializePacketObject();
+	initializeClientObject();
+	initializeMemoryObject();
+	initializeEnvironmentObject();
+	initializeNetworkObject();
+
+	reload();
+}
+
+void ScriptHandler::initializePacketObject() {
+	_packetObject = createClass(_rootClassObject);
+
+	QScriptValue packetInstance = _packetObject.property(_instanceHandle);
+	packetInstance.setProperty(_constructorHandle, _engine.newFunction(Handlers::PacketWrite::constructor));
+	packetInstance.setProperty("readU8", _engine.newFunction(Handlers::PacketRead::readU8));
+	packetInstance.setProperty("readU16", _engine.newFunction(Handlers::PacketRead::readU16));
+	packetInstance.setProperty("readU32", _engine.newFunction(Handlers::PacketRead::readU32));
+	packetInstance.setProperty("readString", _engine.newFunction(Handlers::PacketRead::readString));
+
+	_engine.globalObject().setProperty("Packet", _packetObject, QScriptValue::ReadOnly | QScriptValue::Undeletable);
+}
+
+void ScriptHandler::initializeClientObject() {
+	QScriptValue clientObject = createInstance(_rootClassObject);
 	clientObject.setProperty("sendPacket", _engine.newFunction(Handlers::Client::sendPacket));
 	clientObject.setProperty("sendKeyPress", _engine.newFunction(Handlers::Client::sendKeyPress));
 
-	QScriptValue memoryObject(_engine.newObject());
+	_engine.globalObject().setProperty("Client", clientObject, QScriptValue::ReadOnly | QScriptValue::Undeletable);
+}
+
+void ScriptHandler::initializeMemoryObject() {
+	QScriptValue memoryObject = createInstance(_rootClassObject);
 	memoryObject.setProperty("readU8", _engine.newFunction(Handlers::Memory::readU8));
 	memoryObject.setProperty("readU16", _engine.newFunction(Handlers::Memory::readU16));
 	memoryObject.setProperty("readU32", _engine.newFunction(Handlers::Memory::readU32));
 	memoryObject.setProperty("readString", _engine.newFunction(Handlers::Memory::readString));
 
+	_engine.globalObject().setProperty("Memory", memoryObject, QScriptValue::ReadOnly | QScriptValue::Undeletable);
+}
+
+void ScriptHandler::initializeEnvironmentObject() {
 	QScriptValue reloadFunction = _engine.newFunction(Handlers::Environment::reload);
 	reloadFunction.setData(_engine.newQObject(this));
 
-	QScriptValue environmentObject(_engine.newObject());
+	QScriptValue environmentObject = createInstance(_rootClassObject);
 	environmentObject.setProperty("reload", reloadFunction);
 	environmentObject.setProperty("require", _engine.newFunction(Handlers::Environment::require));
 
-	_engine.globalObject().setProperty("Network", _networkObject, QScriptValue::ReadOnly | QScriptValue::Undeletable);
-	_engine.globalObject().setProperty("Client", clientObject, QScriptValue::ReadOnly | QScriptValue::Undeletable);
-	_engine.globalObject().setProperty("Memory", memoryObject, QScriptValue::ReadOnly | QScriptValue::Undeletable);
-	_engine.globalObject().setProperty("Packet", packetObject, QScriptValue::ReadOnly | QScriptValue::Undeletable);
 	_engine.globalObject().setProperty("Environment", environmentObject, QScriptValue::ReadOnly | QScriptValue::Undeletable);
+}
 
-	reload();
+void ScriptHandler::initializeNetworkObject() {
+	_networkObject = createInstance(_rootClassObject);
+	_networkObject.setProperty("sendToServer", _engine.newFunction(Handlers::Network::sendToServer));
+	_networkObject.setProperty("sendToClient", _engine.newFunction(Handlers::Network::sendToClient));
+
+	_engine.globalObject().setProperty("Network", _networkObject, QScriptValue::ReadOnly | QScriptValue::Undeletable);
 }
 
 void ScriptHandler::reload() {
@@ -55,11 +95,12 @@ void ScriptHandler::receiveFromClient(const EncryptedMessage* message) {
 }
 
 bool ScriptHandler::receiveFromClientInternal(const EncryptedMessage* message) {
-	QScriptValue callback = _networkObject.property("receiveFromClient");
+	QScriptValue callback = _networkObject.property(_receiveFromClientHandle);
 	if (callback.isFunction()) {
 		DecryptedMessage decrypted(message);
 		if (decrypted.isValid()) {
-			QScriptValue packet = _engine.newQObject(new ReadOnlyPacket(decrypted), QScriptEngine::ScriptOwnership);
+			QScriptValue packet = createInstance(_packetObject);
+			packet.setData(_engine.newQObject(new ReadOnlyPacket(decrypted), QScriptEngine::ScriptOwnership));
 			QScriptValueList args;
 			QScriptValue result = callback.call(_networkObject, args << packet);
 			return result.isBool() ? result.toBool() : false;
@@ -69,17 +110,16 @@ bool ScriptHandler::receiveFromClientInternal(const EncryptedMessage* message) {
 }
 
 void ScriptHandler::receiveFromServer(const EncryptedMessage* message) {
-	if (!receiveFromServerInternal(message)) {
-		Hook::getInstance()->sendToClient(message);
-	}
-}
-
-bool ScriptHandler::receiveFromServerInternal(const EncryptedMessage* message) {
-	QScriptValue callback = _networkObject.property("receiveFromServer");
+	QScriptValue callback = _networkObject.property(_receiveFromServerHandle);
 	if (callback.isFunction()) {
-		qDebug() << "received message from server";
+		DecryptedMessage decrypted(message);
+		if (decrypted.isValid()) {
+			QScriptValue packet = createInstance(_packetObject);
+			packet.setData(_engine.newQObject(new ReadOnlyPacket(decrypted), QScriptEngine::ScriptOwnership));
+			QScriptValueList args;
+			QScriptValue result = callback.call(_networkObject, args << packet);
+		}
 	}
-	return false;
 }
 
 static QScriptValue Handlers::Network::sendToServer(QScriptContext* context, QScriptEngine*) {
@@ -132,13 +172,6 @@ QScriptValue Handlers::Environment::require(QScriptContext* context, QScriptEngi
 	return context->throwError("invalid call to require(String)");
 }
 
-QScriptValue Handlers::Packet::constructor(QScriptContext* context, QScriptEngine* engine) {
-	if (context->argumentCount() == 0) {
-		return engine->newQObject(new ReadWritePacket(), QScriptEngine::ScriptOwnership);
-	}
-	return context->throwError("invalid call to Packet()");
-}
-
 QScriptValue Handlers::Client::sendPacket(QScriptContext* context, QScriptEngine* engine) {
 	if (context->argumentCount() == 1) {
 		QScriptValue value = context->argument(0);
@@ -161,6 +194,55 @@ QScriptValue Handlers::Client::sendKeyPress(QScriptContext* context, QScriptEngi
 		}
 	}
 	return context->throwError("invalid call to sendKeyPress(Number)");
+}
+
+QScriptValue Handlers::PacketRead::readU8(QScriptContext* context, QScriptEngine* engine) {
+	if (context->argumentCount() == 0) {
+		Packet* packet = qobject_cast<Packet*>(context->thisObject().data().toQObject());
+		if (packet) {
+			return packet->readU8();
+		}
+	}
+	return context->throwError("invalid call to readU8()");
+}
+
+QScriptValue Handlers::PacketRead::readU16(QScriptContext* context, QScriptEngine* engine) {
+	if (context->argumentCount() == 0) {
+		Packet* packet = qobject_cast<Packet*>(context->thisObject().data().toQObject());
+		if (packet) {
+			return packet->readU16();
+		}
+	}
+	return context->throwError("invalid call to readU16()");
+}
+
+QScriptValue Handlers::PacketRead::readU32(QScriptContext* context, QScriptEngine* engine) {
+	if (context->argumentCount() == 0) {
+		Packet* packet = qobject_cast<Packet*>(context->thisObject().data().toQObject());
+		if (packet) {
+			return packet->readU32();
+		}
+	}
+	return context->throwError("invalid call to readU32()");
+}
+
+QScriptValue Handlers::PacketRead::readString(QScriptContext* context, QScriptEngine* engine) {
+	if (context->argumentCount() == 0) {
+		Packet* packet = qobject_cast<Packet*>(context->thisObject().data().toQObject());
+		if (packet) {
+			return packet->readString();
+		}
+	}
+	return context->throwError("invalid call to readString()");
+}
+
+QScriptValue Handlers::PacketWrite::constructor(QScriptContext* context, QScriptEngine* engine) {
+	if (context->argumentCount() == 0) {
+		QScriptValue data = engine->newQObject(new ReadWritePacket(), QScriptEngine::ScriptOwnership);
+		context->thisObject().setData(data);
+		return true;
+	}
+	return context->throwError("invalid call to Packet constructor");
 }
 
 QScriptValue Handlers::Memory::readU8(QScriptContext* context, QScriptEngine* engine) {
@@ -201,4 +283,71 @@ QScriptValue Handlers::Memory::readString(QScriptContext* context, QScriptEngine
 		}
 	}
 	return context->throwError("invalid call to readString(Number)");
+}
+
+QScriptValue Handlers::Class::extend(QScriptContext* context, QScriptEngine* engine) {
+	ScriptHandler* handler = qobject_cast<ScriptHandler*>(engine->parent());
+	if (handler) {
+		QScriptValue parent = context->thisObject();
+		return handler->createClass(parent);
+	}
+	return false;
+}
+
+QScriptValue Handlers::Class::create(QScriptContext* context, QScriptEngine* engine) {
+	ScriptHandler* handler = qobject_cast<ScriptHandler*>(engine->parent());
+	if (handler) {
+		QScriptValue parent = context->thisObject();
+		return handler->createInstance(parent);
+	}
+	return false;
+}
+
+QScriptValue Handlers::Class::extended(QScriptContext*, QScriptEngine*) {
+	return QScriptValue::UndefinedValue;
+}
+
+QScriptValue Handlers::Class::constructor(QScriptContext*, QScriptEngine*) {
+	return QScriptValue::UndefinedValue;
+}
+
+QScriptValue ScriptHandler::createClassPrototype() {
+	QScriptValue global = _engine.globalObject();
+	QScriptValue prototype = _engine.newObject();
+	prototype.setPrototype(global.property("Object").prototype());
+	prototype.setProperty(_instanceHandle, createInstancePrototype(), QScriptValue::ReadOnly | QScriptValue::Undeletable);
+	prototype.setProperty(_extendHandle, _engine.newFunction(Handlers::Class::extend), QScriptValue::ReadOnly | QScriptValue::Undeletable);
+	prototype.setProperty(_createHandle, _engine.newFunction(Handlers::Class::create), QScriptValue::ReadOnly | QScriptValue::Undeletable);
+	prototype.setProperty(_extendedHandle, _engine.newFunction(Handlers::Class::extended), QScriptValue::ReadOnly | QScriptValue::Undeletable);
+	return prototype;
+}
+
+QScriptValue ScriptHandler::createClass() {
+	return createClass(createClassPrototype());
+}
+
+QScriptValue ScriptHandler::createClass(QScriptValue prototype) {
+	QScriptValue instancePrototype = _engine.newObject();
+	instancePrototype.setPrototype(prototype.property(_instanceHandle));
+	QScriptValue result = _engine.newObject();
+	result.setPrototype(prototype);
+	result.setProperty(_instanceHandle, instancePrototype, QScriptValue::ReadOnly | QScriptValue::Undeletable);
+	prototype.property(_extendedHandle).call(result);
+	return result;
+}
+
+QScriptValue ScriptHandler::createInstancePrototype() {
+	QScriptValue global = _engine.globalObject();
+	QScriptValue prototype = _engine.newObject();
+	prototype.setPrototype(global.property("Object").prototype());
+	prototype.setProperty(_constructorHandle, _engine.newFunction(Handlers::Class::constructor), QScriptValue::ReadOnly | QScriptValue::Undeletable);
+	return prototype;
+}
+
+QScriptValue ScriptHandler::createInstance(QScriptValue parent) {
+	QScriptValue prototype = parent.property(_instanceHandle);
+	QScriptValue result = _engine.newObject();
+	result.setPrototype(prototype);
+	prototype.property(_constructorHandle).call(result);
+	return result;
 }

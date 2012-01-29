@@ -13,7 +13,6 @@ class Packet: public QObject {
 public:
 	Packet();
 
-public slots:
 	virtual quint16 length() const = 0;
 	virtual const quint8* data() const = 0;
 

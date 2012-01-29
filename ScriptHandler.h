@@ -7,7 +7,6 @@
 
 #include <QScriptEngine>
 #include <QScriptContext>
-#include <QScriptClass>
 
 class ScriptHandler: public Handler {
 	Q_OBJECT
@@ -15,20 +14,49 @@ class ScriptHandler: public Handler {
 public:
 	ScriptHandler();
 
-	void receiveFromClient(const EncryptedMessage*);
-	bool receiveFromClientInternal(const EncryptedMessage*);
-
-	void receiveFromServer(const EncryptedMessage*);
-	bool receiveFromServerInternal(const EncryptedMessage*);
-
 	void reload();
 
+	void receiveFromClient(const EncryptedMessage*);
+	void receiveFromServer(const EncryptedMessage*);
+
+	QScriptValue createClassPrototype();
+	QScriptValue createClass();
+	QScriptValue createClass(QScriptValue);
+	QScriptValue createInstancePrototype();
+	QScriptValue createInstance(QScriptValue);
+
 private:
+	void initializePacketObject();
+	void initializeClientObject();
+	void initializeMemoryObject();
+	void initializeEnvironmentObject();
+	void initializeNetworkObject();
+
+	bool receiveFromClientInternal(const EncryptedMessage*);
+
 	ScriptEngine _engine;
+	QScriptValue _rootClassObject;
+	QScriptValue _packetObject;
 	QScriptValue _networkObject;
+
+	QScriptString _instanceHandle;
+	QScriptString _constructorHandle;
+	QScriptString _extendHandle;
+	QScriptString _createHandle;
+	QScriptString _extendedHandle;
+
+	QScriptString _receiveFromClientHandle;
+	QScriptString _receiveFromServerHandle;
 };
 
 namespace Handlers {
+	namespace Class {
+		static QScriptValue extend(QScriptContext*, QScriptEngine*);
+		static QScriptValue create(QScriptContext*, QScriptEngine*);
+		static QScriptValue extended(QScriptContext*, QScriptEngine*);
+		static QScriptValue constructor(QScriptContext*, QScriptEngine*);
+	};
+
 	namespace Environment {
 		static QScriptValue reload(QScriptContext*, QScriptEngine*);
 		static QScriptValue require(QScriptContext*, QScriptEngine*);
@@ -44,9 +72,16 @@ namespace Handlers {
 		static QScriptValue sendKeyPress(QScriptContext*, QScriptEngine*);
 	};
 
-	namespace Packet {
-		static QScriptValue constructor(QScriptContext*, QScriptEngine*);
+	namespace PacketRead {
+		static QScriptValue readU8(QScriptContext*, QScriptEngine*);
+		static QScriptValue readU16(QScriptContext*, QScriptEngine*);
+		static QScriptValue readU32(QScriptContext*, QScriptEngine*);
+		static QScriptValue readString(QScriptContext*, QScriptEngine*);
 	};
+
+	namespace PacketWrite {
+		static QScriptValue constructor(QScriptContext*, QScriptEngine*);
+	}
 
 	namespace Memory {
 		static QScriptValue readU8(QScriptContext*, QScriptEngine*);

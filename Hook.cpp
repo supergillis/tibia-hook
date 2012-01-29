@@ -114,17 +114,6 @@ ssize_t Hook::receiveFromClient(const quint8* buffer, ssize_t length) {
 			return length;
 		}
 	}
-	else {
-		DecryptedMessage message(buffer, length);
-		ReadOnlyPacket packet(message);
-		quint8 protocol = packet.readU8();
-		quint16 os = packet.readU16();
-		quint16 client = packet.readU16();
-		if (protocol == 0x0A) {
-			_protocol = protocol;
-			_pendingLogin = true;
-		}
-	}
 	return sendToServer(buffer, length);
 }
 
@@ -134,5 +123,15 @@ ssize_t Hook::receiveFromServer(quint8* buffer, ssize_t length) {
 		memcpy(buffer, data.constData(), data.length());
 		return data.length();
 	}
-	return __read(_socket, buffer, length);
+
+	ssize_t result = __read(_socket, buffer, length);
+	if (_loggedIn) {
+		EncryptedMessage message(buffer, result);
+		if (message.isValid()) {
+			// Do something with message
+			QCoreApplication::postEvent(_handler, new ReceivingMessageEvent(ReceivingMessageEvent::Server, &message), Qt::HighEventPriority);
+		}
+	}
+
+	return result;
 }
