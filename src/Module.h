@@ -2,15 +2,15 @@
 #define MODULE_H_
 
 #include <QObject>
-#include <QScriptEngine>
 
+class ScriptHandler;
 class Module: public QObject {
 	Q_OBJECT
 
 public:
 	Module(QObject* = NULL);
 
-	virtual void install(QScriptEngine*) = 0;
+	virtual void install(ScriptHandler*) = 0;
 };
 
 #endif /* MODULE_H_ */

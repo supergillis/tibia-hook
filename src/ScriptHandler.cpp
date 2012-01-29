@@ -8,8 +8,8 @@
 
 #include <QDebug>
 
-ScriptHandler::ScriptHandler() :
-		Handler(), _engine(this) {
+ScriptHandler::ScriptHandler(QObject* parent) :
+		Handler(parent), _engine(this) {
 	_instanceHandle = _engine.toStringHandle("instance");
 	_constructorHandle = _engine.toStringHandle("constructor");
 	_extendHandle = _engine.toStringHandle("extend");
@@ -19,31 +19,33 @@ ScriptHandler::ScriptHandler() :
 	_receiveFromClientHandle = _engine.toStringHandle("receiveFromClient");
 	_receiveFromServerHandle = _engine.toStringHandle("receiveFromServer");
 
-	_rootClassObject = createClass(_engine.newArray(0));
-	_engine.globalObject().setProperty("Class", _rootClassObject, QScriptValue::ReadOnly | QScriptValue::Undeletable);
+	_classObject = createClass(_engine.newArray(0));
+	_engine.globalObject().setProperty("Class", _classObject, QScriptValue::ReadOnly | QScriptValue::Undeletable);
 
 	initializePacketObject();
 	initializeClientObject();
 	initializeMemoryObject();
-	initializeEnvironmentObject();
 	initializeNetworkObject();
-
-	reload();
 }
 
-void ScriptHandler::initializeEnvironmentObject() {
-	QScriptValue reloadFunction = _engine.newFunction(Handlers::Environment::reload);
-	reloadFunction.setData(_engine.newQObject(this));
+ScriptEngine* ScriptHandler::getScriptEngine() {
+	return &_engine;
+}
 
-	QScriptValue environmentObject = createInstance(_rootClassObject, _engine.newArray(0));
-	environmentObject.setProperty("reload", reloadFunction);
-	environmentObject.setProperty("require", _engine.newFunction(Handlers::Environment::require));
+const ScriptEngine* ScriptHandler::getEngine() const {
+	return &_engine;
+}
 
-	_engine.globalObject().setProperty("Environment", environmentObject, QScriptValue::ReadOnly | QScriptValue::Undeletable);
+QScriptValue ScriptHandler::getClassObject() const {
+	return _classObject;
+}
+
+void ScriptHandler::install(Module* module) {
+	module->install(this);
 }
 
 void ScriptHandler::initializeClientObject() {
-	QScriptValue clientObject = createInstance(_rootClassObject, _engine.newArray(0));
+	QScriptValue clientObject = createInstance(_classObject, _engine.newArray(0));
 	clientObject.setProperty("sendPacket", _engine.newFunction(Handlers::Client::sendPacket));
 	clientObject.setProperty("sendKeyPress", _engine.newFunction(Handlers::Client::sendKeyPress));
 
@@ -51,7 +53,7 @@ void ScriptHandler::initializeClientObject() {
 }
 
 void ScriptHandler::initializeMemoryObject() {
-	QScriptValue memoryObject = createInstance(_rootClassObject, _engine.newArray(0));
+	QScriptValue memoryObject = createInstance(_classObject, _engine.newArray(0));
 	memoryObject.setProperty("readU8", _engine.newFunction(Handlers::Memory::readU8));
 	memoryObject.setProperty("readU16", _engine.newFunction(Handlers::Memory::readU16));
 	memoryObject.setProperty("readU32", _engine.newFunction(Handlers::Memory::readU32));
@@ -61,7 +63,7 @@ void ScriptHandler::initializeMemoryObject() {
 }
 
 void ScriptHandler::initializeNetworkObject() {
-	_networkObject = createInstance(_rootClassObject, _engine.newArray(0));
+	_networkObject = createInstance(_classObject, _engine.newArray(0));
 	_networkObject.setProperty("sendToServer", _engine.newFunction(Handlers::Network::sendToServer));
 	_networkObject.setProperty("sendToClient", _engine.newFunction(Handlers::Network::sendToClient));
 
@@ -69,7 +71,7 @@ void ScriptHandler::initializeNetworkObject() {
 }
 
 void ScriptHandler::initializePacketObject() {
-	_packetObject = createClass(_rootClassObject, _engine.newArray(0));
+	_packetObject = createClass(_classObject, _engine.newArray(0));
 
 	QScriptValue packetInstance = _packetObject.property(_instanceHandle);
 	packetInstance.setProperty(_constructorHandle, _engine.newFunction(Handlers::PacketWrite::constructor));
@@ -150,30 +152,6 @@ static QScriptValue Handlers::Network::sendToClient(QScriptContext* context, QSc
 		}
 	}
 	return context->throwError("invalid call to sendToServer(Packet)");
-}
-
-QScriptValue Handlers::Environment::reload(QScriptContext* context, QScriptEngine* engine) {
-	if (context->argumentCount() == 0) {
-		QScriptValue value = context->callee().data();
-		ScriptHandler* handler = qobject_cast<ScriptHandler*>(value.toQObject());
-		if (handler) {
-			handler->reload();
-			return QScriptValue(true);
-		}
-	}
-	return context->throwError("invalid call to reload()");
-}
-
-QScriptValue Handlers::Environment::require(QScriptContext* context, QScriptEngine* engine) {
-	if (context->argumentCount() == 1) {
-		QScriptValue value = context->argument(0);
-		ScriptEngine* scriptEngine = qobject_cast<ScriptEngine*>(engine);
-		if (value.isString() && scriptEngine) {
-			QString required = value.toString();
-			return scriptEngine->require(required);
-		}
-	}
-	return context->throwError("invalid call to require(String)");
 }
 
 QScriptValue Handlers::Client::sendPacket(QScriptContext* context, QScriptEngine* engine) {

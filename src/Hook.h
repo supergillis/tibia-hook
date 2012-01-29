@@ -63,7 +63,6 @@ public:
 private:
 	Hook();
 	Hook(const Hook&);
-	~Hook();
 
 	Hook& operator=(const Hook&);
 

@@ -1,48 +1,113 @@
 #!/usr/bin/ruby
 
-require 'fileutils'
+require "optparse"
+require_relative "runner"
 
-cc = "g++"
-moc = "moc"
+$CC = "g++"
+$MOC = "moc"
 
-cflags="-fPIC -m32"
-ldflags="-m32 -ldl -lpthread -L/usr/lib/i386-linux-gnu -lQtCore -lQtScript"
-includes="-I. -I/usr/include/qt4 -I/usr/include/qt4/QtCore -I/usr/include/qt4/QtScript"
+$SOURCE_DIR = "src"
+$MOC_DIR = "moc"
+$OBJECTS_DIR = "obj"
 
-Dir['**/*.o'].each do |file|
-	print "cleaning ", file, "\n"
-	FileUtils.rm file
+$LIBRARY = "hook.so"
+
+$CFLAGS = [
+  "-m32",
+  "-fPIC"
+]
+
+$LDFLAGS = [
+  "-m32",
+  "-ldl",
+  "-lpthread",
+  "-lQtCore",
+  "-lQtScript"
+]
+
+$INCLUDES = [
+  "-I./src",
+  "-I/usr/include/qt4",
+  "-I/usr/include/qt4/QtCore",
+  "-I/usr/include/qt4/QtScript"
+]
+
+class DebugCommand < Command
+  def debug(program)
+    print program
+    print "\n"
+  end
 end
 
-Dir['**/*.moc.cpp'].each do |file|
-	print "cleaning ", file, "\n"
-	FileUtils.rm file
+class MoccerCommand < DebugCommand
+  def moc_file(file)
+    $MOC_DIR + file[$SOURCE_DIR.length .. -3] + ".moc.cpp"
+  end
+
+# Only accepts files that more recently modified than the MOC files
+  def accept(*args, file)
+    output = moc_file(file)
+    if File.readlines(file).grep(/Q_OBJECT/).length > 0
+      if File.exists?(output)
+        return File.ctime(file) > File.ctime(output)
+      end
+      return true
+    end
+    false
+  end
+
+  def transform(*args, file)
+    output = moc_file(file)
+    args + [file, "-o", output]
+  end
 end
 
-Dir['**/*.h'].each do |header|
-	if File.readlines(header).grep(/Q_OBJECT/).length > 0
-		print "moccing ", header, "\n"
-		output = header[0..-3] + ".moc.cpp"
-		result = `#{moc} #{includes} #{header} -o #{output}`
-		status = $?.exitstatus
-		exit unless status == 0
-	end
+class CompilerCommand < DebugCommand
+  def object_file(file)
+    $OBJECTS_DIR + "/" + file[0 .. -5] + ".o"
+  end
+
+  # Only accepts files that more recently modified than the object files
+  def accept(*args, file)
+    output = object_file(file)
+    if File.exists?(output)
+      return File.ctime(file) > File.ctime(output)
+    end
+    true
+  end
+
+  def transform(*args, file)
+    output = object_file(file)
+    args + [file, "-c", "-o", output]
+  end
 end
 
-Dir['**/*.cpp'].each do |source|
-	print "compiling ", source, "\n"
-	output = "obj/" + source[0..-5] + ".o"
-	result = `#{cc} #{cflags} #{includes} #{source} -c -o #{output}`
-	status = $?.exitstatus
-	exit unless status == 0
+def clean
+  cleaner = DebugCommand.new("rm")
+
+  DirectoryRunner.new("#{$OBJECTS_DIR}/**/*.o", cleaner).run
+  DirectoryRunner.new("#{$MOC_DIR}/**/*.moc.cpp", cleaner).run
 end
 
-output = "hook.so"
-print "combining into ", output,"\n"
-objects = Dir['**/*.o'].join(" ")
-result = `#{cc} #{ldflags} #{objects} -shared -o #{output}`
+def all
+  moccer = MoccerCommand.new($MOC)
+  compiler = CompilerCommand.new($CC)
+  linker = DebugCommand.new($CC)
+ 
+  DirectoryRunner.new("#{$SOURCE_DIR}/**/*.h", moccer).run(*$INCLUDES)
+  DirectoryRunner.new("**/*.cpp", compiler).run(*($CFLAGS + $INCLUDES))
 
-status = $?.exitstatus
-exit unless status == 0
+  objects = Dir["#{$OBJECTS_DIR}/**/*.o"]
+  arguments = $LDFLAGS + objects + ["-shared", "-o", $LIBRARY]
+  linker.run(*arguments)
+end
 
-print "done!\n"
+OptionParser.new do |opts|
+  opts.banner = "Usage: make.rb option"
+  opts.on("--clean", "Clean all object files") do
+    clean
+  end
+  opts.on("--all", "Build everything") do
+    all
+  end
+end.parse!

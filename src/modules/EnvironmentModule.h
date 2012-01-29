@@ -2,9 +2,11 @@
 #define ENVIRONMENTMODULE_H_
 
 #include "Module.h"
+#include "ScriptHandler.h"
 
 #include <QObject>
 #include <QScriptEngine>
+#include <QScriptContext>
 
 class EnvironmentModule: public Module {
 	Q_OBJECT
@@ -12,7 +14,11 @@ class EnvironmentModule: public Module {
 public:
 	EnvironmentModule(QObject*);
 
-	void install(QScriptEngine*);
+	void install(ScriptHandler*);
+
+private:
+	static QScriptValue reload(QScriptContext*, QScriptEngine*);
+	static QScriptValue require(QScriptContext*, QScriptEngine*);
 
 };
 

@@ -4,7 +4,9 @@
 #include "Handler.h"
 #include "EncryptedMessage.h"
 #include "ScriptEngine.h"
+#include "Module.h"
 
+#include <QObject>
 #include <QScriptEngine>
 #include <QScriptContext>
 
@@ -12,8 +14,14 @@ class ScriptHandler: public Handler {
 	Q_OBJECT
 
 public:
-	ScriptHandler();
+	ScriptHandler(QObject* = 0);
 
+	ScriptEngine* getScriptEngine();
+	const ScriptEngine* getEngine() const;
+
+	QScriptValue getClassObject() const;
+
+	void install(Module*);
 	void reload();
 
 	void receiveFromClient(const EncryptedMessage*);
@@ -26,7 +34,6 @@ public:
 	QScriptValue createInstance(QScriptValue, QScriptValue);
 
 private:
-	void initializeEnvironmentObject();
 	void initializeClientObject();
 	void initializeMemoryObject();
 	void initializeNetworkObject();
@@ -35,7 +42,7 @@ private:
 	bool receiveFromClientInternal(const EncryptedMessage*);
 
 	ScriptEngine _engine;
-	QScriptValue _rootClassObject;
+	QScriptValue _classObject;
 	QScriptValue _packetObject;
 	QScriptValue _networkObject;
 
@@ -55,11 +62,6 @@ namespace Handlers {
 		static QScriptValue create(QScriptContext*, QScriptEngine*);
 		static QScriptValue extended(QScriptContext*, QScriptEngine*);
 		static QScriptValue constructor(QScriptContext*, QScriptEngine*);
-	};
-
-	namespace Environment {
-		static QScriptValue reload(QScriptContext*, QScriptEngine*);
-		static QScriptValue require(QScriptContext*, QScriptEngine*);
 	};
 
 	namespace Network {

@@ -2,8 +2,8 @@
 #include "Hook.h"
 #include "ReceivingMessageEvent.h"
 
-Handler::Handler() :
-		QObject() {
+Handler::Handler(QObject* parent) :
+		QObject(parent) {
 }
 
 bool Handler::event(QEvent* event) {

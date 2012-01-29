@@ -10,7 +10,7 @@ class Handler: public QObject {
 	Q_OBJECT
 
 public:
-	Handler();
+	Handler(QObject* = 0);
 
 	bool event(QEvent*);
 
