@@ -4,6 +4,7 @@
 #include <QCoreApplication>
 #include <QDebug>
 #include <QEvent>
+#include <QQueue>
 
 #include <unistd.h>
 #include <string.h>
@@ -35,17 +36,23 @@ public:
 		return _instance;
 	}
 
-	const int socket() const;
+	int socket() const;
 	void setSocket(int);
 
 	const Display* display() const;
 	void setDisplay(Display*);
 
-	const Window window() const;
+	Window window() const;
 	void setWindow(Window);
+
+	bool hasClientMessages() const;
 
 	ssize_t receiveFromClient(const quint8*, ssize_t);
 	ssize_t receiveFromServer(quint8*, ssize_t);
+
+	void sendToClient(const quint8*, ssize_t);
+	void sendToClient(const EncryptedMessage*);
+	void sendToClient(const DecryptedMessage*);
 
 	ssize_t sendToServer(const quint8*, ssize_t);
 	ssize_t sendToServer(const EncryptedMessage*);
@@ -70,6 +77,7 @@ private:
 	bool _loggedIn;
 	bool _pendingLogin;
 	quint8 _protocol;
+	QQueue<QByteArray> _queue;
 };
 
 #endif

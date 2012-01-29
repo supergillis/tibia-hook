@@ -20,12 +20,11 @@ Hook::~Hook() {
 	delete _handler;
 }
 
-const int Hook::socket() const {
+int Hook::socket() const {
 	return _socket;
 }
 
 void Hook::setSocket(int socket) {
-	qDebug() << "set socket";
 	_socket = socket;
 }
 
@@ -34,17 +33,19 @@ const Display* Hook::display() const {
 }
 
 void Hook::setDisplay(Display* display) {
-	qDebug() << "set display";
 	_display = display;
 }
 
-const Window Hook::window() const {
+Window Hook::window() const {
 	return _window;
 }
 
 void Hook::setWindow(Window window) {
-	qDebug() << "set window";
 	_window = window;
+}
+
+bool Hook::hasClientMessages() const {
+	return _queue.size() > 0;
 }
 
 XKeyEvent createKeyEvent(Display* display, Window& win, Window& root, bool press, int keycode, int modifiers) {
@@ -74,6 +75,21 @@ void Hook::sendKeyPress(int keycode) {
 	XSendEvent(event.display, event.window, True, KeyPressMask, (XEvent*) &event);
 }
 
+void Hook::sendToClient(const quint8* buffer, ssize_t length) {
+	_queue.enqueue(QByteArray((const char*) buffer, length));
+}
+
+void Hook::sendToClient(const EncryptedMessage* message) {
+	sendToClient(message->rawData(), message->rawLength());
+}
+
+void Hook::sendToClient(const DecryptedMessage* message) {
+	EncryptedMessage encrypted(message);
+	if (encrypted.isValid()) {
+		sendToClient(&encrypted);
+	}
+}
+
 ssize_t Hook::sendToServer(const quint8* buffer, ssize_t length) {
 	return __write(_socket, buffer, length);
 }
@@ -84,7 +100,10 @@ ssize_t Hook::sendToServer(const EncryptedMessage* message) {
 
 ssize_t Hook::sendToServer(const DecryptedMessage* message) {
 	EncryptedMessage encrypted(message);
-	return encrypted.isValid() ? sendToServer(&encrypted) : 0;
+	if (encrypted.isValid()) {
+		return sendToServer(&encrypted);
+	}
+	return 0;
 }
 
 ssize_t Hook::receiveFromClient(const quint8* buffer, ssize_t length) {
@@ -110,5 +129,10 @@ ssize_t Hook::receiveFromClient(const quint8* buffer, ssize_t length) {
 }
 
 ssize_t Hook::receiveFromServer(quint8* buffer, ssize_t length) {
+	if (hasClientMessages()) {
+		QByteArray data = _queue.dequeue();
+		memcpy(buffer, data.constData(), data.length());
+		return data.length();
+	}
 	return __read(_socket, buffer, length);
 }

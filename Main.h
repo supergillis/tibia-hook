@@ -3,9 +3,12 @@
 
 #include <sys/socket.h>
 #include <sys/types.h>
+#include <poll.h>
 #include <X11/Xlib.h>
 
 int __connect(int, const struct sockaddr*, socklen_t);
+
+int __poll(struct pollfd*, nfds_t, int);
 
 ssize_t __read(int, void*, size_t);
 

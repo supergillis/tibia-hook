@@ -38,15 +38,15 @@ BattleListEntry.IsBlockingOffset = 168;
 CommandPlugin.Commands = {};
 
 CommandPlugin.Commands["lol"] = function(speak, arguments) {
-	hooked = new Packet();
-	hooked.writeU8(MessageSpeak.type);
+	var packet = new Packet();
+	packet.writeU8(MessageSpeak.type);
 	double = MessageSpeak.create();
 	double.type = speak.type;
 	double.channel = speak.channel;
 	double.receiver = speak.receiver;
 	double.message = "lolol";
-	double.serialize(hooked);
-	Hook.write(hooked);
+	double.serialize(packet);
+	Network.sendToServer(packet);
 };
 
 CommandPlugin.Commands["battle"] = function(speak, arguments) {
@@ -61,6 +61,16 @@ CommandPlugin.Commands["battle"] = function(speak, arguments) {
 		print(name + " " + visible);
 	}
 };
+
+CommandPlugin.Commands["fake"] = function(speak, arguments) {
+	var packet = new Packet();
+	packet.writeU8(MessageText.type);
+	message = MessageText.create();
+	message.type = 17;
+	message.message = "test";
+	message.serialize(packet);
+	Network.sendToClient(packet);
+}
 
 CommandPlugin.Commands["reload"] = function(speak, arguments) {
 	Environment.reload();
@@ -85,7 +95,7 @@ CommandPlugin.Commands["move"] = function(speak, arguments) {
 		default:
 			key = Keys.XK_Up
 	}
-	Hook.sendKeyPress(key);
+	Client.sendKeyPress(key);
 };
 
 CommandPlugin.parse = function(speak) {

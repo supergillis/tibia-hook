@@ -69,6 +69,9 @@ bool ScriptHandler::receiveFromClientInternal(const EncryptedMessage* message) {
 }
 
 void ScriptHandler::receiveFromServer(const EncryptedMessage* message) {
+	if (!receiveFromServerInternal(message)) {
+		Hook::getInstance()->sendToClient(message);
+	}
 }
 
 bool ScriptHandler::receiveFromServerInternal(const EncryptedMessage* message) {
@@ -79,12 +82,30 @@ bool ScriptHandler::receiveFromServerInternal(const EncryptedMessage* message) {
 	return false;
 }
 
-static QScriptValue Handlers::Network::sendToServer(QScriptContext*, QScriptEngine*) {
-	return false;
+static QScriptValue Handlers::Network::sendToServer(QScriptContext* context, QScriptEngine*) {
+	if (context->argumentCount() == 1) {
+		QScriptValue value = context->argument(0);
+		ReadWritePacket* packet = qobject_cast<ReadWritePacket*>(value.toQObject());
+		if (packet) {
+			DecryptedMessage message(packet);
+			Hook::getInstance()->sendToServer(&message);
+			return true;
+		}
+	}
+	return context->throwError("invalid call to sendToServer(Packet)");
 }
 
-static QScriptValue Handlers::Network::sendToClient(QScriptContext*, QScriptEngine*) {
-	return false;
+static QScriptValue Handlers::Network::sendToClient(QScriptContext* context, QScriptEngine*) {
+	if (context->argumentCount() == 1) {
+		QScriptValue value = context->argument(0);
+		ReadWritePacket* packet = qobject_cast<ReadWritePacket*>(value.toQObject());
+		if (packet) {
+			DecryptedMessage message(packet);
+			Hook::getInstance()->sendToClient(&message);
+			return true;
+		}
+	}
+	return context->throwError("invalid call to sendToServer(Packet)");
 }
 
 QScriptValue Handlers::Environment::reload(QScriptContext* context, QScriptEngine* engine) {
@@ -96,7 +117,7 @@ QScriptValue Handlers::Environment::reload(QScriptContext* context, QScriptEngin
 			return QScriptValue(true);
 		}
 	}
-	return context->throwError("reload() accepts no arguments");
+	return context->throwError("invalid call to reload()");
 }
 
 QScriptValue Handlers::Environment::require(QScriptContext* context, QScriptEngine* engine) {
@@ -108,14 +129,14 @@ QScriptValue Handlers::Environment::require(QScriptContext* context, QScriptEngi
 			return scriptEngine->require(required);
 		}
 	}
-	return context->throwError("import(String) only accepts one argument");
+	return context->throwError("invalid call to require(String)");
 }
 
 QScriptValue Handlers::Packet::constructor(QScriptContext* context, QScriptEngine* engine) {
 	if (context->argumentCount() == 0) {
 		return engine->newQObject(new ReadWritePacket(), QScriptEngine::ScriptOwnership);
 	}
-	return context->throwError("Packet() only accepts no arguments");
+	return context->throwError("invalid call to Packet()");
 }
 
 QScriptValue Handlers::Client::sendPacket(QScriptContext* context, QScriptEngine* engine) {
@@ -124,26 +145,22 @@ QScriptValue Handlers::Client::sendPacket(QScriptContext* context, QScriptEngine
 		ReadWritePacket* packet = qobject_cast<ReadWritePacket*>(value.toQObject());
 		if (packet) {
 			DecryptedMessage message(packet);
-			::Hook::getInstance()->sendToServer(&message);
-			return QScriptValue(true);
+			Hook::getInstance()->sendToClient(&message);
+			return true;
 		}
 	}
-	return context->throwError("write(Packet) only accepts one argument");
+	return context->throwError("invalid call to sendPacket(Packet)");
 }
 
 QScriptValue Handlers::Client::sendKeyPress(QScriptContext* context, QScriptEngine* engine) {
 	if (context->argumentCount() == 1) {
 		QScriptValue value = context->argument(0);
 		if (value.isNumber()) {
-			::Hook::getInstance()->sendKeyPress(value.toInt32());
+			Hook::getInstance()->sendKeyPress(value.toInt32());
 			return true;
 		}
-		else {
-			qWarning() << "not a number";
-		}
 	}
-	qWarning() << "wrong usage of sendKeyPress(Number)";
-	return false;
+	return context->throwError("invalid call to sendKeyPress(Number)");
 }
 
 QScriptValue Handlers::Memory::readU8(QScriptContext* context, QScriptEngine* engine) {
@@ -153,7 +170,7 @@ QScriptValue Handlers::Memory::readU8(QScriptContext* context, QScriptEngine* en
 			return ::Memory::readU8(address.toUInt32());
 		}
 	}
-	return context->throwError("readU8(Address) only accepts one argument");
+	return context->throwError("invalid call to readU8(Number)");
 }
 
 QScriptValue Handlers::Memory::readU16(QScriptContext* context, QScriptEngine* engine) {
@@ -163,7 +180,7 @@ QScriptValue Handlers::Memory::readU16(QScriptContext* context, QScriptEngine* e
 			return ::Memory::readU16(address.toUInt32());
 		}
 	}
-	return context->throwError("readU16(Address) only accepts one argument");
+	return context->throwError("invalid call to readU16(Number)");
 }
 
 QScriptValue Handlers::Memory::readU32(QScriptContext* context, QScriptEngine* engine) {
@@ -173,7 +190,7 @@ QScriptValue Handlers::Memory::readU32(QScriptContext* context, QScriptEngine* e
 			return ::Memory::readU32(address.toUInt32());
 		}
 	}
-	return context->throwError("readU32(Address) only accepts one argument");
+	return context->throwError("invalid call to readU32(Number)");
 }
 
 QScriptValue Handlers::Memory::readString(QScriptContext* context, QScriptEngine* engine) {
@@ -183,5 +200,5 @@ QScriptValue Handlers::Memory::readString(QScriptContext* context, QScriptEngine
 			return ::Memory::readString(address.toUInt32());
 		}
 	}
-	return context->throwError("readU32(Address) only accepts one argument");
+	return context->throwError("invalid call to readString(Number)");
 }

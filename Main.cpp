@@ -27,20 +27,27 @@ void hook_destructor() {
 	pthread_join(hook_id, NULL);
 }
 
-Display* x_display = NULL;
-Window x_window = 0;
-int x_socket = -1;
-int game_socket = -1;
+int X11Socket = -1;
+Display* X11Display = NULL;
+Window X11Window = 0;
 
 int connect(int socket, const struct sockaddr* address, socklen_t length) {
-	if (x_socket == -1) {
-		x_socket = socket;
+	if (X11Socket == -1) {
+		X11Socket = socket;
 	}
 	else {
-		game_socket = socket;
-		Hook::getInstance()->setSocket(game_socket);
+		Hook::getInstance()->setSocket(socket);
 	}
 	return __connect(socket, address, length);
+}
+
+int poll(struct pollfd* fds, nfds_t nfds, int timeout) {
+	Hook* hook = Hook::getInstance();
+	if (nfds == 1 && fds[0].events == POLLIN && hook && hook->socket() == fds[0].fd && hook->hasClientMessages()) {
+		fds[0].revents = POLLIN;
+		return 1;
+	}
+	return __poll(fds, nfds, timeout);
 }
 
 ssize_t read(int socket, void* buffer, size_t length) {
@@ -61,17 +68,17 @@ ssize_t write(int socket, const void* buffer, size_t length) {
 
 Window XCreateWindow(Display* display, Window parent, int x, int y, unsigned int width, unsigned int height, unsigned int border_width, int depth, unsigned int class_, Visual* visual, unsigned long valuemask, XSetWindowAttributes* attributes) {
 	Window window = __XCreateWindow(display, parent, x, y, width, height, border_width, depth, class_, visual, valuemask, attributes);
-	if (x_window == 0) {
-		x_window = window;
-		Hook::getInstance()->setWindow(x_window);
+	if (X11Window == 0) {
+		X11Window = window;
+		Hook::getInstance()->setWindow(X11Window);
 	}
 	return window;
 }
 
 int XNextEvent(Display* display, XEvent* event_return) {
-	if (x_display == NULL) {
-		x_display = display;
-		Hook::getInstance()->setDisplay(x_display);
+	if (X11Display == NULL) {
+		X11Display = display;
+		Hook::getInstance()->setDisplay(X11Display);
 	}
 	return __XNextEvent(display, event_return);
 }
@@ -84,10 +91,18 @@ int __connect(int socket, const struct sockaddr* address, socklen_t length) {
 	return original(socket, address, length);
 }
 
-ssize_t __read(int socket, void* buffer, size_t length) {
-	static ssize_t (*original)(int, const void*, size_t);
+int __poll(struct pollfd* fds, nfds_t nfds, int timeout) {
+	static int (*original)(struct pollfd*, nfds_t, int);
 	if (original == NULL) {
-		original = (ssize_t(*)(int, const void*, size_t)) dlsym(RTLD_NEXT, "read");assert(original != NULL);
+		original = (int(*)(struct pollfd*, nfds_t, int)) dlsym(RTLD_NEXT, "poll");assert(original != NULL);
+	}
+	return original(fds, nfds, timeout);
+}
+
+ssize_t __read(int socket, void* buffer, size_t length) {
+	static ssize_t (*original)(int, void*, size_t);
+	if (original == NULL) {
+		original = (ssize_t(*)(int, void*, size_t)) dlsym(RTLD_NEXT, "read");assert(original != NULL);
 	}
 	return original(socket, buffer, length);
 }
