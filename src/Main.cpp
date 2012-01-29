@@ -1,9 +1,13 @@
+#include "Hook.h"
+#include "Main.h"
+
 #include <assert.h>
 #include <dlfcn.h>
 #include <pthread.h>
+#include <X11/Xlib.h>
 
-#include "Hook.h"
-#include "Main.h"
+Window __XCreateWindow(Display*, Window, int, int, unsigned int, unsigned int, unsigned int, int, unsigned int, Visual*, unsigned long, XSetWindowAttributes*);
+int __XNextEvent(Display*, XEvent*);
 
 void hook_constructor() __attribute__((constructor));
 void hook_destructor() __attribute__((destructor));

@@ -1,14 +1,15 @@
 #ifndef SCRIPTHANDLER_H_
 #define SCRIPTHANDLER_H_
 
-#include "Handler.h"
-#include "EncryptedMessage.h"
-#include "ScriptEngine.h"
-#include "Module.h"
-
 #include <QObject>
+#include <QStringList>
 #include <QScriptEngine>
 #include <QScriptContext>
+#include <QScriptEngineAgent>
+
+#include "Handler.h"
+#include "EncryptedMessage.h"
+#include "Module.h"
 
 class ScriptHandler: public Handler {
 	Q_OBJECT
@@ -16,13 +17,15 @@ class ScriptHandler: public Handler {
 public:
 	ScriptHandler(QObject* = 0);
 
-	ScriptEngine* getScriptEngine();
-	const ScriptEngine* getEngine() const;
+	QScriptEngine* scriptEngine();
+	const QScriptEngine* scriptEngine() const;
 
-	QScriptValue getClassObject() const;
+	QScriptValue classObject();
+	const QScriptValue classObject() const;
 
 	void install(Module*);
 	void reload();
+	void require(const QString&);
 
 	void receiveFromClient(const EncryptedMessage*);
 	void receiveFromServer(const EncryptedMessage*);
@@ -41,7 +44,7 @@ private:
 
 	bool receiveFromClientInternal(const EncryptedMessage*);
 
-	ScriptEngine _engine;
+	QScriptEngine _engine;
 	QScriptValue _classObject;
 	QScriptValue _packetObject;
 	QScriptValue _networkObject;
@@ -54,6 +57,8 @@ private:
 
 	QScriptString _receiveFromClientHandle;
 	QScriptString _receiveFromServerHandle;
+
+	QStringList _requiredFiles;
 };
 
 namespace Handlers {

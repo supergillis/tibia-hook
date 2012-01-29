@@ -1,12 +1,14 @@
+#include <QDebug>
+#include <QDir>
+#include <QFile>
+
 #include "ScriptHandler.h"
 #include "DecryptedMessage.h"
 #include "Packet.h"
 #include "ReadWritePacket.h"
 #include "ReadOnlyPacket.h"
-#include "Hook.h"
 #include "Memory.h"
-
-#include <QDebug>
+#include "Hook.h"
 
 ScriptHandler::ScriptHandler(QObject* parent) :
 		Handler(parent), _engine(this) {
@@ -20,6 +22,7 @@ ScriptHandler::ScriptHandler(QObject* parent) :
 	_receiveFromServerHandle = _engine.toStringHandle("receiveFromServer");
 
 	_classObject = createClass(_engine.newArray(0));
+
 	_engine.globalObject().setProperty("Class", _classObject, QScriptValue::ReadOnly | QScriptValue::Undeletable);
 
 	initializePacketObject();
@@ -28,20 +31,50 @@ ScriptHandler::ScriptHandler(QObject* parent) :
 	initializeNetworkObject();
 }
 
-ScriptEngine* ScriptHandler::getScriptEngine() {
+QScriptEngine* ScriptHandler::scriptEngine() {
 	return &_engine;
 }
 
-const ScriptEngine* ScriptHandler::getEngine() const {
+const QScriptEngine* ScriptHandler::scriptEngine() const {
 	return &_engine;
 }
 
-QScriptValue ScriptHandler::getClassObject() const {
+QScriptValue ScriptHandler::classObject() {
+	return _classObject;
+}
+
+const QScriptValue ScriptHandler::classObject() const {
 	return _classObject;
 }
 
 void ScriptHandler::install(Module* module) {
 	module->install(this);
+}
+
+void ScriptHandler::reload() {
+	_engine.pushContext();
+	_requiredFiles.clear();
+	require("Main.js");
+	_engine.popContext();
+}
+
+void ScriptHandler::require(const QString& path) {
+	if (!_requiredFiles.contains(path)) {
+		QDir scripts(QDir::current());
+		if (!scripts.cd("scripts")) {
+			qWarning() << scripts.absolutePath() << "does not exist";
+			return;
+		}
+
+		QFile file(scripts.absoluteFilePath(path));
+		if (!file.open(QFile::ReadOnly)) {
+			qWarning() << file.fileName() << "does not exist";
+			return;
+		}
+
+		_engine.evaluate(file.readAll(), path);
+		_requiredFiles << path;
+	}
 }
 
 void ScriptHandler::initializeClientObject() {
@@ -85,13 +118,6 @@ void ScriptHandler::initializePacketObject() {
 	packetInstance.setProperty("writeString", _engine.newFunction(Handlers::PacketWrite::writeString));
 
 	_engine.globalObject().setProperty("Packet", _packetObject, QScriptValue::ReadOnly | QScriptValue::Undeletable);
-}
-
-void ScriptHandler::reload() {
-	_engine.pushContext();
-	_engine.clearRequiredFiles();
-	_engine.require("Main.js");
-	_engine.popContext();
 }
 
 void ScriptHandler::receiveFromClient(const EncryptedMessage* message) {

@@ -5,11 +5,11 @@ EnvironmentModule::EnvironmentModule(QObject* parent) :
 }
 
 void EnvironmentModule::install(ScriptHandler* handler) {
-	ScriptEngine* engine = handler->getScriptEngine();
+	QScriptEngine* engine = handler->scriptEngine();
 	QScriptValue reloadFunction = engine->newFunction(EnvironmentModule::reload);
 	reloadFunction.setData(engine->newQObject(this));
 
-	QScriptValue environmentObject = handler->createInstance(handler->getClassObject(), engine->newArray(0));
+	QScriptValue environmentObject = handler->createInstance(handler->classObject(), engine->newArray(0));
 	environmentObject.setProperty("reload", reloadFunction);
 	environmentObject.setProperty("require", engine->newFunction(EnvironmentModule::require));
 
@@ -18,11 +18,10 @@ void EnvironmentModule::install(ScriptHandler* handler) {
 
 QScriptValue EnvironmentModule::reload(QScriptContext* context, QScriptEngine* engine) {
 	if (context->argumentCount() == 0) {
-		QScriptValue value = context->callee().data();
-		ScriptHandler* handler = qobject_cast<ScriptHandler*>(value.toQObject());
+		ScriptHandler* handler = qobject_cast<ScriptHandler*>(context->callee().data().toQObject());
 		if (handler) {
 			handler->reload();
-			return QScriptValue(true);
+			return true;
 		}
 	}
 	return context->throwError("invalid call to reload()");
@@ -31,10 +30,13 @@ QScriptValue EnvironmentModule::reload(QScriptContext* context, QScriptEngine* e
 QScriptValue EnvironmentModule::require(QScriptContext* context, QScriptEngine* engine) {
 	if (context->argumentCount() == 1) {
 		QScriptValue value = context->argument(0);
-		ScriptEngine* scriptEngine = qobject_cast<ScriptEngine*>(engine);
-		if (value.isString() && scriptEngine) {
-			QString required = value.toString();
-			return scriptEngine->require(required);
+		if (value.isString()) {
+			ScriptHandler* handler = qobject_cast<ScriptHandler*>(context->callee().data().toQObject());
+			if (handler) {
+				QString required = value.toString();
+				handler->require(required);
+				return true;
+			}
 		}
 	}
 	return context->throwError("invalid call to require(String)");
