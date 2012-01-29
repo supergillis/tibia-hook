@@ -88,7 +88,7 @@ void ScriptHandler::initializePacketObject() {
 void ScriptHandler::reload() {
 	_engine.pushContext();
 	_engine.clearRequiredFiles();
-	_engine.require("main.js");
+	_engine.require("Main.js");
 	_engine.popContext();
 }
 
