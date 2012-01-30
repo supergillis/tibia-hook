@@ -1,12 +1,12 @@
 #ifndef ENVIRONMENTMODULE_H_
 #define ENVIRONMENTMODULE_H_
 
-#include "Module.h"
-#include "ScriptHandler.h"
-
 #include <QObject>
 #include <QScriptEngine>
 #include <QScriptContext>
+
+#include "Module.h"
+#include "ScriptHandler.h"
 
 class EnvironmentModule: public Module {
 	Q_OBJECT
