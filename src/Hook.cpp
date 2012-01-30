@@ -15,7 +15,6 @@ static int _argc = 0;
 Hook::Hook() :
 		QCoreApplication(_argc, NULL), _socket(-1), _display(NULL), _loggedIn(true), _pendingLogin(false), _protocol(0) {
 	ScriptHandler* scriptHandler = new ScriptHandler(this);
-	scriptHandler->install(new EnvironmentModule(this));
 	scriptHandler->reload();
 	_handler = scriptHandler;
 }
