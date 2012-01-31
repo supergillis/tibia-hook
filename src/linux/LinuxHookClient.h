@@ -1,6 +1,8 @@
 #ifndef LINUXHOOKCLIENT_H_
 #define LINUXHOOKCLIENT_H_
 
+#include <QQueue>
+
 #include "HookClient.h"
 
 #include <X11/Xlib.h>
@@ -15,9 +17,15 @@ public:
 
 	void sendKeyPress(int);
 
+	XEvent nextEvent();
+
+	int pendingEvents() const;
+
 private:
 	Display* display_;
 	Window window_;
+
+	QQueue<XEvent> queue_;
 };
 
 #endif /* LINUXHOOKCLIENT_H_ */

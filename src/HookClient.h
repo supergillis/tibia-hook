@@ -8,6 +8,8 @@ public:
 
 	virtual void sendKeyPress(int) = 0;
 
+	virtual int pendingEvents() const = 0;
+
 private:
 	Hook* hook_;
 };

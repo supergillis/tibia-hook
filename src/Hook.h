@@ -25,7 +25,8 @@ public:
 	HookClient* client();
 	void setClient(HookClient*);
 
-	bool hasClientMessages() const;
+	int pendingClientMessages() const;
+	int pendingClientEvents() const;
 
 	ssize_t receiveFromClient(const quint8*, ssize_t);
 	ssize_t receiveFromServer(quint8*, ssize_t);

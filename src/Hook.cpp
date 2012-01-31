@@ -37,12 +37,16 @@ void Hook::setHandler(Handler* handler) {
 	handler_ = handler;
 }
 
-void Hook::sendKeyPress(int code) {
-	client_->sendKeyPress(code);
+int Hook::pendingClientMessages() const {
+	return queue_.size();
 }
 
-bool Hook::hasClientMessages() const {
-	return queue_.size() > 0;
+int Hook::pendingClientEvents() const {
+	return client_->pendingEvents();
+}
+
+void Hook::sendKeyPress(int code) {
+	client_->sendKeyPress(code);
 }
 
 void Hook::sendToClient(const quint8* buffer, ssize_t length) {
@@ -86,7 +90,7 @@ ssize_t Hook::receiveFromClient(const quint8* buffer, ssize_t length) {
 }
 
 ssize_t Hook::receiveFromServer(quint8* buffer, ssize_t length) {
-	if (hasClientMessages()) {
+	if (pendingClientMessages() > 0) {
 		QByteArray data = queue_.dequeue();
 		memcpy(buffer, data.constData(), data.length());
 		return data.length();

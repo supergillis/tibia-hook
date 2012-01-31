@@ -21,6 +21,8 @@
 #include <X11/Xlib.h>
 
 Window __XCreateWindow(Display*, Window, int, int, unsigned int, unsigned int, unsigned int, int, unsigned int, Visual*, unsigned long, XSetWindowAttributes*);
+int __XPending(Display*);
+int __XNextEvent(Display*, XEvent*);
 
 void hook_constructor() __attribute__((constructor));
 void hook_destructor() __attribute__((destructor));
@@ -75,7 +77,7 @@ int connect(int fd, const struct sockaddr* address, socklen_t length) {
 }
 
 int poll(struct pollfd* fds, nfds_t nfds, int timeout) {
-	if (nfds == 1 && fds[0].events == POLLIN && hookSocket && hookSocket->fileDescriptor() == fds[0].fd && hook->hasClientMessages()) {
+	if (nfds == 1 && fds[0].events == POLLIN && hookSocket && hookSocket->fileDescriptor() == fds[0].fd && hook->pendingClientMessages() > 0) {
 		fds[0].revents = POLLIN;
 		return 1;
 	}
@@ -103,6 +105,22 @@ Window XCreateWindow(Display* display, Window parent, int x, int y, unsigned int
 		hook->setClient(hookClient);
 	}
 	return window;
+}
+
+int XPending(Display* display) {
+	int result = __XPending(display);
+	if (hookClient) {
+		result += hookClient->pendingEvents();
+	}
+	return result;
+}
+
+int XNextEvent(Display* display, XEvent* return_event) {
+	if (hookClient && hookClient->pendingEvents() > 0) {
+		*return_event = hookClient->nextEvent();
+		return 0;
+	}
+	return __XNextEvent(display, return_event);
 }
 
 int __connect(int socket, const struct sockaddr* address, socklen_t length) {
@@ -143,4 +161,20 @@ Window __XCreateWindow(Display* display, Window parent, int x, int y, unsigned i
 		original = (Window(*)(Display*, Window, int, int, unsigned int, unsigned int, unsigned int, int, unsigned int, Visual*, unsigned long, XSetWindowAttributes*)) dlsym(RTLD_NEXT, "XCreateWindow");assert(original != NULL);
 	}
 	return original(display, parent, x, y, width, height, border_width, depth, class_, visual, valuemask, attributes);
+}
+
+int __XPending(Display* display) {
+	static int (*original)(Display*);
+	if (original == NULL) {
+		original = (int(*)(Display*)) dlsym(RTLD_NEXT, "XPending");assert(original != NULL);
+	}
+	return original(display);
+}
+
+int __XNextEvent(Display* display, XEvent* return_event) {
+	static int (*original)(Display*, XEvent*);
+	if (original == NULL) {
+		original = (int(*)(Display*, XEvent*)) dlsym(RTLD_NEXT, "XNextEvent");assert(original != NULL);
+	}
+	return original(display, return_event);
 }
