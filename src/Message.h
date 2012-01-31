@@ -19,7 +19,7 @@ protected:
 	virtual void initialize(const quint8*, quint16);
 
 private:
-	QByteArray _raw;
+	QByteArray raw_;
 };
 
 #endif /* MESSAGE_H_ */

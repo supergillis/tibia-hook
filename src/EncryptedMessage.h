@@ -28,10 +28,10 @@ protected:
 	void initialize(const quint8*, quint16);
 
 private:
-	QByteArray _raw;
-	quint16 _dataLength;
-	quint32 _checksum;
-	quint16 _needsMore;
+	QByteArray raw_;
+	quint16 dataLength_;
+	quint32 checksum_;
+	quint16 needsMore_;
 };
 
 #endif /* ENCRYPTEDMESSAGE_H_ */

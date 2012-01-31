@@ -1,17 +1,17 @@
 #include "ReadOnlyPacket.h"
 
 ReadOnlyPacket::ReadOnlyPacket(const DecryptedMessage& message) :
-		Packet(), _message(message) {
+		Packet(), message_(message) {
 }
 
 const DecryptedMessage& ReadOnlyPacket::message() const {
-	return _message;
+	return message_;
 }
 
 quint16 ReadOnlyPacket::length() const {
-	return _message.length();
+	return message_.length();
 }
 
 const quint8* ReadOnlyPacket::data() const {
-	return _message.data();
+	return message_.data();
 }

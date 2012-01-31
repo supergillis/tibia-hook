@@ -20,8 +20,8 @@ public:
 	const EncryptedMessage* message() const;
 
 private:
-	const MessageType _type;
-	const EncryptedMessage _message;
+	const MessageType type_;
+	const EncryptedMessage message_;
 };
 
 #endif /* HOOKEVENT_H_ */

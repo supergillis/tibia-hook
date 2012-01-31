@@ -30,7 +30,7 @@ public:
 	QString readString();
 
 protected:
-	quint16 _position;
+	quint16 position_;
 
 };
 

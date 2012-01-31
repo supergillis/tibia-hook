@@ -24,8 +24,8 @@ public:
 private:
 	void reserve(quint16);
 
-	QByteArray _data;
-	quint16 _length;
+	QByteArray data_;
+	quint16 length_;
 };
 
 #endif /* READWRITEPACKET_H_ */

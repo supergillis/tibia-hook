@@ -4,7 +4,7 @@
 #include "EncryptedMessage.h"
 
 DecryptedMessage::DecryptedMessage() :
-		Message(), _dataLength(0) {
+		Message(), dataLength_(0) {
 }
 
 DecryptedMessage::DecryptedMessage(const quint8* buffer, quint16 length) :
@@ -37,16 +37,16 @@ DecryptedMessage::DecryptedMessage(const EncryptedMessage* message) {
 }
 
 void DecryptedMessage::initialize(const quint8* buffer, quint16 length) {
-	_dataLength = *(quint16*) buffer;
+	dataLength_ = *(quint16*) buffer;
 	Message::initialize(buffer, length);
 }
 
 bool DecryptedMessage::isValid() const {
-	return _dataLength > 0;
+	return dataLength_ > 0;
 }
 
 quint16 DecryptedMessage::length() const {
-	return _dataLength;
+	return dataLength_;
 }
 
 const quint8* DecryptedMessage::data() const {

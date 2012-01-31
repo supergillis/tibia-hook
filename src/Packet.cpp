@@ -1,29 +1,29 @@
 #include "Packet.h"
 
 Packet::Packet() :
-		QObject(), _position(0) {
+		QObject(), position_(0) {
 }
 
 quint16 Packet::position() const {
-	return _position;
+	return position_;
 }
 
 void Packet::setPosition(quint16 position) {
-	_position = position;
+	position_ = position;
 }
 
 void Packet::skip(quint16 count) {
-	_position += count;
+	position_ += count;
 }
 
 bool Packet::has(quint16 count) const {
-	return length() - _position >= count;
+	return length() - position_ >= count;
 }
 
 quint8 Packet::readU8() {
 	if (has(1)) {
-		quint8 value = *(data() + _position);
-		_position += 1;
+		quint8 value = *(data() + position_);
+		position_ += 1;
 		return value;
 	}
 	qWarning() << PACKET_END_OF_FILE;
@@ -32,8 +32,8 @@ quint8 Packet::readU8() {
 
 quint16 Packet::readU16() {
 	if (has(2)) {
-		quint16 value = *(quint16*) (data() + _position);
-		_position += 2;
+		quint16 value = *(quint16*) (data() + position_);
+		position_ += 2;
 		return value;
 	}
 	qWarning() << PACKET_END_OF_FILE;
@@ -42,8 +42,8 @@ quint16 Packet::readU16() {
 
 quint32 Packet::readU32() {
 	if (has(2)) {
-		quint32 value = *(quint32*) (data() + _position);
-		_position += 4;
+		quint32 value = *(quint32*) (data() + position_);
+		position_ += 4;
 		return value;
 	}
 	qWarning() << PACKET_END_OF_FILE;
@@ -52,8 +52,8 @@ quint32 Packet::readU32() {
 
 quint64 Packet::readU64() {
 	if (has(2)) {
-		quint64 value = *(quint64*) (data() + _position);
-		_position += 8;
+		quint64 value = *(quint64*) (data() + position_);
+		position_ += 8;
 		return value;
 	}
 	qWarning() << PACKET_END_OF_FILE;
@@ -63,8 +63,8 @@ quint64 Packet::readU64() {
 QString Packet::readString() {
 	quint16 length = readU16();
 	if (has(length)) {
-		QString value = QString::fromAscii((const char*) (data() + _position), length);
-		_position += length;
+		QString value = QString::fromAscii((const char*) (data() + position_), length);
+		position_ += length;
 		return value;
 	}
 	qWarning() << PACKET_END_OF_FILE;

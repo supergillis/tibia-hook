@@ -28,7 +28,7 @@ protected:
 	void initialize(const quint8*, quint16);
 
 private:
-	quint16 _dataLength;
+	quint16 dataLength_;
 };
 
 #endif /* DECRYPTEDMESSAGE_H_ */

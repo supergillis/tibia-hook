@@ -19,7 +19,7 @@ public:
 	const quint8* data() const;
 
 private:
-	DecryptedMessage _message;
+	DecryptedMessage message_;
 };
 
 #endif /* READONLYPACKET_H_ */
