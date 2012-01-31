@@ -8,6 +8,7 @@
 
 class ReadWritePacket: public Packet {
 	Q_OBJECT
+	Q_PROPERTY(quint16 length READ length)
 
 public:
 	ReadWritePacket();
@@ -15,6 +16,7 @@ public:
 	quint16 length() const;
 	const quint8* data() const;
 
+public slots:
 	void writeU8(quint8);
 	void writeU16(quint16);
 	void writeU32(quint32);

@@ -1,7 +1,11 @@
 #include "ModuleManager.h"
 
-ModuleManager::ModuleManager(QScriptEngine* engine) :
-		engine_(engine) {
+ModuleManager::ModuleManager(Hook* hook, QScriptEngine* engine) :
+		hook_(hook), engine_(engine) {
+}
+
+Hook* ModuleManager::hook() {
+	return hook_;
 }
 
 QScriptEngine* ModuleManager::engine() {

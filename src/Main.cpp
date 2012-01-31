@@ -3,6 +3,7 @@
 #include "HookClient.h"
 #include "LinuxHookSocket.h"
 #include "LinuxHookClient.h"
+#include "ScriptHandler.h"
 #include "Main.h"
 
 #include "DebuggerModule.h"

@@ -6,15 +6,14 @@
 #include <QScriptContext>
 
 #include "Module.h"
-#include "ClassModule.h"
-#include "ScriptHandler.h"
-#include "DecryptedMessage.h"
+#include "ModuleManager.h"
 
 class PacketModule: public Module {
 	Q_OBJECT
 
 public:
 	static const QString PLUGIN_NAME;
+	static const QString VARIABLE_NAME;
 
 	PacketModule(QObject*);
 
@@ -22,27 +21,8 @@ public:
 
 	bool install(ModuleManager*);
 
-	QScriptValue createReadOnlyPacket(const DecryptedMessage*);
-	QScriptValue createReadWritePacket();
-
 private:
-	ClassModule* classModule_;
-	QScriptEngine* engine_;
-	QScriptValue packetClass_;
-
 	static QScriptValue constructor(QScriptContext*, QScriptEngine*);
-
-	static QScriptValue readU8(QScriptContext*, QScriptEngine*);
-	static QScriptValue readU16(QScriptContext*, QScriptEngine*);
-	static QScriptValue readU32(QScriptContext*, QScriptEngine*);
-	static QScriptValue readString(QScriptContext*, QScriptEngine*);
-
-	static QScriptValue writeU8(QScriptContext*, QScriptEngine*);
-	static QScriptValue writeU16(QScriptContext*, QScriptEngine*);
-	static QScriptValue writeU32(QScriptContext*, QScriptEngine*);
-	static QScriptValue writeString(QScriptContext*, QScriptEngine*);
-
-	static const QString VARIABLE_NAME;
 };
 
 #endif /* PACKETMODULE_H */

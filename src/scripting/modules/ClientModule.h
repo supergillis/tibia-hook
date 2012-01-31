@@ -6,13 +6,16 @@
 #include <QScriptContext>
 
 #include "Module.h"
-#include "ScriptHandler.h"
+#include "ModuleManager.h"
+#include "Packet.h"
+#include "Hook.h"
 
 class ClientModule: public Module {
 	Q_OBJECT
 
 public:
 	static const QString PLUGIN_NAME;
+	static const QString VARIABLE_NAME;
 
 	ClientModule(QObject*);
 
@@ -20,11 +23,12 @@ public:
 
 	bool install(ModuleManager*);
 
-private:
-	static QScriptValue sendPacket(QScriptContext*, QScriptEngine*);
-	static QScriptValue sendKeyPress(QScriptContext*, QScriptEngine*);
+public slots:
+	void sendPacket(Packet*);
+	void sendKeyPress(int);
 
-	static const QString VARIABLE_NAME;
+private:
+	Hook* hook_;
 };
 
 #endif /* CLIENTMODULE_H */

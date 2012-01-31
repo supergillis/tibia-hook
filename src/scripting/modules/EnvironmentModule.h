@@ -8,13 +8,14 @@
 #include <QScriptContext>
 
 #include "Module.h"
-#include "ScriptHandler.h"
+#include "ModuleManager.h"
 
 class EnvironmentModule: public Module {
 	Q_OBJECT
 
 public:
 	static const QString PLUGIN_NAME;
+	static const QString VARIABLE_NAME;
 
 	EnvironmentModule(QObject*);
 
@@ -22,18 +23,14 @@ public:
 
 	bool install(ModuleManager*);
 
-	QScriptValue reload();
-	QScriptValue require(const QString&);
-	QScriptValue require(QFile& file);
+public slots:
+	bool reload();
+	bool require(const QString&);
+	bool require(QFile& file);
 
 private:
 	QScriptEngine* engine_;
 	QStringList requiredFiles_;
-
-	static QScriptValue reload(QScriptContext*, QScriptEngine*);
-	static QScriptValue require(QScriptContext*, QScriptEngine*);
-
-	static const QString VARIABLE_NAME;
 };
 
 #endif /* ENVIRONMENTMODULE_H_ */

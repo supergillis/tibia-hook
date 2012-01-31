@@ -1,12 +1,14 @@
 #ifndef DEBUGGER_MODULE_H
 #define DEBUGGER_MODULE_H
 
+#include <QDebug>
 #include <QObject>
 #include <QScriptEngine>
-#include <QScriptContext>
+#include <QScriptEngineAgent>
+#include <QStringList>
 
 #include "Module.h"
-#include "ScriptHandler.h"
+#include "ModuleManager.h"
 
 class Debugger;
 class DebuggerModule: public Module {

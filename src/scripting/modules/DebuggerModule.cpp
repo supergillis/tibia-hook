@@ -1,5 +1,3 @@
-#include <QDebug>
-
 #include "DebuggerModule.h"
 
 const QString DebuggerModule::PLUGIN_NAME("environment");

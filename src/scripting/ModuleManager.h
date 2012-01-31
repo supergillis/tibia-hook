@@ -3,12 +3,14 @@
 
 #include <QScriptEngine>
 
+#include "Hook.h"
 #include "Module.h"
 
 class ModuleManager {
 public:
-	ModuleManager(QScriptEngine*);
+	ModuleManager(Hook*, QScriptEngine*);
 
+	Hook* hook();
 	QScriptEngine* engine();
 
 	bool install(Module*);
@@ -16,6 +18,7 @@ public:
 	Module* lookup(const QString&);
 
 private:
+	Hook* hook_;
 	QScriptEngine* engine_;
 	QHash<QString, Module*> modules_;
 };

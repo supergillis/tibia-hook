@@ -8,6 +8,7 @@
 
 class ReadOnlyPacket: public Packet {
 	Q_OBJECT
+	Q_PROPERTY(quint16 length READ length)
 
 public:
 	ReadOnlyPacket();

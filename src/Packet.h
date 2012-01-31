@@ -9,6 +9,8 @@
 
 class Packet: public QObject {
 	Q_OBJECT
+	Q_PROPERTY(quint16 length READ length)
+	Q_PROPERTY(quint16 position WRITE setPosition READ position)
 
 public:
 	Packet();
@@ -19,6 +21,7 @@ public:
 	quint16 position() const;
 	void setPosition(quint16);
 
+public slots:
 	void skip(quint16 = 1);
 
 	bool has(quint16) const;

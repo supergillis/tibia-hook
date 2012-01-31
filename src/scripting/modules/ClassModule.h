@@ -6,7 +6,7 @@
 #include <QScriptContext>
 
 #include "Module.h"
-#include "ScriptHandler.h"
+#include "ModuleManager.h"
 
 class ClassModule: public Module {
 	Q_OBJECT

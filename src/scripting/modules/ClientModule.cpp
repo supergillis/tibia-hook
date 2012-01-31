@@ -1,14 +1,11 @@
 #include "ClientModule.h"
-#include "ClassModule.h"
-#include "Hook.h"
-#include "Packet.h"
 #include "DecryptedMessage.h"
 
 const QString ClientModule::PLUGIN_NAME("client");
 const QString ClientModule::VARIABLE_NAME("Client");
 
 ClientModule::ClientModule(QObject* parent) :
-		Module(parent) {
+		Module(parent), hook_(NULL) {
 }
 
 QString ClientModule::name() const {
@@ -16,44 +13,18 @@ QString ClientModule::name() const {
 }
 
 bool ClientModule::install(ModuleManager* manager) {
+	hook_ = manager->hook();
 	QScriptEngine* engine = manager->engine();
-	ClassModule* classModule = (ClassModule*) manager->lookup(ClassModule::PLUGIN_NAME);
-	if (classModule) {
-		QScriptValue clientObject = classModule->createRootInstance();
-		clientObject.setProperty("sendPacket", engine->newFunction(ClientModule::sendPacket));
-		clientObject.setProperty("sendKeyPress", engine->newFunction(ClientModule::sendKeyPress));
-		engine->globalObject().setProperty(VARIABLE_NAME, clientObject, QScriptValue::ReadOnly | QScriptValue::Undeletable);
-		return true;
-	}
-	return false;
+	QScriptValue clientObject = engine->newQObject(this);
+	engine->globalObject().setProperty(VARIABLE_NAME, clientObject, QScriptValue::ReadOnly | QScriptValue::Undeletable);
+	return true;
 }
 
-QScriptValue ClientModule::sendPacket(QScriptContext* context, QScriptEngine* engine) {
-	if (context->argumentCount() == 1) {
-		QScriptValue value = context->argument(0);
-		Packet* packet = qobject_cast<Packet*>(value.toQObject());
-		if (packet) {
-			ScriptHandler* handler = qobject_cast<ScriptHandler*>(engine->parent());
-			if (handler) {
-				DecryptedMessage message(packet);
-				handler->hook()->sendToClient(&message);
-				return true;
-			}
-		}
-	}
-	return context->throwError("invalid call to sendPacket(Packet)");
+void ClientModule::sendPacket(Packet* packet) {
+	DecryptedMessage message(packet);
+	hook_->sendToClient(&message);
 }
 
-QScriptValue ClientModule::sendKeyPress(QScriptContext* context, QScriptEngine* engine) {
-	if (context->argumentCount() == 1) {
-		QScriptValue value = context->argument(0);
-		if (value.isNumber()) {
-			ScriptHandler* handler = qobject_cast<ScriptHandler*>(engine->parent());
-			if (handler) {
-				handler->hook()->sendKeyPress(value.toInt32());
-				return true;
-			}
-		}
-	}
-	return context->throwError("invalid call to sendKeyPress(Number)");
+void ClientModule::sendKeyPress(int key) {
+	hook_->sendKeyPress(key);
 }
