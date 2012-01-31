@@ -22,6 +22,7 @@ public:
 	QScriptEngine* scriptEngine();
 	const QScriptEngine* scriptEngine() const;
 
+	template <class T> bool install();
 	bool install(Module*);
 
 	Module* lookup(const QString& name);

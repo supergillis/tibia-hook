@@ -17,13 +17,12 @@
 
 ScriptHandler::ScriptHandler(QObject* parent) :
 		Handler(parent), engine_(this) {
-	install(new DebuggerModule());
-	install(new ClassModule());
-	install(new ClientModule());
-	install(new EnvironmentModule());
-	install(new MemoryModule());
-	install(new NetworkModule());
-	install(new PacketModule());
+	install<DebuggerModule>();
+	install<ClassModule>();
+	install<EnvironmentModule>();
+	install<MemoryModule>();
+	install<NetworkModule>();
+	install<PacketModule>();
 
 	receiveFromClientHandle_ = engine_.toStringHandle("receiveFromClient");
 	receiveFromServerHandle_ = engine_.toStringHandle("receiveFromServer");
@@ -35,6 +34,10 @@ QScriptEngine* ScriptHandler::scriptEngine() {
 
 const QScriptEngine* ScriptHandler::scriptEngine() const {
 	return &engine_;
+}
+
+template<class T> bool ScriptHandler::install() {
+	return install(new T);
 }
 
 bool ScriptHandler::install(Module* module) {
