@@ -63,6 +63,9 @@ class LinkerCommand < DebugCommand
 
   # Only build if there are object files that are newer than the output file
   def accept(*args)
+    if not File.exists?(@output)
+      return true
+    end
     output_time = File.ctime(@output)
     args.each do |file|
       if File.ctime(file) > output_time

@@ -8,12 +8,11 @@ QString EnvironmentModule::name() const {
 }
 
 void EnvironmentModule::install() {
-	QScriptEngine* engine = handler()->scriptEngine();
+	QScriptEngine* engine = handler()->engine();
 	QScriptValue rootClass = engine->globalObject().property("Class");
 	if (rootClass.isObject()) {
 		QScriptValue require = engine->newFunction(EnvironmentModule::require);
 		QScriptValue reload = engine->newFunction(EnvironmentModule::reload);
-		reload.setData(engine->newQObject(this));
 
 		QScriptValue environmentObject = ClassModule::createInstance(engine, rootClass);
 		environmentObject.setProperty("reload", reload);
@@ -21,6 +20,9 @@ void EnvironmentModule::install() {
 
 		engine->globalObject().setProperty("Environment", environmentObject, QScriptValue::ReadOnly | QScriptValue::Undeletable);
 		EnvironmentModule::setRequiredFiles(engine, QStringList());
+	}
+	else {
+		qDebug() << "could not find root class";
 	}
 }
 
@@ -31,6 +33,14 @@ void EnvironmentModule::setRequiredFiles(QScriptEngine* engine, const QStringLis
 QStringList EnvironmentModule::requiredFiles(QScriptEngine* engine) {
 	QScriptValue data = engine->globalObject().property("Environment").data();
 	return engine->fromScriptValue<QStringList>(data);
+}
+
+QScriptValue EnvironmentModule::reload(QScriptEngine* engine) {
+	engine->pushContext();
+	EnvironmentModule::setRequiredFiles(engine, QStringList());
+	EnvironmentModule::require(engine, "Main.js");
+	engine->popContext();
+	return true;
 }
 
 QScriptValue EnvironmentModule::require(QScriptEngine* engine, const QString& path) {
@@ -59,12 +69,7 @@ QScriptValue EnvironmentModule::require(QScriptEngine* engine, QFile& file) {
 
 QScriptValue EnvironmentModule::reload(QScriptContext* context, QScriptEngine* engine) {
 	if (context->argumentCount() == 0) {
-		QScriptValue data = context->callee().data();
-		EnvironmentModule* environment = qobject_cast<EnvironmentModule*>(data.toQObject());
-		if (environment && environment->handler()) {
-			environment->handler()->reload();
-			return true;
-		}
+		return EnvironmentModule::reload(engine);
 	}
 	return context->throwError("invalid call to reload()");
 }

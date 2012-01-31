@@ -5,7 +5,7 @@ QString ClassModule::name() const {
 }
 
 void ClassModule::install() {
-	QScriptEngine* engine = handler()->scriptEngine();
+	QScriptEngine* engine = handler()->engine();
 	rootClass_ = engine->newObject();
 	rootClass_.setPrototype(ClassModule::createClassPrototype(engine));
 	engine->globalObject().setProperty("Class", rootClass_, QScriptValue::ReadOnly | QScriptValue::Undeletable);

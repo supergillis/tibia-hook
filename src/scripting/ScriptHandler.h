@@ -10,6 +10,7 @@
 #include <QScriptEngineAgent>
 
 #include "Handler.h"
+#include "Hook.h"
 #include "EncryptedMessage.h"
 #include "Module.h"
 
@@ -17,15 +18,12 @@ class ScriptHandler: public Handler {
 	Q_OBJECT
 
 public:
-	ScriptHandler(QObject* = 0);
+	ScriptHandler(Hook*);
 
-	QScriptEngine* scriptEngine();
-	const QScriptEngine* scriptEngine() const;
+	Hook* hook();
+	QScriptEngine* engine();
 
-	template <class T> bool install();
 	bool install(Module*);
-
-	Module* lookup(const QString& name);
 
 	void reload();
 
@@ -34,6 +32,8 @@ public:
 
 private:
 	bool receiveFromClientInternal(const EncryptedMessage*);
+
+	Hook* hook_;
 
 	QScriptEngine engine_;
 	QScriptString receiveFromClientHandle_;

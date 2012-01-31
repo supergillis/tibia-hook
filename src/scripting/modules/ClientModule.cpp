@@ -9,13 +9,16 @@ QString ClientModule::name() const {
 }
 
 void ClientModule::install() {
-	QScriptEngine* engine = handler()->scriptEngine();
+	QScriptEngine* engine = handler()->engine();
 	QScriptValue rootClass = engine->globalObject().property("Class");
 	if (rootClass.isObject()) {
 		QScriptValue clientObject = ClassModule::createInstance(engine, rootClass);
 		clientObject.setProperty("sendPacket", engine->newFunction(ClientModule::sendPacket));
 		clientObject.setProperty("sendKeyPress", engine->newFunction(ClientModule::sendKeyPress));
 		engine->globalObject().setProperty("Client", clientObject, QScriptValue::ReadOnly | QScriptValue::Undeletable);
+	}
+	else {
+		qDebug() << "could not find root class";
 	}
 }
 
@@ -24,9 +27,12 @@ QScriptValue ClientModule::sendPacket(QScriptContext* context, QScriptEngine* en
 		QScriptValue value = context->argument(0);
 		Packet* packet = qobject_cast<Packet*>(value.toQObject());
 		if (packet) {
-			DecryptedMessage message(packet);
-			Hook::getInstance()->sendToClient(&message);
-			return true;
+			ScriptHandler* handler = qobject_cast<ScriptHandler*>(engine->parent());
+			if (handler) {
+				DecryptedMessage message(packet);
+				handler->hook()->sendToClient(&message);
+				return true;
+			}
 		}
 	}
 	return context->throwError("invalid call to sendPacket(Packet)");
@@ -36,8 +42,11 @@ QScriptValue ClientModule::sendKeyPress(QScriptContext* context, QScriptEngine* 
 	if (context->argumentCount() == 1) {
 		QScriptValue value = context->argument(0);
 		if (value.isNumber()) {
-			Hook::getInstance()->sendKeyPress(value.toInt32());
-			return true;
+			ScriptHandler* handler = qobject_cast<ScriptHandler*>(engine->parent());
+			if (handler) {
+				handler->hook()->sendKeyPress(value.toInt32());
+				return true;
+			}
 		}
 	}
 	return context->throwError("invalid call to sendKeyPress(Number)");

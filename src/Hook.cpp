@@ -1,96 +1,66 @@
 #include <stdio.h>
 #include <string.h>
 
+#include <QDebug>
+
 #include "Hook.h"
 #include "ReceivingMessageEvent.h"
-#include "Main.h"
-#include "ScriptHandler.h"
 
-#include "modules/EnvironmentModule.h"
-
-Hook* Hook::_instance = NULL;
-
-static int _argc = 0;
+static int argc_ = 0;
 
 Hook::Hook() :
-		QCoreApplication(_argc, NULL), _socket(-1), _display(NULL), _loggedIn(true), _pendingLogin(false), _protocol(0) {
-	ScriptHandler* scriptHandler = new ScriptHandler(this);
-	scriptHandler->reload();
-	_handler = scriptHandler;
+		QCoreApplication(argc_, NULL), socket_(NULL), client_(NULL), handler_(NULL), loggedIn_(true), pendingLogin_(false) {
 }
 
-int Hook::socket() const {
-	return _socket;
+HookSocket* Hook::socket() {
+	return socket_;
 }
 
-void Hook::setSocket(int socket) {
-	_socket = socket;
+void Hook::setSocket(HookSocket* socket) {
+	socket_ = socket;
 }
 
-const Display* Hook::display() const {
-	return _display;
+HookClient* Hook::client() {
+	return client_;
 }
 
-void Hook::setDisplay(Display* display) {
-	_display = display;
+void Hook::setClient(HookClient* client) {
+	client_ = client;
 }
 
-Window Hook::window() const {
-	return _window;
+Handler* Hook::handler() {
+	return handler_;
 }
 
-void Hook::setWindow(Window window) {
-	_window = window;
+void Hook::setHandler(Handler* handler) {
+	handler_ = handler;
+}
+
+void Hook::sendKeyPress(int code) {
+	client_->sendKeyPress(code);
 }
 
 bool Hook::hasClientMessages() const {
-	return _queue.size() > 0;
-}
-
-XKeyEvent createKeyEvent(Display* display, Window& win, Window& root, bool press, int keycode, int modifiers) {
-	XKeyEvent event;
-	event.display = display;
-	event.window = win;
-	event.root = root;
-	event.subwindow = None;
-	event.time = CurrentTime;
-	event.x = 1;
-	event.y = 1;
-	event.x_root = 1;
-	event.y_root = 1;
-	event.same_screen = True;
-	event.keycode = XKeysymToKeycode(display, keycode);
-	event.state = modifiers;
-	event.type = press ? KeyPress : KeyRelease;
-	return event;
-}
-
-void Hook::sendKeyPress(int keycode) {
-	Window root = XDefaultRootWindow(_display);
-	XKeyEvent event = createKeyEvent(_display, _window, root, true, keycode, 0);
-	XSendEvent(event.display, event.window, True, KeyPressMask, (XEvent*) &event);
-
-	event = createKeyEvent(_display, _window, root, false, keycode, 0);
-	XSendEvent(event.display, event.window, True, KeyPressMask, (XEvent*) &event);
+	return queue_.size() > 0;
 }
 
 void Hook::sendToClient(const quint8* buffer, ssize_t length) {
-	_queue.enqueue(QByteArray((const char*) buffer, length));
+	queue_.enqueue(QByteArray((const char*) buffer, length));
 }
 
 void Hook::sendToClient(const EncryptedMessage* message) {
-	sendToClient(message->rawData(), message->rawLength());
+	if (message->isValid()) {
+		sendToClient(message->rawData(), message->rawLength());
+	}
 }
 
 void Hook::sendToClient(const DecryptedMessage* message) {
 	EncryptedMessage encrypted(message);
-	if (encrypted.isValid()) {
-		sendToClient(&encrypted);
-	}
+	sendToClient(&encrypted);
 }
 
 ssize_t Hook::sendToServer(const quint8* buffer, ssize_t length) {
-	return __write(_socket, buffer, length);
+	return socket_->write(buffer, length);
 }
 
 ssize_t Hook::sendToServer(const EncryptedMessage* message) {
@@ -106,10 +76,10 @@ ssize_t Hook::sendToServer(const DecryptedMessage* message) {
 }
 
 ssize_t Hook::receiveFromClient(const quint8* buffer, ssize_t length) {
-	if (_loggedIn) {
+	if (loggedIn_) {
 		EncryptedMessage message(buffer, length);
 		if (message.isValid()) {
-			QCoreApplication::postEvent(_handler, new ReceivingMessageEvent(ReceivingMessageEvent::Client, &message), Qt::HighEventPriority);
+			QCoreApplication::postEvent(handler_, new ReceivingMessageEvent(ReceivingMessageEvent::Client, &message), Qt::HighEventPriority);
 			return length;
 		}
 	}
@@ -118,17 +88,17 @@ ssize_t Hook::receiveFromClient(const quint8* buffer, ssize_t length) {
 
 ssize_t Hook::receiveFromServer(quint8* buffer, ssize_t length) {
 	if (hasClientMessages()) {
-		QByteArray data = _queue.dequeue();
+		QByteArray data = queue_.dequeue();
 		memcpy(buffer, data.constData(), data.length());
 		return data.length();
 	}
 
-	ssize_t result = __read(_socket, buffer, length);
-	if (_loggedIn) {
+	ssize_t result = socket_->read(buffer, length);
+	if (loggedIn_) {
 		EncryptedMessage message(buffer, result);
 		if (message.isValid()) {
 			// Do something with message
-			QCoreApplication::postEvent(_handler, new ReceivingMessageEvent(ReceivingMessageEvent::Server, &message), Qt::HighEventPriority);
+			QCoreApplication::postEvent(handler_, new ReceivingMessageEvent(ReceivingMessageEvent::Server, &message), Qt::HighEventPriority);
 		}
 	}
 

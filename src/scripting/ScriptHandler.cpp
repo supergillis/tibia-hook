@@ -5,39 +5,24 @@
 #include "ScriptHandler.h"
 #include "DecryptedMessage.h"
 #include "Packet.h"
+#include "ReadOnlyPacket.h"
 #include "Hook.h"
 
-#include "DebuggerModule.h"
 #include "ClassModule.h"
-#include "ClientModule.h"
 #include "EnvironmentModule.h"
-#include "MemoryModule.h"
-#include "NetworkModule.h"
-#include "PacketModule.h"
 
-ScriptHandler::ScriptHandler(QObject* parent) :
-		Handler(parent), engine_(this) {
-	install<DebuggerModule>();
-	install<ClassModule>();
-	install<EnvironmentModule>();
-	install<MemoryModule>();
-	install<NetworkModule>();
-	install<PacketModule>();
-
+ScriptHandler::ScriptHandler(Hook* hook) :
+		Handler(hook), hook_(hook), engine_(this) {
 	receiveFromClientHandle_ = engine_.toStringHandle("receiveFromClient");
 	receiveFromServerHandle_ = engine_.toStringHandle("receiveFromServer");
 }
 
-QScriptEngine* ScriptHandler::scriptEngine() {
-	return &engine_;
+Hook* ScriptHandler::hook() {
+	return hook_;
 }
 
-const QScriptEngine* ScriptHandler::scriptEngine() const {
+QScriptEngine* ScriptHandler::engine() {
 	return &engine_;
-}
-
-template<class T> bool ScriptHandler::install() {
-	return install(new T);
 }
 
 bool ScriptHandler::install(Module* module) {
@@ -48,20 +33,13 @@ bool ScriptHandler::install(Module* module) {
 	return false;
 }
 
-Module* ScriptHandler::lookup(const QString& name) {
-	return modules_.value(name, NULL);
-}
-
 void ScriptHandler::reload() {
-	engine_.pushContext();
-	EnvironmentModule::setRequiredFiles(&engine_, QStringList());
-	EnvironmentModule::require(&engine_, "Main.js");
-	engine_.popContext();
+	EnvironmentModule::reload(&engine_);
 }
 
 void ScriptHandler::receiveFromClient(const EncryptedMessage* message) {
 	if (!receiveFromClientInternal(message)) {
-		Hook::getInstance()->sendToServer(message);
+		hook_->sendToServer(message);
 	}
 }
 

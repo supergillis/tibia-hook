@@ -9,13 +9,16 @@ QString NetworkModule::name() const {
 }
 
 void NetworkModule::install() {
-	QScriptEngine* engine = handler()->scriptEngine();
+	QScriptEngine* engine = handler()->engine();
 	QScriptValue rootClass = engine->globalObject().property("Class");
 	if (rootClass.isObject()) {
 		QScriptValue networkObject = ClassModule::createInstance(engine, rootClass);
 		networkObject.setProperty("sendToServer", engine->newFunction(NetworkModule::sendToServer));
 		networkObject.setProperty("sendToClient", engine->newFunction(NetworkModule::sendToClient));
 		engine->globalObject().setProperty("Network", networkObject, QScriptValue::ReadOnly | QScriptValue::Undeletable);
+	}
+	else {
+		qDebug() << "could not find root class";
 	}
 }
 
@@ -25,7 +28,7 @@ QScriptValue NetworkModule::sendToServer(QScriptContext* context, QScriptEngine*
 		Packet* packet = qobject_cast<Packet*>(value.toQObject());
 		if (packet) {
 			DecryptedMessage message(packet);
-			Hook::getInstance()->sendToServer(&message);
+			//Hook::getInstance()->sendToServer(&message);
 			return true;
 		}
 	}
@@ -38,7 +41,7 @@ QScriptValue NetworkModule::sendToClient(QScriptContext* context, QScriptEngine*
 		Packet* packet = qobject_cast<Packet*>(value.toQObject());
 		if (packet) {
 			DecryptedMessage message(packet);
-			Hook::getInstance()->sendToClient(&message);
+			//Hook::getInstance()->sendToClient(&message);
 			return true;
 		}
 	}

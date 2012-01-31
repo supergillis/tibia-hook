@@ -21,6 +21,8 @@ public:
 	static void setRequiredFiles(QScriptEngine*, const QStringList&);
 	static QStringList requiredFiles(QScriptEngine*);
 
+	static QScriptValue reload(QScriptEngine*);
+
 	static QScriptValue require(QScriptEngine*, const QString&);
 	static QScriptValue require(QScriptEngine*, QFile& file);
 

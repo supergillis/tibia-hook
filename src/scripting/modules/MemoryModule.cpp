@@ -7,7 +7,7 @@ QString MemoryModule::name() const {
 }
 
 void MemoryModule::install() {
-	QScriptEngine* engine = handler()->scriptEngine();
+	QScriptEngine* engine = handler()->engine();
 	QScriptValue rootClass = engine->globalObject().property("Class");
 	if (rootClass.isObject()) {
 		QScriptValue memoryObject = ClassModule::createInstance(engine, rootClass);
@@ -16,6 +16,9 @@ void MemoryModule::install() {
 		memoryObject.setProperty("readU32", engine->newFunction(MemoryModule::readU32));
 		memoryObject.setProperty("readString", engine->newFunction(MemoryModule::readString));
 		engine->globalObject().setProperty("Memory", memoryObject, QScriptValue::ReadOnly | QScriptValue::Undeletable);
+	}
+	else {
+		qDebug() << "could not find root class";
 	}
 }
 

@@ -28,6 +28,7 @@ $LDFLAGS = [
 
 $INCLUDES = [
   "-I./src",
+  "-I./src/linux",
   "-I./src/scripting",
   "-I./src/scripting/modules",
   "-I/usr/include/qt4",

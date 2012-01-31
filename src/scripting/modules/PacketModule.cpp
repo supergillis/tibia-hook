@@ -7,11 +7,11 @@ QString PacketModule::name() const {
 }
 
 void PacketModule::install() {
-	QScriptEngine* engine = handler()->scriptEngine();
+	QScriptEngine* engine = handler()->engine();
 	QScriptValue rootClass = engine->globalObject().property("Class");
 	if (rootClass.isObject()) {
-		QScriptValue packetObject = ClassModule::extendClass(engine, rootClass);
-		QScriptValue packetInstance = packetObject.property("instance");
+		QScriptValue packetClass = ClassModule::extendClass(engine, rootClass);
+		QScriptValue packetInstance = packetClass.property("instance");
 		packetInstance.setProperty("constructor", engine->newFunction(PacketModule::constructor));
 		packetInstance.setProperty("readU8", engine->newFunction(PacketModule::readU8));
 		packetInstance.setProperty("readU16", engine->newFunction(PacketModule::readU16));
@@ -21,7 +21,10 @@ void PacketModule::install() {
 		packetInstance.setProperty("writeU16", engine->newFunction(PacketModule::writeU16));
 		packetInstance.setProperty("writeU32", engine->newFunction(PacketModule::writeU32));
 		packetInstance.setProperty("writeString", engine->newFunction(PacketModule::writeString));
-		engine->globalObject().setProperty("Packet", packetObject, QScriptValue::ReadOnly | QScriptValue::Undeletable);
+		engine->globalObject().setProperty("Packet", packetClass, QScriptValue::ReadOnly | QScriptValue::Undeletable);
+	}
+	else {
+		qDebug() << "could not find root class";
 	}
 }
 

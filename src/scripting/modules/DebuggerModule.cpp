@@ -17,7 +17,7 @@ QString DebuggerModule::name() const {
 }
 
 void DebuggerModule::install() {
-	QScriptEngine* engine = handler()->scriptEngine();
+	QScriptEngine* engine = handler()->engine();
 	debugger_ = new Debugger(engine);
 	engine->setAgent(debugger_);
 }

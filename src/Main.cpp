@@ -1,5 +1,17 @@
 #include "Hook.h"
+#include "HookSocket.h"
+#include "HookClient.h"
+#include "LinuxHookSocket.h"
+#include "LinuxHookClient.h"
 #include "Main.h"
+
+#include "DebuggerModule.h"
+#include "ClassModule.h"
+#include "ClientModule.h"
+#include "EnvironmentModule.h"
+#include "MemoryModule.h"
+#include "NetworkModule.h"
+#include "PacketModule.h"
 
 #include <assert.h>
 #include <dlfcn.h>
@@ -7,15 +19,28 @@
 #include <X11/Xlib.h>
 
 Window __XCreateWindow(Display*, Window, int, int, unsigned int, unsigned int, unsigned int, int, unsigned int, Visual*, unsigned long, XSetWindowAttributes*);
-int __XNextEvent(Display*, XEvent*);
 
 void hook_constructor() __attribute__((constructor));
 void hook_destructor() __attribute__((destructor));
 
+Hook* hook = NULL;
+LinuxHookSocket* hookSocket = NULL;
+LinuxHookClient* hookClient = NULL;
+
 pthread_t hook_id;
 
 void* hook_thread(void*) {
-	Hook* hook = Hook::initialize();
+	hook = new Hook();
+	ScriptHandler* handler = new ScriptHandler(hook);
+	handler->install(new DebuggerModule);
+	handler->install(new ClassModule);
+	handler->install(new EnvironmentModule);
+	handler->install(new PacketModule);
+	handler->install(new ClientModule);
+	handler->install(new MemoryModule);
+	handler->install(new NetworkModule);
+	handler->reload();
+	hook->setHandler(handler);
 	hook->exec();
 	return NULL;
 }
@@ -31,60 +56,50 @@ void hook_destructor() {
 	pthread_join(hook_id, NULL);
 }
 
-int X11Socket = -1;
-Display* X11Display = NULL;
-Window X11Window = 0;
-
-int connect(int socket, const struct sockaddr* address, socklen_t length) {
+int connect(int fd, const struct sockaddr* address, socklen_t length) {
+	static int X11Socket = -1;
 	if (X11Socket == -1) {
-		X11Socket = socket;
+		X11Socket = fd;
 	}
-	else {
-		Hook::getInstance()->setSocket(socket);
+	else if (hook) {
+		if (hookSocket != NULL) {
+			delete hookSocket;
+		}
+		hookSocket = new LinuxHookSocket(hook, fd);
+		hook->setSocket(hookSocket);
 	}
-	return __connect(socket, address, length);
+	return __connect(fd, address, length);
 }
 
 int poll(struct pollfd* fds, nfds_t nfds, int timeout) {
-	Hook* hook = Hook::getInstance();
-	if (nfds == 1 && fds[0].events == POLLIN && hook && hook->socket() == fds[0].fd && hook->hasClientMessages()) {
+	if (nfds == 1 && fds[0].events == POLLIN && hookSocket && hookSocket->fileDescriptor() == fds[0].fd && hook->hasClientMessages()) {
 		fds[0].revents = POLLIN;
 		return 1;
 	}
 	return __poll(fds, nfds, timeout);
 }
 
-ssize_t read(int socket, void* buffer, size_t length) {
-	Hook* hook = Hook::getInstance();
-	if (hook && hook->socket() == socket && length > 0) {
+ssize_t read(int fd, void* buffer, size_t length) {
+	if (hookSocket && hookSocket->fileDescriptor() == fd && length > 0) {
 		return hook->receiveFromServer((quint8*) buffer, length);
 	}
-	return __read(socket, buffer, length);
+	return __read(fd, buffer, length);
 }
 
-ssize_t write(int socket, const void* buffer, size_t length) {
-	Hook* hook = Hook::getInstance();
-	if (hook && hook->socket() == socket && length > 0) {
+ssize_t write(int fd, const void* buffer, size_t length) {
+	if (hookSocket && hookSocket->fileDescriptor() == fd && length > 0) {
 		return hook->receiveFromClient((const quint8*) buffer, length);
 	}
-	return __write(socket, buffer, length);
+	return __write(fd, buffer, length);
 }
 
 Window XCreateWindow(Display* display, Window parent, int x, int y, unsigned int width, unsigned int height, unsigned int border_width, int depth, unsigned int class_, Visual* visual, unsigned long valuemask, XSetWindowAttributes* attributes) {
 	Window window = __XCreateWindow(display, parent, x, y, width, height, border_width, depth, class_, visual, valuemask, attributes);
-	if (X11Window == 0) {
-		X11Window = window;
-		Hook::getInstance()->setWindow(X11Window);
+	if (hookClient == NULL) {
+		hookClient = new LinuxHookClient(hook, display, window);
+		hook->setClient(hookClient);
 	}
 	return window;
-}
-
-int XNextEvent(Display* display, XEvent* event_return) {
-	if (X11Display == NULL) {
-		X11Display = display;
-		Hook::getInstance()->setDisplay(X11Display);
-	}
-	return __XNextEvent(display, event_return);
 }
 
 int __connect(int socket, const struct sockaddr* address, socklen_t length) {
@@ -125,12 +140,4 @@ Window __XCreateWindow(Display* display, Window parent, int x, int y, unsigned i
 		original = (Window(*)(Display*, Window, int, int, unsigned int, unsigned int, unsigned int, int, unsigned int, Visual*, unsigned long, XSetWindowAttributes*)) dlsym(RTLD_NEXT, "XCreateWindow");assert(original != NULL);
 	}
 	return original(display, parent, x, y, width, height, border_width, depth, class_, visual, valuemask, attributes);
-}
-
-int __XNextEvent(Display* display, XEvent* event_return) {
-	static int (*original)(Display*, XEvent*);
-	if (original == NULL) {
-		original = (int(*)(Display*, XEvent*)) dlsym(RTLD_NEXT, "XNextEvent");assert(original != NULL);
-	}
-	return original(display, event_return);
 }

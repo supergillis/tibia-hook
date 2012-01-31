@@ -2,48 +2,28 @@
 #define HOOK_H
 
 #include <QCoreApplication>
-#include <QDebug>
-#include <QEvent>
 #include <QQueue>
 
-#include <unistd.h>
-#include <string.h>
-
-#include <X11/Xlib.h>
-#include <X11/keysym.h>
-
-/* Including  <X11/Xlib.h> gives an error with Qt. Undefining Bool fixes that. */
-#undef Bool
-
+#include "Handler.h"
+#include "HookSocket.h"
+#include "HookClient.h"
 #include "EncryptedMessage.h"
 #include "DecryptedMessage.h"
-#include "ReadOnlyPacket.h"
-#include "ReadWritePacket.h"
 
-class Handler;
 class Hook: public QCoreApplication {
 	Q_OBJECT
 
 public:
-	static Hook* getInstance() {
-		return _instance;
-	}
+	Hook();
 
-	static Hook* initialize() {
-		if(_instance == NULL) {
-			_instance = new Hook();
-		}
-		return _instance;
-	}
+	Handler* handler();
+	void setHandler(Handler*);
 
-	int socket() const;
-	void setSocket(int);
+	HookSocket* socket();
+	void setSocket(HookSocket*);
 
-	const Display* display() const;
-	void setDisplay(Display*);
-
-	Window window() const;
-	void setWindow(Window);
+	HookClient* client();
+	void setClient(HookClient*);
 
 	bool hasClientMessages() const;
 
@@ -61,22 +41,16 @@ public:
 	void sendKeyPress(int);
 
 private:
-	Hook();
 	Hook(const Hook&);
-
 	Hook& operator=(const Hook&);
 
-	static Hook* _instance;
+	HookSocket* socket_;
+	HookClient* client_;
+	Handler* handler_;
 
-	int _socket;
-	Display* _display;
-	Window _window;
-
-	Handler* _handler;
-	bool _loggedIn;
-	bool _pendingLogin;
-	quint8 _protocol;
-	QQueue<QByteArray> _queue;
+	bool loggedIn_;
+	bool pendingLogin_;
+	QQueue<QByteArray> queue_;
 };
 
 #endif
