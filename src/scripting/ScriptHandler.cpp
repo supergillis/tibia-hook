@@ -44,7 +44,7 @@ bool ScriptHandler::receiveFromClientInternal(const EncryptedMessage* message) {
 	if (callback.isFunction()) {
 		DecryptedMessage decrypted(message);
 		if (decrypted.isValid()) {
-			QScriptValue packet = engine_.newQObject(new ReadOnlyPacket(decrypted), QScriptEngine::ScriptOwnership);
+			QScriptValue packet = engine_.newQObject(new ReadOnlyPacket(&decrypted), QScriptEngine::ScriptOwnership);
 			QScriptValueList args;
 			QScriptValue result = callback.call(engine_.globalObject(), args << packet);
 			return result.isBool() ? result.toBool() : false;
@@ -58,7 +58,7 @@ void ScriptHandler::receiveFromServer(const EncryptedMessage* message) {
 	if (callback.isFunction()) {
 		DecryptedMessage decrypted(message);
 		if (decrypted.isValid()) {
-			QScriptValue packet = engine_.newQObject(new ReadOnlyPacket(decrypted), QScriptEngine::ScriptOwnership);
+			QScriptValue packet = engine_.newQObject(new ReadOnlyPacket(&decrypted), QScriptEngine::ScriptOwnership);
 			QScriptValueList args;
 			QScriptValue result = callback.call(engine_.globalObject(), args << packet);
 		}

@@ -13,6 +13,7 @@
 #include "MemoryModule.h"
 #include "NetworkModule.h"
 #include "PacketModule.h"
+#include "SchedulerModule.h"
 
 #include <assert.h>
 #include <dlfcn.h>
@@ -40,6 +41,7 @@ void* hook_thread(void*) {
 	handler->install(new ClientModule(hook));
 	handler->install(new MemoryModule(hook));
 	handler->install(new NetworkModule(hook));
+	handler->install(new SchedulerModule(hook));
 	handler->reload();
 	hook->setHandler(handler);
 	hook->exec();

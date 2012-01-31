@@ -5,11 +5,12 @@
 
 #include "Hook.h"
 #include "MessageEvent.h"
+#include "ReadOnlyPacket.h"
 
 static int argc_ = 0;
 
 Hook::Hook() :
-		QCoreApplication(argc_, NULL), socket_(NULL), client_(NULL), handler_(NULL), loggedIn_(true), pendingLogin_(false) {
+		QCoreApplication(argc_, NULL), socket_(NULL), client_(NULL), handler_(NULL), loggedIn_(false), pendingLogin_(false) {
 }
 
 HookSocket* Hook::socket() {
@@ -76,12 +77,10 @@ ssize_t Hook::sendToServer(const DecryptedMessage* message) {
 }
 
 ssize_t Hook::receiveFromClient(const quint8* buffer, ssize_t length) {
-	if (loggedIn_) {
-		EncryptedMessage message(buffer, length);
-		if (message.isValid()) {
-			QCoreApplication::postEvent(handler_, new MessageEvent(MessageEvent::ReceivingClient, &message), Qt::HighEventPriority);
-			return length;
-		}
+	EncryptedMessage message(buffer, length);
+	if (message.isValid()) {
+		QCoreApplication::postEvent(handler_, new MessageEvent(MessageEvent::ReceivingClient, &message), Qt::HighEventPriority);
+		return length;
 	}
 	return sendToServer(buffer, length);
 }
@@ -94,13 +93,9 @@ ssize_t Hook::receiveFromServer(quint8* buffer, ssize_t length) {
 	}
 
 	ssize_t result = socket_->read(buffer, length);
-	if (loggedIn_) {
-		EncryptedMessage message(buffer, result);
-		if (message.isValid()) {
-			// Do something with message
-			QCoreApplication::postEvent(handler_, new MessageEvent(MessageEvent::ReceivingServer, &message), Qt::HighEventPriority);
-		}
+	EncryptedMessage message(buffer, result);
+	if (message.isValid()) {
+		QCoreApplication::postEvent(handler_, new MessageEvent(MessageEvent::ReceivingServer, &message), Qt::HighEventPriority);
 	}
-
 	return result;
 }

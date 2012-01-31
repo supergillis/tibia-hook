@@ -12,9 +12,9 @@ class ReadOnlyPacket: public Packet {
 
 public:
 	ReadOnlyPacket();
-	ReadOnlyPacket(const DecryptedMessage&);
+	ReadOnlyPacket(const DecryptedMessage*);
 
-	const DecryptedMessage& message() const;
+	const DecryptedMessage* message() const;
 
 	quint16 length() const;
 	const quint8* data() const;
