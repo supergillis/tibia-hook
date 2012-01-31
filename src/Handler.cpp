@@ -1,19 +1,19 @@
 #include "Handler.h"
 #include "Hook.h"
-#include "ReceivingMessageEvent.h"
+#include "MessageEvent.h"
 
 Handler::Handler(QObject* parent) :
 		QObject(parent) {
 }
 
 bool Handler::event(QEvent* event) {
-	if (event->type() == ReceivingMessageEvent::EventType) {
-		ReceivingMessageEvent* hookEvent = (ReceivingMessageEvent*) event;
+	if (event->type() == MessageEvent::EventType) {
+		MessageEvent* hookEvent = (MessageEvent*) event;
 		switch (hookEvent->messageType()) {
-			case ReceivingMessageEvent::Client:
+			case MessageEvent::ReceivingClient:
 				receiveFromClient(hookEvent->message());
 				break;
-			case ReceivingMessageEvent::Server:
+			case MessageEvent::ReceivingServer:
 				receiveFromServer(hookEvent->message());
 				break;
 		}

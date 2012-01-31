@@ -4,7 +4,7 @@
 #include <QDebug>
 
 #include "Hook.h"
-#include "ReceivingMessageEvent.h"
+#include "MessageEvent.h"
 
 static int argc_ = 0;
 
@@ -79,7 +79,7 @@ ssize_t Hook::receiveFromClient(const quint8* buffer, ssize_t length) {
 	if (loggedIn_) {
 		EncryptedMessage message(buffer, length);
 		if (message.isValid()) {
-			QCoreApplication::postEvent(handler_, new ReceivingMessageEvent(ReceivingMessageEvent::Client, &message), Qt::HighEventPriority);
+			QCoreApplication::postEvent(handler_, new MessageEvent(MessageEvent::ReceivingClient, &message), Qt::HighEventPriority);
 			return length;
 		}
 	}
@@ -98,7 +98,7 @@ ssize_t Hook::receiveFromServer(quint8* buffer, ssize_t length) {
 		EncryptedMessage message(buffer, result);
 		if (message.isValid()) {
 			// Do something with message
-			QCoreApplication::postEvent(handler_, new ReceivingMessageEvent(ReceivingMessageEvent::Server, &message), Qt::HighEventPriority);
+			QCoreApplication::postEvent(handler_, new MessageEvent(MessageEvent::ReceivingServer, &message), Qt::HighEventPriority);
 		}
 	}
 

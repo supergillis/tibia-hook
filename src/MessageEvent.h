@@ -1,20 +1,20 @@
-#ifndef HOOKEVENT_H_
-#define HOOKEVENT_H_
+#ifndef MESSAGEEVENT_H
+#define MESSAGEEVENT_H
 
 #include <QEvent>
 
 #include "EncryptedMessage.h"
 
-class ReceivingMessageEvent: public QEvent {
+class MessageEvent: public QEvent {
 public:
 	static const QEvent::Type EventType = QEvent::User;
 
 	enum MessageType {
-		Client,
-		Server
+		ReceivingClient,
+		ReceivingServer
 	};
 
-	ReceivingMessageEvent(const MessageType, const EncryptedMessage*);
+	MessageEvent(const MessageType, const EncryptedMessage*);
 
 	const MessageType messageType() const;
 	const EncryptedMessage* message() const;
@@ -24,4 +24,4 @@ private:
 	const EncryptedMessage message_;
 };
 
-#endif /* HOOKEVENT_H_ */
+#endif /* MESSAGEEVENT_H */
