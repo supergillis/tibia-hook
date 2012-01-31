@@ -1,22 +1,16 @@
 #ifndef MODULE_H_
 #define MODULE_H_
 
+#include <QObject>
 #include <QString>
 
-class ScriptHandler;
-class Module {
+class ModuleManager;
+class Module: public QObject {
 public:
+	Module(QObject*);
+
 	virtual QString name() const = 0;
-
-	bool install(ScriptHandler*);
-
-protected:
-	ScriptHandler* handler() const;
-
-	virtual void install() = 0;
-
-private:
-	ScriptHandler* handler_;
+	virtual bool install(ModuleManager*) = 0;
 };
 
 #endif /* MODULE_H_ */

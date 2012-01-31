@@ -10,25 +10,30 @@
 #include "Module.h"
 #include "ScriptHandler.h"
 
-class EnvironmentModule: public QObject, public Module {
+class EnvironmentModule: public Module {
 	Q_OBJECT
 
 public:
+	static const QString PLUGIN_NAME;
+
+	EnvironmentModule(QObject*);
+
 	QString name() const;
 
-	void install();
+	bool install(ModuleManager*);
 
-	static void setRequiredFiles(QScriptEngine*, const QStringList&);
-	static QStringList requiredFiles(QScriptEngine*);
-
-	static QScriptValue reload(QScriptEngine*);
-
-	static QScriptValue require(QScriptEngine*, const QString&);
-	static QScriptValue require(QScriptEngine*, QFile& file);
+	QScriptValue reload();
+	QScriptValue require(const QString&);
+	QScriptValue require(QFile& file);
 
 private:
+	QScriptEngine* engine_;
+	QStringList requiredFiles_;
+
 	static QScriptValue reload(QScriptContext*, QScriptEngine*);
 	static QScriptValue require(QScriptContext*, QScriptEngine*);
+
+	static const QString VARIABLE_NAME;
 };
 
 #endif /* ENVIRONMENTMODULE_H_ */

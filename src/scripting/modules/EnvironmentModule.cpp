@@ -3,73 +3,70 @@
 #include "EnvironmentModule.h"
 #include "ClassModule.h"
 
-QString EnvironmentModule::name() const {
-	return "environment";
+const QString EnvironmentModule::PLUGIN_NAME("environment");
+const QString EnvironmentModule::VARIABLE_NAME("Environment");
+
+EnvironmentModule::EnvironmentModule(QObject* parent) :
+		Module(parent) {
 }
 
-void EnvironmentModule::install() {
-	QScriptEngine* engine = handler()->engine();
-	QScriptValue rootClass = engine->globalObject().property("Class");
-	if (rootClass.isObject()) {
-		QScriptValue require = engine->newFunction(EnvironmentModule::require);
-		QScriptValue reload = engine->newFunction(EnvironmentModule::reload);
+QString EnvironmentModule::name() const {
+	return PLUGIN_NAME;
+}
 
-		QScriptValue environmentObject = ClassModule::createInstance(engine, rootClass);
+bool EnvironmentModule::install(ModuleManager* manager) {
+	ClassModule* classModule = (ClassModule*) manager->lookup(ClassModule::PLUGIN_NAME);
+	if (classModule) {
+		engine_ = manager->engine();
+
+		QScriptValue require = engine_->newFunction(EnvironmentModule::require);
+		QScriptValue reload = engine_->newFunction(EnvironmentModule::reload);
+
+		QScriptValue environmentObject = classModule->createRootInstance();
+		environmentObject.setData(engine_->newQObject(this));
 		environmentObject.setProperty("reload", reload);
 		environmentObject.setProperty("require", require);
-
-		engine->globalObject().setProperty("Environment", environmentObject, QScriptValue::ReadOnly | QScriptValue::Undeletable);
-		EnvironmentModule::setRequiredFiles(engine, QStringList());
+		engine_->globalObject().setProperty(VARIABLE_NAME, environmentObject, QScriptValue::ReadOnly | QScriptValue::Undeletable);
+		return true;
 	}
-	else {
-		qDebug() << "could not find root class";
-	}
+	return false;
 }
 
-void EnvironmentModule::setRequiredFiles(QScriptEngine* engine, const QStringList& list) {
-	engine->globalObject().property("Environment").setData(engine->toScriptValue(list));
-}
-
-QStringList EnvironmentModule::requiredFiles(QScriptEngine* engine) {
-	QScriptValue data = engine->globalObject().property("Environment").data();
-	return engine->fromScriptValue<QStringList>(data);
-}
-
-QScriptValue EnvironmentModule::reload(QScriptEngine* engine) {
-	engine->pushContext();
-	EnvironmentModule::setRequiredFiles(engine, QStringList());
-	EnvironmentModule::require(engine, "Main.js");
-	engine->popContext();
+QScriptValue EnvironmentModule::reload() {
+	engine_->pushContext();
+	requiredFiles_.clear();
+	require("Main.js");
+	engine_->popContext();
 	return true;
 }
 
-QScriptValue EnvironmentModule::require(QScriptEngine* engine, const QString& path) {
+QScriptValue EnvironmentModule::require(const QString& path) {
 	QDir scripts(QDir::current());
 	if (scripts.cd("scripts")) {
 		QFile file(scripts.absoluteFilePath(path));
-		return EnvironmentModule::require(engine, file);
+		return require(file);
 	}
-	return engine->currentContext()->throwError(scripts.absolutePath() + " does not exist");
+	return false;
 }
 
-QScriptValue EnvironmentModule::require(QScriptEngine* engine, QFile& file) {
-	QStringList requiredFiles = EnvironmentModule::requiredFiles(engine);
+QScriptValue EnvironmentModule::require(QFile& file) {
 	QString fileName = file.fileName();
-	if (!requiredFiles.contains(fileName)) {
+	if (!requiredFiles_.contains(fileName)) {
 		if (file.open(QFile::ReadOnly)) {
-			engine->evaluate(file.readAll(), fileName);
-			requiredFiles << fileName;
-			EnvironmentModule::setRequiredFiles(engine, requiredFiles);
+			engine_->evaluate(file.readAll(), fileName);
+			requiredFiles_ << fileName;
 			return true;
 		}
-		return engine->currentContext()->throwError(fileName + " does not exist");
 	}
-	return engine->currentContext()->throwError(fileName + " is already included");
+	return false;
 }
 
 QScriptValue EnvironmentModule::reload(QScriptContext* context, QScriptEngine* engine) {
 	if (context->argumentCount() == 0) {
-		return EnvironmentModule::reload(engine);
+		EnvironmentModule* module = qobject_cast<EnvironmentModule*>(context->thisObject().data().toQObject());
+		if (module) {
+			return module->reload();
+		}
 	}
 	return context->throwError("invalid call to reload()");
 }
@@ -79,8 +76,10 @@ QScriptValue EnvironmentModule::require(QScriptContext* context, QScriptEngine* 
 		QScriptValue value = context->argument(0);
 		if (value.isString()) {
 			QString required = value.toString();
-			EnvironmentModule::require(engine, required);
-			return true;
+			EnvironmentModule* module = qobject_cast<EnvironmentModule*>(context->thisObject().data().toQObject());
+			if (module) {
+				return module->require(required);
+			}
 		}
 	}
 	return context->throwError("invalid call to require(String)");

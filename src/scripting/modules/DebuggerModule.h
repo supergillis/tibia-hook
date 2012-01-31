@@ -10,13 +10,17 @@
 
 class Debugger;
 class DebuggerModule: public Module {
+	Q_OBJECT
+
 public:
-	DebuggerModule();
+	static const QString PLUGIN_NAME;
+
+	DebuggerModule(QObject*);
 	~DebuggerModule();
 
 	QString name() const;
 
-	void install();
+	bool install(ModuleManager*);
 
 private:
 	Debugger* debugger_;

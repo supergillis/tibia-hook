@@ -1,31 +1,51 @@
 #include "PacketModule.h"
-#include "ClassModule.h"
+#include "ReadOnlyPacket.h"
 #include "ReadWritePacket.h"
 
-QString PacketModule::name() const {
-	return "packet";
+const QString PacketModule::PLUGIN_NAME("packet");
+const QString PacketModule::VARIABLE_NAME("Packet");
+
+PacketModule::PacketModule(QObject* parent) :
+		Module(parent), classModule_(NULL), engine_(NULL) {
 }
 
-void PacketModule::install() {
-	QScriptEngine* engine = handler()->engine();
-	QScriptValue rootClass = engine->globalObject().property("Class");
-	if (rootClass.isObject()) {
-		QScriptValue packetClass = ClassModule::extendClass(engine, rootClass);
-		QScriptValue packetInstance = packetClass.property("instance");
-		packetInstance.setProperty("constructor", engine->newFunction(PacketModule::constructor));
-		packetInstance.setProperty("readU8", engine->newFunction(PacketModule::readU8));
-		packetInstance.setProperty("readU16", engine->newFunction(PacketModule::readU16));
-		packetInstance.setProperty("readU32", engine->newFunction(PacketModule::readU32));
-		packetInstance.setProperty("readString", engine->newFunction(PacketModule::readString));
-		packetInstance.setProperty("writeU8", engine->newFunction(PacketModule::writeU8));
-		packetInstance.setProperty("writeU16", engine->newFunction(PacketModule::writeU16));
-		packetInstance.setProperty("writeU32", engine->newFunction(PacketModule::writeU32));
-		packetInstance.setProperty("writeString", engine->newFunction(PacketModule::writeString));
-		engine->globalObject().setProperty("Packet", packetClass, QScriptValue::ReadOnly | QScriptValue::Undeletable);
+QString PacketModule::name() const {
+	return PLUGIN_NAME;
+}
+
+bool PacketModule::install(ModuleManager* manager) {
+	classModule_ = (ClassModule*) manager->lookup(ClassModule::PLUGIN_NAME);
+	if (classModule_) {
+		engine_ = manager->engine();
+		packetClass_ = classModule_->extendRootClass();
+		packetClass_.setData(engine_->newQObject(this));
+
+		QScriptValue packetInstance = packetClass_.property("instance");
+		packetInstance.setProperty("constructor", engine_->newFunction(PacketModule::constructor));
+		packetInstance.setProperty("readU8", engine_->newFunction(PacketModule::readU8));
+		packetInstance.setProperty("readU16", engine_->newFunction(PacketModule::readU16));
+		packetInstance.setProperty("readU32", engine_->newFunction(PacketModule::readU32));
+		packetInstance.setProperty("readString", engine_->newFunction(PacketModule::readString));
+		packetInstance.setProperty("writeU8", engine_->newFunction(PacketModule::writeU8));
+		packetInstance.setProperty("writeU16", engine_->newFunction(PacketModule::writeU16));
+		packetInstance.setProperty("writeU32", engine_->newFunction(PacketModule::writeU32));
+		packetInstance.setProperty("writeString", engine_->newFunction(PacketModule::writeString));
+		engine_->globalObject().setProperty(VARIABLE_NAME, packetClass_, QScriptValue::ReadOnly | QScriptValue::Undeletable);
+		return true;
 	}
-	else {
-		qDebug() << "could not find root class";
-	}
+	return false;
+}
+
+QScriptValue PacketModule::createReadOnlyPacket(const DecryptedMessage* message) {
+	QScriptValue packet = classModule_->createInstance(packetClass_);
+	packet.setData(engine_->newQObject(new ReadOnlyPacket(*message), QScriptEngine::ScriptOwnership));
+	return packet;
+}
+
+QScriptValue PacketModule::createReadWritePacket() {
+	QScriptValue packet = classModule_->createInstance(packetClass_);
+	packet.setData(engine_->newQObject(new ReadWritePacket(), QScriptEngine::ScriptOwnership));
+	return packet;
 }
 
 QScriptValue PacketModule::constructor(QScriptContext* context, QScriptEngine* engine) {

@@ -4,22 +4,28 @@
 #include "Packet.h"
 #include "DecryptedMessage.h"
 
-QString ClientModule::name() const {
-	return "client";
+const QString ClientModule::PLUGIN_NAME("client");
+const QString ClientModule::VARIABLE_NAME("Client");
+
+ClientModule::ClientModule(QObject* parent) :
+		Module(parent) {
 }
 
-void ClientModule::install() {
-	QScriptEngine* engine = handler()->engine();
-	QScriptValue rootClass = engine->globalObject().property("Class");
-	if (rootClass.isObject()) {
-		QScriptValue clientObject = ClassModule::createInstance(engine, rootClass);
+QString ClientModule::name() const {
+	return PLUGIN_NAME;
+}
+
+bool ClientModule::install(ModuleManager* manager) {
+	QScriptEngine* engine = manager->engine();
+	ClassModule* classModule = (ClassModule*) manager->lookup(ClassModule::PLUGIN_NAME);
+	if (classModule) {
+		QScriptValue clientObject = classModule->createRootInstance();
 		clientObject.setProperty("sendPacket", engine->newFunction(ClientModule::sendPacket));
 		clientObject.setProperty("sendKeyPress", engine->newFunction(ClientModule::sendKeyPress));
-		engine->globalObject().setProperty("Client", clientObject, QScriptValue::ReadOnly | QScriptValue::Undeletable);
+		engine->globalObject().setProperty(VARIABLE_NAME, clientObject, QScriptValue::ReadOnly | QScriptValue::Undeletable);
+		return true;
 	}
-	else {
-		qDebug() << "could not find root class";
-	}
+	return false;
 }
 
 QScriptValue ClientModule::sendPacket(QScriptContext* context, QScriptEngine* engine) {

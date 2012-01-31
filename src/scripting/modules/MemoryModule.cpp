@@ -2,24 +2,30 @@
 #include "ClassModule.h"
 #include "Memory.h"
 
-QString MemoryModule::name() const {
-	return "memory";
+const QString MemoryModule::PLUGIN_NAME("memory");
+const QString MemoryModule::VARIABLE_NAME("Memory");
+
+MemoryModule::MemoryModule(QObject* parent) :
+		Module(parent) {
 }
 
-void MemoryModule::install() {
-	QScriptEngine* engine = handler()->engine();
-	QScriptValue rootClass = engine->globalObject().property("Class");
-	if (rootClass.isObject()) {
-		QScriptValue memoryObject = ClassModule::createInstance(engine, rootClass);
+QString MemoryModule::name() const {
+	return PLUGIN_NAME;
+}
+
+bool MemoryModule::install(ModuleManager* manager) {
+	QScriptEngine* engine = manager->engine();
+	ClassModule* classModule = (ClassModule*) manager->lookup(ClassModule::PLUGIN_NAME);
+	if (classModule) {
+		QScriptValue memoryObject = classModule->createRootInstance();
 		memoryObject.setProperty("readU8", engine->newFunction(MemoryModule::readU8));
 		memoryObject.setProperty("readU16", engine->newFunction(MemoryModule::readU16));
 		memoryObject.setProperty("readU32", engine->newFunction(MemoryModule::readU32));
 		memoryObject.setProperty("readString", engine->newFunction(MemoryModule::readString));
-		engine->globalObject().setProperty("Memory", memoryObject, QScriptValue::ReadOnly | QScriptValue::Undeletable);
+		engine->globalObject().setProperty(VARIABLE_NAME, memoryObject, QScriptValue::ReadOnly | QScriptValue::Undeletable);
+		return true;
 	}
-	else {
-		qDebug() << "could not find root class";
-	}
+	return false;
 }
 
 QScriptValue MemoryModule::readU8(QScriptContext* context, QScriptEngine* engine) {

@@ -2,8 +2,10 @@
 
 #include "DebuggerModule.h"
 
-DebuggerModule::DebuggerModule() :
-		debugger_(NULL) {
+const QString DebuggerModule::PLUGIN_NAME("environment");
+
+DebuggerModule::DebuggerModule(QObject* parent) :
+		Module(parent), debugger_(NULL) {
 }
 
 DebuggerModule::~DebuggerModule() {
@@ -13,13 +15,14 @@ DebuggerModule::~DebuggerModule() {
 }
 
 QString DebuggerModule::name() const {
-	return "debugger";
+	return PLUGIN_NAME;
 }
 
-void DebuggerModule::install() {
-	QScriptEngine* engine = handler()->engine();
+bool DebuggerModule::install(ModuleManager* manager) {
+	QScriptEngine* engine = manager->engine();
 	debugger_ = new Debugger(engine);
 	engine->setAgent(debugger_);
+	return true;
 }
 
 Debugger::Debugger(QScriptEngine* engine) :
