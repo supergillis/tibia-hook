@@ -13,8 +13,6 @@ void EnvironmentModule::install() {
 	if (rootClass.isObject()) {
 		QScriptValue require = engine->newFunction(EnvironmentModule::require);
 		QScriptValue reload = engine->newFunction(EnvironmentModule::reload);
-
-		require.setData(engine->newQObject(this));
 		reload.setData(engine->newQObject(this));
 
 		QScriptValue environmentObject = ClassModule::createInstance(engine, rootClass);
@@ -61,9 +59,10 @@ QScriptValue EnvironmentModule::require(QScriptEngine* engine, QFile& file) {
 
 QScriptValue EnvironmentModule::reload(QScriptContext* context, QScriptEngine* engine) {
 	if (context->argumentCount() == 0) {
-		ScriptHandler* handler = qobject_cast<ScriptHandler*>(context->callee().data().toQObject());
-		if (handler) {
-			handler->reload();
+		QScriptValue data = context->callee().data();
+		EnvironmentModule* environment = qobject_cast<EnvironmentModule*>(data.toQObject());
+		if (environment && environment->handler()) {
+			environment->handler()->reload();
 			return true;
 		}
 	}

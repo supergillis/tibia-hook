@@ -11,6 +11,8 @@
 #include "ScriptHandler.h"
 
 class EnvironmentModule: public QObject, public Module {
+	Q_OBJECT
+
 public:
 	QString name() const;
 
