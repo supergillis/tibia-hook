@@ -22,7 +22,18 @@ int SchedulerModule::start(QScriptValue callback, quint32 interval) {
 	if (callback.isFunction()) {
 		int timerId = startTimer(interval);
 		if (timerId > 0) {
-			callbacks_.insert(timerId, callback);
+			callbacks_.insert(timerId, QPair<bool, QScriptValue>(false, callback));
+			return timerId;
+		}
+	}
+	return 0;
+}
+
+int SchedulerModule::single(QScriptValue callback, quint32 interval) {
+	if (callback.isFunction()) {
+		int timerId = startTimer(interval);
+		if (timerId > 0) {
+			callbacks_.insert(timerId, QPair<bool, QScriptValue>(true, callback));
 			return timerId;
 		}
 	}
@@ -35,8 +46,14 @@ void SchedulerModule::stop(quint32 timerId) {
 }
 
 void SchedulerModule::timerEvent(QTimerEvent* event) {
-	QScriptValue callback = callbacks_.value(event->timerId(), QScriptValue());
+	int timerId = event->timerId();
+	QPair<bool, QScriptValue> entry = callbacks_.value(timerId);
+	QScriptValue callback = entry.second;
 	if (callback.isValid()) {
 		callback.call();
+	}
+	// If this entry is a single shot entry, then we stop that timer
+	if (entry.first) {
+		stop(timerId);
 	}
 }

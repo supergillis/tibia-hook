@@ -2,6 +2,7 @@
 #define SCHEDULERMODULE_H
 
 #include <QHash>
+#include <QPair>
 #include <QObject>
 #include <QScriptEngine>
 #include <QScriptContext>
@@ -27,13 +28,14 @@ public:
 
 public slots:
 	int start(QScriptValue, quint32);
+	int single(QScriptValue, quint32);
 	void stop(quint32);
 
 protected:
 	void timerEvent(QTimerEvent*);
 
 private:
-	QHash<int, QScriptValue> callbacks_;
+	QHash<int, QPair<bool, QScriptValue> > callbacks_;
 };
 
 #endif /* SCHEDULERMODULE_H */
