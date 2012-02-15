@@ -1,14 +1,9 @@
 #include "Hook.h"
-#include "HookSocket.h"
-#include "HookClient.h"
-#include "LinuxHookSocket.h"
-#include "LinuxHookClient.h"
 #include "ScriptHandler.h"
 #include "Main.h"
 
 #include "DebuggerModule.h"
 #include "ClassModule.h"
-#include "ClientModule.h"
 #include "EnvironmentModule.h"
 #include "MemoryModule.h"
 #include "NetworkModule.h"
@@ -16,22 +11,37 @@
 #include "SchedulerModule.h"
 
 #include <assert.h>
-#include <dlfcn.h>
 #include <pthread.h>
-#include <X11/Xlib.h>
-
-Window __XCreateWindow(Display*, Window, int, int, unsigned int, unsigned int, unsigned int, int, unsigned int, Visual*, unsigned long, XSetWindowAttributes*);
-int __XPending(Display*);
-int __XNextEvent(Display*, XEvent*);
 
 void hook_constructor() __attribute__((constructor));
 void hook_destructor() __attribute__((destructor));
+void* hook_thread(void*);
 
-Hook* hook = NULL;
-LinuxHookSocket* hookSocket = NULL;
-LinuxHookClient* hookClient = NULL;
+typedef void (*writePacketSignature)(bool);
+typedef void (*readPacketSignature)();
 
+MologieDetours::Detour<writePacketSignature>* writePacketDetour;
+MologieDetours::Detour<readPacketSignature>* readPacketDetour;
+
+void writePacketHook(bool);
+void readPacketHook();
+
+Hook* hook;
 pthread_t hook_id;
+
+void hook_constructor() {
+	pthread_attr_t attr;
+	pthread_attr_init(&attr);
+	pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
+	pthread_create(&hook_id, &attr, hook_thread, NULL);
+
+	writePacketDetour = new MologieDetours::Detour<writePacketSignature>((writePacketSignature) ADDRESS_WRITE_PACKET, writePacketHook);
+	//readPacketDetour = new MologieDetours::Detour<readPacketSignature>((readPacketSignature) ADDRESS_READ_PACKET, readPacketHook);
+}
+
+void hook_destructor() {
+	pthread_join(hook_id, NULL);
+}
 
 void* hook_thread(void*) {
 	hook = new Hook();
@@ -40,7 +50,6 @@ void* hook_thread(void*) {
 	handler->install(new ClassModule(hook));
 	handler->install(new EnvironmentModule(hook));
 	handler->install(new PacketModule(hook));
-	handler->install(new ClientModule(hook));
 	handler->install(new MemoryModule(hook));
 	handler->install(new NetworkModule(hook));
 	handler->install(new SchedulerModule(hook));
@@ -50,131 +59,22 @@ void* hook_thread(void*) {
 	return NULL;
 }
 
-void hook_constructor() {
-	pthread_attr_t attr;
-	pthread_attr_init(&attr);
-	pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
-	pthread_create(&hook_id, &attr, hook_thread, NULL);
+void writePacketHook(bool encrypt) {
+	if (hook != NULL) {
+		hook->receiveFromClient(encrypt);
+	}
 }
 
-void hook_destructor() {
-	pthread_join(hook_id, NULL);
+void readPacketHook() {
+	if (hook != NULL) {
+		hook->receiveFromServer();
+	}
 }
 
-int connect(int fd, const struct sockaddr* address, socklen_t length) {
-	static int X11Socket = -1;
-	if (X11Socket == -1) {
-		X11Socket = fd;
-	}
-	else if (hook) {
-		if (hookSocket != NULL) {
-			delete hookSocket;
-		}
-		hookSocket = new LinuxHookSocket(hook, fd);
-		hook->setSocket(hookSocket);
-	}
-	return __connect(fd, address, length);
+void writePacket(bool encrypt) {
+	writePacketDetour->GetOriginalFunction()(encrypt);
 }
 
-int poll(struct pollfd* fds, nfds_t nfds, int timeout) {
-	if (nfds == 1 && fds[0].events == POLLIN && hookSocket && hookSocket->fileDescriptor() == fds[0].fd && hook->pendingClientMessages() > 0) {
-		fds[0].revents = POLLIN;
-		return 1;
-	}
-	return __poll(fds, nfds, timeout);
-}
-
-ssize_t read(int fd, void* buffer, size_t length) {
-	if (hookSocket && hookSocket->fileDescriptor() == fd && length > 0) {
-		return hook->receiveFromServer((quint8*) buffer, length);
-	}
-	return __read(fd, buffer, length);
-}
-
-ssize_t write(int fd, const void* buffer, size_t length) {
-	if (hookSocket && hookSocket->fileDescriptor() == fd && length > 0) {
-		return hook->receiveFromClient((const quint8*) buffer, length);
-	}
-	return __write(fd, buffer, length);
-}
-
-Window XCreateWindow(Display* display, Window parent, int x, int y, unsigned int width, unsigned int height, unsigned int border_width, int depth, unsigned int class_, Visual* visual, unsigned long valuemask, XSetWindowAttributes* attributes) {
-	Window window = __XCreateWindow(display, parent, x, y, width, height, border_width, depth, class_, visual, valuemask, attributes);
-	if (hookClient == NULL) {
-		hookClient = new LinuxHookClient(hook, display, window);
-		hook->setClient(hookClient);
-	}
-	return window;
-}
-
-int XPending(Display* display) {
-	int result = __XPending(display);
-	if (hookClient) {
-		result += hookClient->pendingEvents();
-	}
-	return result;
-}
-
-int XNextEvent(Display* display, XEvent* return_event) {
-	if (hookClient && hookClient->pendingEvents() > 0) {
-		*return_event = hookClient->nextEvent();
-		return 0;
-	}
-	return __XNextEvent(display, return_event);
-}
-
-int __connect(int socket, const struct sockaddr* address, socklen_t length) {
-	static int (*original)(int, const struct sockaddr*, socklen_t);
-	if (original == NULL) {
-		original = (int(*)(int, const struct sockaddr*, socklen_t)) dlsym(RTLD_NEXT, "connect");assert(original != NULL);
-	}
-	return original(socket, address, length);
-}
-
-int __poll(struct pollfd* fds, nfds_t nfds, int timeout) {
-	static int (*original)(struct pollfd*, nfds_t, int);
-	if (original == NULL) {
-		original = (int(*)(struct pollfd*, nfds_t, int)) dlsym(RTLD_NEXT, "poll");assert(original != NULL);
-	}
-	return original(fds, nfds, timeout);
-}
-
-ssize_t __read(int socket, void* buffer, size_t length) {
-	static ssize_t (*original)(int, void*, size_t);
-	if (original == NULL) {
-		original = (ssize_t(*)(int, void*, size_t)) dlsym(RTLD_NEXT, "read");assert(original != NULL);
-	}
-	return original(socket, buffer, length);
-}
-
-ssize_t __write(int socket, const void* buffer, size_t length) {
-	static ssize_t (*original)(int, const void*, size_t);
-	if (original == NULL) {
-		original = (ssize_t(*)(int, const void*, size_t)) dlsym(RTLD_NEXT, "write");assert(original != NULL);
-	}
-	return original(socket, buffer, length);
-}
-
-Window __XCreateWindow(Display* display, Window parent, int x, int y, unsigned int width, unsigned int height, unsigned int border_width, int depth, unsigned int class_, Visual* visual, unsigned long valuemask, XSetWindowAttributes* attributes) {
-	static Window (*original)(Display*, Window, int, int, unsigned int, unsigned int, unsigned int, int, unsigned int, Visual*, unsigned long, XSetWindowAttributes*);
-	if (original == NULL) {
-		original = (Window(*)(Display*, Window, int, int, unsigned int, unsigned int, unsigned int, int, unsigned int, Visual*, unsigned long, XSetWindowAttributes*)) dlsym(RTLD_NEXT, "XCreateWindow");assert(original != NULL);
-	}
-	return original(display, parent, x, y, width, height, border_width, depth, class_, visual, valuemask, attributes);
-}
-
-int __XPending(Display* display) {
-	static int (*original)(Display*);
-	if (original == NULL) {
-		original = (int(*)(Display*)) dlsym(RTLD_NEXT, "XPending");assert(original != NULL);
-	}
-	return original(display);
-}
-
-int __XNextEvent(Display* display, XEvent* return_event) {
-	static int (*original)(Display*, XEvent*);
-	if (original == NULL) {
-		original = (int(*)(Display*, XEvent*)) dlsym(RTLD_NEXT, "XNextEvent");assert(original != NULL);
-	}
-	return original(display, return_event);
+void readPacket() {
+	readPacketDetour->GetOriginalFunction()();
 }

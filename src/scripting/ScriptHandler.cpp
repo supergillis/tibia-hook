@@ -3,7 +3,6 @@
 #include <QScriptValueIterator>
 
 #include "ScriptHandler.h"
-#include "DecryptedMessage.h"
 #include "Packet.h"
 #include "ReadOnlyPacket.h"
 #include "Hook.h"
@@ -33,34 +32,22 @@ void ScriptHandler::reload() {
 	}
 }
 
-void ScriptHandler::receiveFromClient(const EncryptedMessage* message) {
-	if (!receiveFromClientInternal(message)) {
-		hook_->sendToServer(message);
-	}
-}
-
-bool ScriptHandler::receiveFromClientInternal(const EncryptedMessage* message) {
+bool ScriptHandler::receiveFromClient(Packet* packet) {
 	QScriptValue callback = engine_.globalObject().property(receiveFromClientHandle_);
 	if (callback.isFunction()) {
-		DecryptedMessage decrypted(message);
-		if (decrypted.isValid()) {
-			QScriptValue packet = engine_.newQObject(new ReadOnlyPacket(&decrypted), QScriptEngine::ScriptOwnership);
-			QScriptValueList args;
-			QScriptValue result = callback.call(engine_.globalObject(), args << packet);
-			return result.isBool() ? result.toBool() : false;
-		}
+		QScriptValue value = engine_.newQObject(packet, QScriptEngine::QtOwnership);
+		QScriptValueList args;
+		QScriptValue result = callback.call(engine_.globalObject(), args << value);
+		return result.isBool() ? result.toBool() : false;
 	}
 	return false;
 }
 
-void ScriptHandler::receiveFromServer(const EncryptedMessage* message) {
+bool ScriptHandler::receiveFromServer(Packet* packet) {
 	QScriptValue callback = engine_.globalObject().property(receiveFromServerHandle_);
 	if (callback.isFunction()) {
-		DecryptedMessage decrypted(message);
-		if (decrypted.isValid()) {
-			QScriptValue packet = engine_.newQObject(new ReadOnlyPacket(&decrypted), QScriptEngine::ScriptOwnership);
-			QScriptValueList args;
-			QScriptValue result = callback.call(engine_.globalObject(), args << packet);
-		}
+		QScriptValue value = engine_.newQObject(packet, QScriptEngine::QtOwnership);
+		QScriptValueList args;
+		QScriptValue result = callback.call(engine_.globalObject(), args << value);
 	}
 }

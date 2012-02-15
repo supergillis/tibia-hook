@@ -1,0 +1,121 @@
+/-- ## WRITE PACKET
+|   0x08264920:	push   ebp
+|   0x08264921:	mov    ebp,esp
+|   0x08264923:	push   edi
+|   0x08264924:	push   esi
+|   0x08264925:	push   ebx
+|   0x08264926:	sub    esp,0x8c # allocate 140 bytes of locals on the stack
+|   0x0826492c:	mov    ebx,DWORD PTR ds:0x85d3b40 # load the value at 0x85d3b40 into ebx
+|   0x08264932:	movzx  eax,BYTE PTR [ebp+0x8] # load first argument into eax
+|   0x08264936:	test   ebx,ebx
+|   0x08264938:	je 0x8264a61 # leave function if ebx == zero
+|   0x0826493e:	test   al,al
+|   0x08264940:	je 0x8264a6c # jump to without XTEA if al == 0 (al = lower 8-bit of ax, ax = lower 16-bit of eax)
+|   /-- ## WITH XTEA
+|   |   0x08264946:	mov    eax,ds:0x85d4368 # load the value at 0x85d4368 into eax (buffer length)
+|   |   0x0826494b:	lea    edi,[eax-0x6]
+|   |   0x0826494e:	lea    esi,[eax-0x2]
+|   |   0x08264951:	test   edi,0x7
+|   |   0x08264957:	mov    DWORD PTR [ebp-0x70],esi
+|   |   0x0826495a:	je 0x826498c # skip adding padding bytes
+|   |   0x0826495c:	lea    ebx,[eax-0x5]
+|   |   0x0826495f:	nop
+|   |   /-- # ADD PADDING BYTES
+|   |   |   0x08264960:	call   0x80b3230 # get padding byte
+|   |   |   0x08264965:	movzx  eax,al
+|   |   |   0x08264968:	mov    DWORD PTR [esp+0x4],eax
+|   |   |   0x0826496c:	mov    DWORD PTR [esp],0x85d4360
+|   |   |   0x08264973:	call   0x80abc10
+|   |   |   0x08264978:	lea    eax,[ebx+0x4]
+|   |   |   0x0826497b:	mov    edi,ebx
+|   |   |   0x0826497d:	mov    DWORD PTR [ebp-0x70],eax
+|   |   |   0x08264980:	mov    eax,ebx
+|   |   |   0x08264982:	add    ebx,0x1
+|   |   |   0x08264985:	and    eax,0x7
+|   |   |   0x08264988:	test   eax,eax
+|   |   \-- 0x0826498a:	jne    0x8264960
+|   |   0x0826498c:	movzx  eax,WORD PTR [ebp-0x70]
+|   |   0x08264990:	mov    DWORD PTR ds:0x85d4368,0x0
+|   |   0x0826499a:	mov    DWORD PTR [ebp-0x74],eax
+|   |   0x0826499d:	mov    DWORD PTR [esp+0x4],eax
+|   |   0x082649a1:	mov    DWORD PTR [esp],0x85d4360
+|   |   0x082649a8:	call   0x80ab8a0
+|   |   0x082649ad:	mov    DWORD PTR [esp+0x4],0x0
+|   |   0x082649b5:	mov    DWORD PTR [esp],0x85d4360
+|   |   0x082649bc:	call   0x80ab520
+|   |   0x082649c1:	lea    eax,[esi-0x6]
+|   |   0x082649c4:	movzx  eax,ax
+|   |   0x082649c7:	mov    DWORD PTR [esp+0x4],eax
+|   |   0x082649cb:	mov    DWORD PTR [esp],0x85d4360
+|   |   0x082649d2:	call   0x80ab8a0
+|   |   0x082649d7:	mov    esi,DWORD PTR [ebp-0x70]
+|   |   0x082649da:	add    esi,0x1
+|   |   0x082649dd:	cmp    esi,0x5
+|   |   0x082649e0:	jle0x8264a05
+|   |   0x082649e2:	mov    ebx,0x6
+|   |   0x082649e7:	nop
+|   |   /-- ## NO IDEA
+|   |   |   0x082649e8:	lea    eax,[ebx+0x85d3b60]
+|   |   |   0x082649ee:	mov    DWORD PTR [esp+0x4],eax
+|   |   |   0x082649f2:	mov    DWORD PTR [esp],0x85d882c
+|   |   |   0x082649f9:	call   0x83886c0
+|   |   |   0x082649fe:	add    ebx,0x8
+|   |   |   0x08264a01:	cmp    ebx,esi
+|   |   \-- 0x08264a03:	jle    0x82649e8
+|   |   0x08264a05:	mov    eax,DWORD PTR [ebp-0x74]
+|   |   0x08264a08:	mov    DWORD PTR ds:0x85d4368,0x0
+|   |   0x08264a12:	mov    DWORD PTR [esp],0x85d4360
+|   |   0x08264a19:	mov    DWORD PTR [esp+0x4],eax
+|   |   0x08264a1d:	call   0x80ab8a0
+|   |   0x08264a22:	mov    DWORD PTR [esp+0x4],edi
+|   |   0x08264a26:	mov    DWORD PTR [esp],0x85d3b66
+|   |   0x08264a2d:	call   0x80ad6b0
+|   |   0x08264a32:	mov    DWORD PTR [esp+0x4],eax
+|   |   0x08264a36:	mov    DWORD PTR [esp],0x85d4360
+|   |   0x08264a3d:	call   0x80ab520
+|   |   0x08264a42:	mov    eax,ds:0x85d3b40
+|   |   0x08264a47:	mov    edx,DWORD PTR [ebp-0x70]
+|   |   0x08264a4a:	mov    ecx,DWORD PTR [eax]
+|   |   0x08264a4c:	add    edx,0x2
+|   |   0x08264a4f:	mov    DWORD PTR [esp+0x8],edx
+|   |   0x08264a53:	mov    DWORD PTR [esp+0x4],0x85d3b60
+|   |   0x08264a5b:	mov    DWORD PTR [esp],eax
+|   |   0x08264a5e:	call   DWORD PTR [ecx+0x10]
+|   |   0x08264a61:	add    esp,0x8c # deallocate 140 bytes of locals off the stack
+|   |   0x08264a67:	pop    ebx
+|   |   0x08264a68:	pop    esi
+|   |   0x08264a69:	pop    edi
+|   |   0x08264a6a:	pop    ebp
+|   \-- 0x08264a6b:	ret
+|   /-- ## WITHOUT XTEA
+|   |   0x08264a6c:	mov    eax,ds:0x85d4368
+|   |   0x08264a71:	mov    DWORD PTR [esp+0x4],0x0
+|   |   0x08264a79:	mov    DWORD PTR ds:0x85d4368,0x0
+|   |   0x08264a83:	mov    DWORD PTR [esp],0x85d4360
+|   |   0x08264a8a:	lea    ebx,[eax-0x4]
+|   |   0x08264a8d:	call   0x80ab8a0
+|   |   0x08264a92:	movzx  eax,bx
+|   |   0x08264a95:	mov    DWORD PTR [esp+0x4],eax
+|   |   0x08264a99:	mov    DWORD PTR [esp],0x85d4360
+|   |   0x08264aa0:	call   0x80ab8a0
+|   |   0x08264aa5:	lea    eax,[ebx-0x4]
+|   |   0x08264aa8:	mov    DWORD PTR [esp+0x4],eax
+|   |   0x08264aac:	mov    DWORD PTR [esp],0x85d3b68
+|   |   0x08264ab3:	call   0x80ad6b0
+|   |   0x08264ab8:	mov    DWORD PTR [esp+0x4],eax
+|   |   0x08264abc:	mov    DWORD PTR [esp],0x85d4360
+|   |   0x08264ac3:	call   0x80ab520
+|   |   0x08264ac8:	mov    eax,ds:0x85d3b40
+|   |   0x08264acd:	lea    edx,[ebx+0x2]
+|   |   0x08264ad0:	mov    ecx,DWORD PTR [eax]
+|   |   0x08264ad2:	mov    DWORD PTR [esp+0x8],edx
+|   |   0x08264ad6:	mov    DWORD PTR [esp+0x4],0x85d3b62
+|   |   0x08264ade:	mov    DWORD PTR [esp],eax
+|   |   0x08264ae1:	call   DWORD PTR [ecx+0x10]
+|   |   0x08264ae4:	add    esp,0x8c
+|   |   0x08264aea:	pop    ebx
+|   |   0x08264aeb:	pop    esi
+|   |   0x08264aec:	pop    edi
+|   |   0x08264aed:	pop    ebp
+|   \-- 0x08264aee:	ret
+\--

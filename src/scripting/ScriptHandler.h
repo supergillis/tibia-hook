@@ -12,7 +12,6 @@
 #include "Handler.h"
 #include "ModuleManager.h"
 #include "Hook.h"
-#include "EncryptedMessage.h"
 
 class ScriptHandler: public Handler, public ModuleManager {
 	Q_OBJECT
@@ -25,12 +24,10 @@ public:
 
 	void reload();
 
-	void receiveFromClient(const EncryptedMessage*);
-	void receiveFromServer(const EncryptedMessage*);
+	bool receiveFromClient(Packet*);
+	bool receiveFromServer(Packet*);
 
 private:
-	bool receiveFromClientInternal(const EncryptedMessage*);
-
 	Hook* hook_;
 
 	QScriptEngine engine_;

@@ -25,7 +25,6 @@ public:
 
 public slots:
 	void sendToServer(Packet*);
-	void sendToClient(Packet*);
 
 private:
 	Hook* hook_;

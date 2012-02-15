@@ -2,9 +2,8 @@
 #define HANDLER_H_
 
 #include <QObject>
-#include <QEvent>
 
-#include "EncryptedMessage.h"
+#include "Packet.h"
 
 class Handler: public QObject {
 	Q_OBJECT
@@ -12,10 +11,8 @@ class Handler: public QObject {
 public:
 	Handler(QObject* = 0);
 
-	bool event(QEvent*);
-
-	virtual void receiveFromClient(const EncryptedMessage*) = 0;
-	virtual void receiveFromServer(const EncryptedMessage*) = 0;
+	virtual bool receiveFromClient(Packet*) = 0;
+	virtual bool receiveFromServer(Packet*) = 0;
 };
 
 #endif /* HANDLER_H_ */

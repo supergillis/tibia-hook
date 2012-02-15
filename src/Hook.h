@@ -5,10 +5,6 @@
 #include <QQueue>
 
 #include "Handler.h"
-#include "HookSocket.h"
-#include "HookClient.h"
-#include "EncryptedMessage.h"
-#include "DecryptedMessage.h"
 
 class Hook: public QCoreApplication {
 	Q_OBJECT
@@ -19,39 +15,17 @@ public:
 	Handler* handler();
 	void setHandler(Handler*);
 
-	HookSocket* socket();
-	void setSocket(HookSocket*);
+	void sendToClient(const Packet*);
+	void sendToServer(const Packet*);
 
-	HookClient* client();
-	void setClient(HookClient*);
-
-	int pendingClientMessages() const;
-	int pendingClientEvents() const;
-
-	ssize_t receiveFromClient(const quint8*, ssize_t);
-	ssize_t receiveFromServer(quint8*, ssize_t);
-
-	void sendToClient(const quint8*, ssize_t);
-	void sendToClient(const EncryptedMessage*);
-	void sendToClient(const DecryptedMessage*);
-
-	ssize_t sendToServer(const quint8*, ssize_t);
-	ssize_t sendToServer(const EncryptedMessage*);
-	ssize_t sendToServer(const DecryptedMessage*);
-
-	void sendKeyPress(int);
+	void receiveFromClient(bool);
+	void receiveFromServer();
 
 private:
 	Hook(const Hook&);
 	Hook& operator=(const Hook&);
 
-	HookSocket* socket_;
-	HookClient* client_;
 	Handler* handler_;
-
-	bool loggedIn_;
-	bool pendingLogin_;
-	QQueue<QByteArray> queue_;
 };
 
 #endif

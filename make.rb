@@ -27,6 +27,7 @@ $LDFLAGS = [
 ]
 
 $INCLUDES = [
+  "-I./lib/mologie-detours",
   "-I./src",
   "-I./src/linux",
   "-I./src/scripting",
@@ -49,7 +50,7 @@ def all
   linker = LinkerCommand.new($CC, $LIBRARY, $LDFLAGS)
  
   DirectoryRunner.new("#{$SOURCE_DIR}/**/*.h", moccer).run(*$INCLUDES)
-  DirectoryRunner.new("**/*.cpp", compiler).run(*($CFLAGS + $INCLUDES))
+  DirectoryRunner.new("**/*.cpp", compiler, ["lib/mologie-detours/hde32/src/hde32.cpp", "lib/mologie-detours/hde64/src/hde64.cpp"]).run(*($CFLAGS + $INCLUDES))
 
   objects = Dir["#{$OBJECTS_DIR}/**/*.o"]
   linker.run(*objects)

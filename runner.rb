@@ -43,14 +43,17 @@ class Command < Runner
 end
 
 class DirectoryRunner < Runner
-  def initialize(filter, runnable)
+  def initialize(filter, runnable, ignores = [])
     @filter = filter
     @runnable = runnable
+    @ignores = ignores
   end
 
   def run(*args)
     Dir[@filter].each do |file|
-      @runnable.run(*(args + [file]))
+      if not @ignores.include? file
+        @runnable.run(*(args + [file]))
+      end
     end
   end
 end

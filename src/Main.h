@@ -1,16 +1,15 @@
 #ifndef MAIN_H_
 #define MAIN_H_
 
-#include <sys/socket.h>
-#include <sys/types.h>
-#include <poll.h>
+#include "detours.h"
 
-int __connect(int, const struct sockaddr*, socklen_t);
+#define ADDRESS_BUFFER 0x85d3b60
+#define ADDRESS_BUFFER_LENGTH 0x85d4368
 
-int __poll(struct pollfd*, nfds_t, int);
+#define ADDRESS_WRITE_PACKET 0x08264920
+#define ADDRESS_READ_PACKET 0 // TODO
 
-ssize_t __read(int, void*, size_t);
-
-ssize_t __write(int, const void*, size_t);
+void writePacket(bool);
+void readPacket();
 
 #endif /* MAIN_H_ */

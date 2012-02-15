@@ -1,5 +1,4 @@
 #include "NetworkModule.h"
-#include "DecryptedMessage.h"
 
 const QString NetworkModule::PLUGIN_NAME("network");
 const QString NetworkModule::VARIABLE_NAME("Network");
@@ -21,11 +20,5 @@ bool NetworkModule::install(ModuleManager* manager) {
 }
 
 void NetworkModule::sendToServer(Packet* packet) {
-	DecryptedMessage message(packet);
-	hook_->sendToServer(&message);
-}
-
-void NetworkModule::sendToClient(Packet* packet) {
-	DecryptedMessage message(packet);
-	hook_->sendToClient(&message);
+	hook_->sendToServer(packet);
 }
