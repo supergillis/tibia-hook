@@ -10,5 +10,27 @@
 	* adds padding
 	* adds XTEA?
 
+0x80513c0
+	* main loop that checks for events
+
+0x80b59e0
+0x80b2da0
+0x812bb50
+0x80b4970
+0x8127f50
+0x80b5060
+0x80b4ae0
+0x80b4960
+0x80b5020
+	* get called in main loop
+
+0x812bb50
+0x8127f50
+0x80b5060
+0x80b4ae0
+0x80b4960
+0x80b5020
+	* possible change of buffer...
+
 0x8264920
 	* writes packet to server
