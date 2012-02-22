@@ -1,5 +1,4 @@
 #include "MemoryModule.h"
-#include "Memory.h"
 
 const QString MemoryModule::PLUGIN_NAME("memory");
 const QString MemoryModule::VARIABLE_NAME("Memory");
@@ -19,17 +18,20 @@ bool MemoryModule::install(ModuleManager* manager) {
 }
 
 quint8 MemoryModule::readU8(quint32 address) {
-	return Memory::readU8(address);
+	quint8 value = *((quint8*) address);
+	return value;
 }
 
 quint16 MemoryModule::readU16(quint32 address) {
-	return Memory::readU16(address);
+	quint16 value = *((quint16*) address);
+	return value;
 }
 
 quint32 MemoryModule::readU32(quint32 address) {
-	return Memory::readU32(address);
+	quint32 value = *((quint32*) address);
+	return value;
 }
 
 QString MemoryModule::readString(quint32 address) {
-	return Memory::readString(address);
+	return QString((const char*) address);
 }
