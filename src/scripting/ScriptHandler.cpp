@@ -38,9 +38,9 @@ bool ScriptHandler::receiveFromClient(const QByteArray& data) {
 		QScriptValue value = engine_.newQObject(packet, QScriptEngine::ScriptOwnership);
 		QScriptValueList args;
 		QScriptValue result = callback.call(engine_.globalObject(), args << value);
-		return result.isBool() ? result.toBool() : false;
+		return result.isBool() ? result.toBool() : true;
 	}
-	return false;
+	return true;
 }
 
 bool ScriptHandler::receiveFromServer(const QByteArray& data) {
@@ -50,7 +50,7 @@ bool ScriptHandler::receiveFromServer(const QByteArray& data) {
 		QScriptValue value = engine_.newQObject(packet, QScriptEngine::ScriptOwnership);
 		QScriptValueList args;
 		QScriptValue result = callback.call(engine_.globalObject(), args << value);
-		return result.isBool() ? result.toBool() : false;
+		return result.isBool() ? result.toBool() : true;
 	}
-	return false;
+	return true;
 }

@@ -75,7 +75,7 @@ void DetourManager::onSend(bool encrypt) {
 		quint8* buffer = (quint8*) (ADDRESS_SEND_BUFFER + 8);
 		quint32 length = *((quint32*) ADDRESS_SEND_BUFFER_LENGTH) - 8;
 		QByteArray data((char*) buffer, length);
-		if (hook_->receiveFromClient(data)) {
+		if (!hook_->receiveFromClient(data)) {
 			return;
 		}
 	}
