@@ -3,6 +3,7 @@
 
 #include <QApplication>
 #include <QMainWindow>
+#include <QEvent>
 
 #include "Handler.h"
 
@@ -12,13 +13,15 @@ class Hook: public QApplication {
 public:
 	Hook();
 
+	bool event(QEvent*);
+
 	Handler* handler();
 	void setHandler(Handler*);
 
 	void sendToClient(const QByteArray&);
 	void sendToServer(const QByteArray&);
 
-	bool receiveFromClient(const QByteArray&);
+	void receiveFromClient(const QByteArray&);
 	void receiveFromServer(const QByteArray&);
 
 private:

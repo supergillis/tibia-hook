@@ -2,7 +2,9 @@
 #define DETOURMANAGER_H_
 
 #include "detours.h"
-#include "SafeQueue.h"
+
+#include "DataEvent.h"
+#include "DataQueue.h"
 
 struct PacketStream {
 	quint8* buffer;
@@ -11,7 +13,7 @@ struct PacketStream {
 };
 
 typedef void* loopSignature();
-typedef void sendSignature(bool);
+typedef void sendSignature( bool);
 typedef void parserSignature();
 typedef int nextPacketSignature();
 
@@ -31,20 +33,21 @@ typedef int nextPacketSignature();
 class Hook;
 class DetourManager {
 public:
-	static void initialize(Hook*);
+	static void initialize(QObject*);
 
-	static SafeQueue* clientQueue();
-	static SafeQueue* serverQueue();
+	static DataQueue* clientQueue();
+	static DataQueue* serverQueue();
 private:
 	DetourManager();
 
-	static Hook* hook_;
+	static QObject* parent_;
 	static PacketStream* stream_;
 
+	static bool encrypted_;
 	static bool sendingToClient_;
 
-	static SafeQueue clientQueue_;
-	static SafeQueue serverQueue_;
+	static DataQueue clientQueue_;
+	static DataQueue serverQueue_;
 
 	static void* onLoop();
 	static void onSend(bool);

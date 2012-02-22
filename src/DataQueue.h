@@ -1,17 +1,17 @@
-#ifndef SAFEQUEUE_H_
-#define SAFEQUEUE_H_
+#ifndef DATAQUEUE_H_
+#define DATAQUEUE_H_
 
 #include <QByteArray>
 #include <QQueue>
 #include <QMutex>
 #include <QMutexLocker>
 
-class SafeQueue {
+class DataQueue {
 public:
 	int size();
 	bool empty();
 
-	void enqueue(const QByteArray& value);
+	void enqueue(const QByteArray&);
 	QByteArray dequeue();
 
 private:
@@ -19,4 +19,4 @@ private:
 	QMutex mutex_;
 };
 
-#endif /* SAFEQUEUE_H_ */
+#endif /* DATAQUEUE_H_ */

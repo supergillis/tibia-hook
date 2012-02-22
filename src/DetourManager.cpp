@@ -1,13 +1,14 @@
 #include "DetourManager.h"
 #include "Hook.h"
 
-Hook* DetourManager::hook_ = NULL;
+QObject* DetourManager::parent_ = NULL;
 PacketStream* DetourManager::stream_ = (PacketStream*) ADDRESS_PACKET_STREAM;
 
+bool DetourManager::encrypted_ = false;
 bool DetourManager::sendingToClient_ = false;
 
-SafeQueue DetourManager::clientQueue_;
-SafeQueue DetourManager::serverQueue_;
+DataQueue DetourManager::clientQueue_;
+DataQueue DetourManager::serverQueue_;
 
 MologieDetours::Detour<loopSignature*>* DetourManager::loopDetour_;
 MologieDetours::Detour<sendSignature*>* DetourManager::sendDetour_;
@@ -17,19 +18,19 @@ MologieDetours::Detour<nextPacketSignature*>* DetourManager::nextPacketDetour_;
 /**
  * This function runs in the Tibia thread.
  */
-void DetourManager::initialize(Hook* hook) {
-	hook_ = hook;
+void DetourManager::initialize(QObject* parent) {
+	parent_ = parent;
 	loopDetour_ = new MologieDetours::Detour<loopSignature*>((loopSignature*) ADDRESS_LOOP_FUNCTION, &DetourManager::onLoop);
 	sendDetour_ = new MologieDetours::Detour<sendSignature*>((sendSignature*) ADDRESS_SEND_FUNCTION, &DetourManager::onSend);
 	parserDetour_ = new MologieDetours::Detour<parserSignature*>((parserSignature*) ADDRESS_PARSER_FUNCTION, &DetourManager::onParse);
 	nextPacketDetour_ = new MologieDetours::Detour<nextPacketSignature*>((nextPacketSignature*) ADDRESS_NEXT_PACKET_FUNCTION, &DetourManager::onNextPacket);
 }
 
-SafeQueue* DetourManager::clientQueue() {
+DataQueue* DetourManager::clientQueue() {
 	return &clientQueue_;
 }
 
-SafeQueue* DetourManager::serverQueue() {
+DataQueue* DetourManager::serverQueue() {
 	return &serverQueue_;
 }
 
@@ -45,7 +46,7 @@ void* DetourManager::onLoop() {
 		memset((quint8*) ADDRESS_SEND_BUFFER, 0, 8);
 		memcpy((quint8*) ADDRESS_SEND_BUFFER + 8, buffer.constData(), buffer.length());
 		// Call send function with modified buffer
-		sendDetour_->GetOriginalFunction()(true);
+		sendDetour_->GetOriginalFunction()(encrypted_);
 	}
 	if (!clientQueue_.empty()) {
 		qDebug() << "onLoop clientQueue";
@@ -70,14 +71,14 @@ void* DetourManager::onLoop() {
  * This function runs in the Tibia thread.
  */
 void DetourManager::onSend(bool encrypt) {
-	qDebug() << "onSend" << encrypt;
-	if (hook_) {
+	//qDebug() << "onSend" << encrypt;
+	encrypted_ = encrypt;
+	if (parent_) {
 		quint8* buffer = (quint8*) (ADDRESS_SEND_BUFFER + 8);
 		quint32 length = *((quint32*) ADDRESS_SEND_BUFFER_LENGTH) - 8;
 		QByteArray data((char*) buffer, length);
-		if (!hook_->receiveFromClient(data)) {
-			return;
-		}
+		QCoreApplication::postEvent(parent_, new DataEvent(DataEvent::Client, data));
+		return;
 	}
 	sendDetour_->GetOriginalFunction()(encrypt);
 }
@@ -86,7 +87,7 @@ void DetourManager::onSend(bool encrypt) {
  * This function runs in the Tibia thread.
  */
 void DetourManager::onParse() {
-	qDebug() << "onParse" << stream_->position << stream_->size;
+	//qDebug() << "onParse" << stream_->position << stream_->size;
 	parserDetour_->GetOriginalFunction()();
 }
 
@@ -102,14 +103,14 @@ int DetourManager::onNextPacket() {
 		}
 		return -1;
 	}
-	if (hook_) {
+	if (parent_) {
 		int command = nextPacketDetour_->GetOriginalFunction()();
 		if (command != -1) {
-			qDebug() << "onNextPacket" << stream_->position << stream_->size;
+			//qDebug() << "onNextPacket" << stream_->position << stream_->size;
 			quint32 position = stream_->position - 1;
 			quint32 length = stream_->size - position;
 			QByteArray data((char*) (stream_->buffer + position), length);
-			hook_->receiveFromServer(data);
+			QCoreApplication::postEvent(parent_, new DataEvent(DataEvent::Server, data));
 		}
 		return command;
 	}
