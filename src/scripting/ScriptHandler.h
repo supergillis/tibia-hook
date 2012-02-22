@@ -25,7 +25,7 @@ public:
 	void reload();
 
 	bool receiveFromClient(const QByteArray&);
-	bool receiveFromServer(const QByteArray&);
+	void receiveFromServer(const QByteArray&);
 
 private:
 	Hook* hook_;

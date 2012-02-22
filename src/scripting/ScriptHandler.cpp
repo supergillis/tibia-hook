@@ -43,14 +43,12 @@ bool ScriptHandler::receiveFromClient(const QByteArray& data) {
 	return true;
 }
 
-bool ScriptHandler::receiveFromServer(const QByteArray& data) {
+void ScriptHandler::receiveFromServer(const QByteArray& data) {
 	QScriptValue callback = engine_.globalObject().property(receiveFromServerHandle_);
 	if (callback.isFunction()) {
 		ReadOnlyPacket* packet = new ReadOnlyPacket(data);
 		QScriptValue value = engine_.newQObject(packet, QScriptEngine::ScriptOwnership);
 		QScriptValueList args;
 		QScriptValue result = callback.call(engine_.globalObject(), args << value);
-		return result.isBool() ? result.toBool() : true;
 	}
-	return true;
 }

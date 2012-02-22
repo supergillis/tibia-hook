@@ -9,20 +9,20 @@ bool DetourManager::sendingToClient_ = false;
 SafeQueue DetourManager::clientQueue_;
 SafeQueue DetourManager::serverQueue_;
 
-MologieDetours::Detour<loopSignature>* DetourManager::loopDetour_;
-MologieDetours::Detour<sendSignature>* DetourManager::sendDetour_;
-MologieDetours::Detour<parserSignature>* DetourManager::parserDetour_;
-MologieDetours::Detour<nextPacketSignature>* DetourManager::nextPacketDetour_;
+MologieDetours::Detour<loopSignature*>* DetourManager::loopDetour_;
+MologieDetours::Detour<sendSignature*>* DetourManager::sendDetour_;
+MologieDetours::Detour<parserSignature*>* DetourManager::parserDetour_;
+MologieDetours::Detour<nextPacketSignature*>* DetourManager::nextPacketDetour_;
 
 /**
  * This function runs in the Tibia thread.
  */
 void DetourManager::initialize(Hook* hook) {
 	hook_ = hook;
-	loopDetour_ = new MologieDetours::Detour<loopSignature>((loopSignature) ADDRESS_LOOP_FUNCTION, &DetourManager::onLoop);
-	sendDetour_ = new MologieDetours::Detour<sendSignature>((sendSignature) ADDRESS_SEND_FUNCTION, &DetourManager::onSend);
-	parserDetour_ = new MologieDetours::Detour<parserSignature>((parserSignature) ADDRESS_PARSER_FUNCTION, &DetourManager::onParse);
-	nextPacketDetour_ = new MologieDetours::Detour<nextPacketSignature>((nextPacketSignature) ADDRESS_NEXT_PACKET_FUNCTION, &DetourManager::onNextPacket);
+	loopDetour_ = new MologieDetours::Detour<loopSignature*>((loopSignature*) ADDRESS_LOOP_FUNCTION, &DetourManager::onLoop);
+	sendDetour_ = new MologieDetours::Detour<sendSignature*>((sendSignature*) ADDRESS_SEND_FUNCTION, &DetourManager::onSend);
+	parserDetour_ = new MologieDetours::Detour<parserSignature*>((parserSignature*) ADDRESS_PARSER_FUNCTION, &DetourManager::onParse);
+	nextPacketDetour_ = new MologieDetours::Detour<nextPacketSignature*>((nextPacketSignature*) ADDRESS_NEXT_PACKET_FUNCTION, &DetourManager::onNextPacket);
 }
 
 SafeQueue* DetourManager::clientQueue() {
@@ -86,7 +86,7 @@ void DetourManager::onSend(bool encrypt) {
  * This function runs in the Tibia thread.
  */
 void DetourManager::onParse() {
-	qDebug() << "onParse";
+	qDebug() << "onParse" << stream_->position << stream_->size;
 	parserDetour_->GetOriginalFunction()();
 }
 
@@ -94,7 +94,6 @@ void DetourManager::onParse() {
  * This function runs in the Tibia thread.
  */
 int DetourManager::onNextPacket() {
-	qDebug() << "onNextPacket";
 	if (sendingToClient_) {
 		if (stream_->position < stream_->size) {
 			quint8 command = *((quint8*) (stream_->buffer + stream_->position));
@@ -102,6 +101,17 @@ int DetourManager::onNextPacket() {
 			return command;
 		}
 		return -1;
+	}
+	if (hook_) {
+		int command = nextPacketDetour_->GetOriginalFunction()();
+		if (command != -1) {
+			qDebug() << "onNextPacket" << stream_->position << stream_->size;
+			quint32 position = stream_->position - 1;
+			quint32 length = stream_->size - position;
+			QByteArray data((char*) (stream_->buffer + position), length);
+			hook_->receiveFromServer(data);
+		}
+		return command;
 	}
 	return nextPacketDetour_->GetOriginalFunction()();
 }

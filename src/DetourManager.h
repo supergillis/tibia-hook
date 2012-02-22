@@ -10,10 +10,10 @@ struct PacketStream {
 	quint32 position;
 };
 
-typedef void* (*loopSignature)();
-typedef void (*sendSignature)( bool);
-typedef void (*parserSignature)();
-typedef int (*nextPacketSignature)();
+typedef void* loopSignature();
+typedef void sendSignature(bool);
+typedef void parserSignature();
+typedef int nextPacketSignature();
 
 #ifdef WIN32
 #else
@@ -51,10 +51,10 @@ private:
 	static void onParse();
 	static int onNextPacket();
 
-	static MologieDetours::Detour<loopSignature>* loopDetour_;
-	static MologieDetours::Detour<sendSignature>* sendDetour_;
-	static MologieDetours::Detour<parserSignature>* parserDetour_;
-	static MologieDetours::Detour<nextPacketSignature>* nextPacketDetour_;
+	static MologieDetours::Detour<loopSignature*>* loopDetour_;
+	static MologieDetours::Detour<sendSignature*>* sendDetour_;
+	static MologieDetours::Detour<parserSignature*>* parserDetour_;
+	static MologieDetours::Detour<nextPacketSignature*>* nextPacketDetour_;
 };
 
 #endif /* DETOURMANAGER_H_ */
