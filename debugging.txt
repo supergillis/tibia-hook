@@ -1,9 +1,12 @@
-0x85d3b60	= buffer address
-0x85d4360	= no idea
-0x85d4368	= buffer length
+0x85d3b60	= send buffer address
+0x85d4368	= send buffer length
 0x08264a61	= common return stack value
 0x0823fb57	= return address after move west
 0x082403f7	= return address after move east
+
+0x85d4380	= read buffer address
+0x85d3b4c	= pointer to the decrypt function
+0x81320f0	= decrypt function
 
 0x82675c0
 	* called before writing

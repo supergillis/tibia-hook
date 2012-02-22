@@ -3,10 +3,9 @@
 #include <QScriptValueIterator>
 
 #include "ScriptHandler.h"
-#include "Packet.h"
+
 #include "ReadOnlyPacket.h"
 #include "Hook.h"
-
 #include "ClassModule.h"
 #include "EnvironmentModule.h"
 #include "PacketModule.h"
@@ -32,10 +31,11 @@ void ScriptHandler::reload() {
 	}
 }
 
-bool ScriptHandler::receiveFromClient(Packet* packet) {
+bool ScriptHandler::receiveFromClient(const QByteArray& data) {
 	QScriptValue callback = engine_.globalObject().property(receiveFromClientHandle_);
 	if (callback.isFunction()) {
-		QScriptValue value = engine_.newQObject(packet, QScriptEngine::QtOwnership);
+		ReadOnlyPacket* packet = new ReadOnlyPacket(data);
+		QScriptValue value = engine_.newQObject(packet, QScriptEngine::ScriptOwnership);
 		QScriptValueList args;
 		QScriptValue result = callback.call(engine_.globalObject(), args << value);
 		return result.isBool() ? result.toBool() : false;
@@ -43,11 +43,14 @@ bool ScriptHandler::receiveFromClient(Packet* packet) {
 	return false;
 }
 
-bool ScriptHandler::receiveFromServer(Packet* packet) {
+bool ScriptHandler::receiveFromServer(const QByteArray& data) {
 	QScriptValue callback = engine_.globalObject().property(receiveFromServerHandle_);
 	if (callback.isFunction()) {
-		QScriptValue value = engine_.newQObject(packet, QScriptEngine::QtOwnership);
+		ReadOnlyPacket* packet = new ReadOnlyPacket(data);
+		QScriptValue value = engine_.newQObject(packet, QScriptEngine::ScriptOwnership);
 		QScriptValueList args;
 		QScriptValue result = callback.call(engine_.globalObject(), args << value);
+		return result.isBool() ? result.toBool() : false;
 	}
+	return false;
 }

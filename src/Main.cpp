@@ -30,7 +30,7 @@ void hook_destructor() {
 #include "SchedulerModule.h"
 
 void* hook_thread(void*) {
-	Hook* hook = Hook::instance();
+	Hook* hook = new Hook();
 	ScriptHandler* handler = new ScriptHandler(hook);
 	handler->install(new DebuggerModule(hook));
 	handler->install(new ClassModule(hook));

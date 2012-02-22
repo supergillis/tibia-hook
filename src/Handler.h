@@ -11,8 +11,8 @@ class Handler: public QObject {
 public:
 	Handler(QObject* = 0);
 
-	virtual bool receiveFromClient(Packet*) = 0;
-	virtual bool receiveFromServer(Packet*) = 0;
+	virtual bool receiveFromClient(const QByteArray&) = 0;
+	virtual bool receiveFromServer(const QByteArray&) = 0;
 };
 
 #endif /* HANDLER_H_ */

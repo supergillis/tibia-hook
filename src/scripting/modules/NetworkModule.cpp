@@ -20,5 +20,9 @@ bool NetworkModule::install(ModuleManager* manager) {
 }
 
 void NetworkModule::sendToServer(Packet* packet) {
-	hook_->sendToServer(packet);
+	hook_->sendToServer(QByteArray((const char*) packet->data(), packet->length()));
+}
+
+void NetworkModule::sendToClient(Packet* packet) {
+	hook_->sendToClient(QByteArray((const char*) packet->data(), packet->length()));
 }
