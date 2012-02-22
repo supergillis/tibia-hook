@@ -23,6 +23,7 @@ $LDFLAGS = [
   "-ldl",
   "-lpthread",
   "-lQtCore",
+  "-lQtGui",
   "-lQtScript"
 ]
 
@@ -34,6 +35,7 @@ $INCLUDES = [
   "-I./src/scripting/modules",
   "-I/usr/include/qt4",
   "-I/usr/include/qt4/QtCore",
+  "-I/usr/include/qt4/QtGui",
   "-I/usr/include/qt4/QtScript"
 ]
 

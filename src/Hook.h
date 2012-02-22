@@ -1,11 +1,12 @@
 #ifndef HOOK_H
 #define HOOK_H
 
-#include <QCoreApplication>
+#include <QApplication>
+#include <QMainWindow>
 
 #include "Handler.h"
 
-class Hook: public QCoreApplication {
+class Hook: public QApplication {
 	Q_OBJECT
 
 public:
@@ -18,7 +19,7 @@ public:
 	void sendToServer(const QByteArray&);
 
 	bool receiveFromClient(const QByteArray&);
-	bool receiveFromServer(const QByteArray&);
+	void receiveFromServer(const QByteArray&);
 
 private:
 	Hook(const Hook&);

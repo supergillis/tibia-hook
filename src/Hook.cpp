@@ -1,5 +1,3 @@
-#include <QDebug>
-
 #include "Hook.h"
 #include "DetourManager.h"
 #include "ReadOnlyPacket.h"
@@ -7,8 +5,10 @@
 static int argc_ = 0;
 
 Hook::Hook() :
-		QCoreApplication(argc_, NULL), handler_(NULL) {
+		QApplication(argc_, NULL), handler_(NULL) {
 	DetourManager::initialize(this);
+	QMainWindow* window = new QMainWindow();
+	window->show();
 }
 
 Handler* Hook::handler() {
@@ -43,6 +43,6 @@ bool Hook::receiveFromClient(const QByteArray& data) {
 /**
  * This function runs in the Tibia thread.
  */
-bool Hook::receiveFromServer(const QByteArray& data) {
-	return handler_->receiveFromServer(data);
+void Hook::receiveFromServer(const QByteArray& data) {
+	handler_->receiveFromServer(data);
 }
