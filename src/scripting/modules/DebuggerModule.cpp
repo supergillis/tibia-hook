@@ -1,6 +1,6 @@
 #include "DebuggerModule.h"
 
-const QString DebuggerModule::PLUGIN_NAME("environment");
+const QString DebuggerModule::PLUGIN_NAME("debugger");
 
 DebuggerModule::DebuggerModule(QObject* parent) :
 		Module(parent), debugger_(NULL) {
