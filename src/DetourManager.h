@@ -44,7 +44,6 @@ private:
 	static PacketStream* stream_;
 	static ParserSignature* parserFunction_;
 
-	static bool encrypted_;
 	static bool sendingToClient_;
 
 	static DataQueue clientQueue_;

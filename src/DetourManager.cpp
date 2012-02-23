@@ -5,7 +5,6 @@ QObject* DetourManager::parent_ = NULL;
 PacketStream* DetourManager::stream_ = (PacketStream*) ADDRESS_PACKET_STREAM;
 ParserSignature* DetourManager::parserFunction_ = (ParserSignature*) ADDRESS_PARSER_FUNCTION;
 
-bool DetourManager::encrypted_ = false;
 bool DetourManager::sendingToClient_ = false;
 
 DataQueue DetourManager::clientQueue_;
@@ -44,7 +43,7 @@ void* DetourManager::onLoop() {
 		memset((quint8*) ADDRESS_SEND_BUFFER, 0, 8);
 		memcpy((quint8*) ADDRESS_SEND_BUFFER + 8, buffer.constData(), buffer.length());
 		// Call send function with modified buffer
-		sendDetour_->GetOriginalFunction()(encrypted_);
+		sendDetour_->GetOriginalFunction()(true);
 	}
 	if (!clientQueue_.empty()) {
 		// Backup stream data
@@ -68,8 +67,7 @@ void* DetourManager::onLoop() {
  * This function runs in the Tibia thread.
  */
 void DetourManager::onSend(bool encrypt) {
-	encrypted_ = encrypt;
-	if (parent_) {
+	if (encrypt && parent_) {
 		quint8* buffer = (quint8*) (ADDRESS_SEND_BUFFER + 8);
 		quint32 length = *((quint32*) ADDRESS_SEND_BUFFER_LENGTH) - 8;
 		QCoreApplication::postEvent(parent_, new DataEvent(DataEvent::Client, buffer, length), Qt::HighEventPriority);
