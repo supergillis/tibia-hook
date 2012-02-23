@@ -12,7 +12,7 @@ struct PacketStream {
 	quint32 position;
 };
 
-typedef void* LoopSignature();
+typedef void LoopSignature();
 typedef void SendSignature( bool);
 typedef void ParserSignature();
 typedef int NextPacketSignature();
@@ -49,7 +49,7 @@ private:
 	static DataQueue clientQueue_;
 	static DataQueue serverQueue_;
 
-	static void* onLoop();
+	static void onLoop();
 	static void onSend(bool);
 	static int onNextPacket();
 

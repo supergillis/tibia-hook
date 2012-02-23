@@ -35,7 +35,7 @@ DataQueue* DetourManager::serverQueue() {
 /**
  * This function runs in the Tibia thread.
  */
-void* DetourManager::onLoop() {
+void DetourManager::onLoop() {
 	if (!serverQueue_.empty()) {
 		// Replace send buffer with new buffer
 		QByteArray buffer = serverQueue_.dequeue();
@@ -60,7 +60,7 @@ void* DetourManager::onLoop() {
 		sendingToClient_ = false;
 		*stream_ = recover;
 	}
-	return loopDetour_->GetOriginalFunction()();
+	loopDetour_->GetOriginalFunction()();
 }
 
 /**
