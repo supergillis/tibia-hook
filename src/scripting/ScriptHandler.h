@@ -2,26 +2,22 @@
 #define SCRIPTHANDLER_H_
 
 #include <QObject>
-#include <QFile>
-#include <QHash>
-#include <QStringList>
 #include <QScriptEngine>
-#include <QScriptContext>
-#include <QScriptEngineAgent>
+#include <QScriptString>
 
 #include "Handler.h"
 #include "ModuleManager.h"
 #include "Hook.h"
 
-class ScriptHandler: public Handler, public ModuleManager {
-	Q_OBJECT
-
+class ScriptHandler: public QObject, public Handler {
 public:
 	ScriptHandler(Hook*);
+	~ScriptHandler();
 
 	Hook* hook();
 	QScriptEngine* engine();
 
+	void install(Module*);
 	void reload();
 
 	bool receiveFromClient(const QByteArray&);
@@ -29,6 +25,7 @@ public:
 
 private:
 	Hook* hook_;
+	ModuleManager* moduleManager_;
 
 	QScriptEngine engine_;
 	QScriptString receiveFromClientHandle_;

@@ -13,10 +13,10 @@ class Hook: public QApplication {
 public:
 	Hook();
 
-	bool event(QEvent*);
-
 	Handler* handler();
 	void setHandler(Handler*);
+
+	bool event(QEvent*);
 
 	void sendToClient(const QByteArray&);
 	void sendToServer(const QByteArray&);

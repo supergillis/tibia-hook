@@ -1,16 +1,10 @@
 #ifndef HANDLER_H_
 #define HANDLER_H_
 
-#include <QObject>
+#include <QByteArray>
 
-#include "Packet.h"
-
-class Handler: public QObject {
-	Q_OBJECT
-
+class Handler {
 public:
-	Handler(QObject* = 0);
-
 	virtual bool receiveFromClient(const QByteArray&) = 0;
 	virtual void receiveFromServer(const QByteArray&) = 0;
 };

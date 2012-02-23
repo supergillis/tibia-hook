@@ -1,19 +1,15 @@
-#include <QDebug>
-#include <QDir>
-#include <QScriptValueIterator>
-
 #include "ScriptHandler.h"
-
 #include "ReadOnlyPacket.h"
-#include "Hook.h"
-#include "ClassModule.h"
 #include "EnvironmentModule.h"
-#include "PacketModule.h"
 
 ScriptHandler::ScriptHandler(Hook* hook) :
-		Handler(hook), hook_(hook), engine_(this), ModuleManager(hook, &engine_) {
+		QObject(hook), Handler(), hook_(hook), engine_(this), moduleManager_(new ModuleManager(hook, &engine_)) {
 	receiveFromClientHandle_ = engine_.toStringHandle("receiveFromClient");
 	receiveFromServerHandle_ = engine_.toStringHandle("receiveFromServer");
+}
+
+ScriptHandler::~ScriptHandler() {
+	delete moduleManager_;
 }
 
 Hook* ScriptHandler::hook() {
@@ -24,8 +20,12 @@ QScriptEngine* ScriptHandler::engine() {
 	return &engine_;
 }
 
+void ScriptHandler::install(Module* module) {
+	moduleManager_->install(module);
+}
+
 void ScriptHandler::reload() {
-	EnvironmentModule* environmentModule = (EnvironmentModule*) lookup(EnvironmentModule::PLUGIN_NAME);
+	EnvironmentModule* environmentModule = (EnvironmentModule*) moduleManager_->lookup(EnvironmentModule::PLUGIN_NAME);
 	if (environmentModule) {
 		environmentModule->reload();
 	}

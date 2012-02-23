@@ -10,10 +10,21 @@ Hook::Hook() :
 	DetourManager::initialize(this);
 }
 
+Handler* Hook::handler() {
+	return handler_;
+}
+
+void Hook::setHandler(Handler* handler) {
+	handler_ = handler;
+}
+
+/**
+ * This function runs in the injected thread.
+ */
 bool Hook::event(QEvent* event) {
-	if (event->type() == (QEvent::Type) DataEvent::Client || event->type() == (QEvent::Type) DataEvent::Server) {
+	if (event->type() == DataEvent::EventType) {
 		DataEvent* dataEvent = (DataEvent*) event;
-		switch (dataEvent->type()) {
+		switch (dataEvent->dataType()) {
 			case DataEvent::Client:
 				receiveFromClient(dataEvent->data());
 				break;
@@ -23,14 +34,6 @@ bool Hook::event(QEvent* event) {
 		}
 	}
 	return QApplication::event(event);
-}
-
-Handler* Hook::handler() {
-	return handler_;
-}
-
-void Hook::setHandler(Handler* handler) {
-	handler_ = handler;
 }
 
 /**
@@ -51,7 +54,6 @@ void Hook::sendToServer(const QByteArray& data) {
  * This function runs in the injected thread.
  */
 void Hook::receiveFromClient(const QByteArray& data) {
-	qDebug() << "receiveFromClient";
 	if (handler_->receiveFromClient(data)) {
 		DetourManager::serverQueue()->enqueue(data);
 	}
