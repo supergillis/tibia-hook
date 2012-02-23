@@ -41,7 +41,7 @@ quint16 Packet::readU16() {
 }
 
 quint32 Packet::readU32() {
-	if (has(2)) {
+	if (has(4)) {
 		quint32 value = *(quint32*) (data() + position_);
 		position_ += 4;
 		return value;
@@ -51,7 +51,7 @@ quint32 Packet::readU32() {
 }
 
 quint64 Packet::readU64() {
-	if (has(2)) {
+	if (has(8)) {
 		quint64 value = *(quint64*) (data() + position_);
 		position_ += 8;
 		return value;
