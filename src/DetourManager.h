@@ -12,10 +12,10 @@ struct PacketStream {
 	quint32 position;
 };
 
-typedef void* loopSignature();
-typedef void sendSignature( bool);
-typedef void parserSignature();
-typedef int nextPacketSignature();
+typedef void* LoopSignature();
+typedef void SendSignature( bool);
+typedef void ParserSignature();
+typedef int NextPacketSignature();
 
 #ifdef WIN32
 #else
@@ -42,6 +42,7 @@ private:
 
 	static QObject* parent_;
 	static PacketStream* stream_;
+	static ParserSignature* parserFunction_;
 
 	static bool encrypted_;
 	static bool sendingToClient_;
@@ -51,13 +52,11 @@ private:
 
 	static void* onLoop();
 	static void onSend(bool);
-	static void onParse();
 	static int onNextPacket();
 
-	static MologieDetours::Detour<loopSignature*>* loopDetour_;
-	static MologieDetours::Detour<sendSignature*>* sendDetour_;
-	static MologieDetours::Detour<parserSignature*>* parserDetour_;
-	static MologieDetours::Detour<nextPacketSignature*>* nextPacketDetour_;
+	static MologieDetours::Detour<LoopSignature*>* loopDetour_;
+	static MologieDetours::Detour<SendSignature*>* sendDetour_;
+	static MologieDetours::Detour<NextPacketSignature*>* nextPacketDetour_;
 };
 
 #endif /* DETOURMANAGER_H_ */

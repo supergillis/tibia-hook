@@ -3,6 +3,7 @@
 
 QObject* DetourManager::parent_ = NULL;
 PacketStream* DetourManager::stream_ = (PacketStream*) ADDRESS_PACKET_STREAM;
+ParserSignature* DetourManager::parserFunction_ = (ParserSignature*) ADDRESS_PARSER_FUNCTION;
 
 bool DetourManager::encrypted_ = false;
 bool DetourManager::sendingToClient_ = false;
@@ -10,20 +11,18 @@ bool DetourManager::sendingToClient_ = false;
 DataQueue DetourManager::clientQueue_;
 DataQueue DetourManager::serverQueue_;
 
-MologieDetours::Detour<loopSignature*>* DetourManager::loopDetour_;
-MologieDetours::Detour<sendSignature*>* DetourManager::sendDetour_;
-MologieDetours::Detour<parserSignature*>* DetourManager::parserDetour_;
-MologieDetours::Detour<nextPacketSignature*>* DetourManager::nextPacketDetour_;
+MologieDetours::Detour<LoopSignature*>* DetourManager::loopDetour_;
+MologieDetours::Detour<SendSignature*>* DetourManager::sendDetour_;
+MologieDetours::Detour<NextPacketSignature*>* DetourManager::nextPacketDetour_;
 
 /**
  * This function runs in the Tibia thread.
  */
 void DetourManager::initialize(QObject* parent) {
 	parent_ = parent;
-	loopDetour_ = new MologieDetours::Detour<loopSignature*>((loopSignature*) ADDRESS_LOOP_FUNCTION, &DetourManager::onLoop);
-	sendDetour_ = new MologieDetours::Detour<sendSignature*>((sendSignature*) ADDRESS_SEND_FUNCTION, &DetourManager::onSend);
-	parserDetour_ = new MologieDetours::Detour<parserSignature*>((parserSignature*) ADDRESS_PARSER_FUNCTION, &DetourManager::onParse);
-	nextPacketDetour_ = new MologieDetours::Detour<nextPacketSignature*>((nextPacketSignature*) ADDRESS_NEXT_PACKET_FUNCTION, &DetourManager::onNextPacket);
+	loopDetour_ = new MologieDetours::Detour<LoopSignature*>((LoopSignature*) ADDRESS_LOOP_FUNCTION, &DetourManager::onLoop);
+	sendDetour_ = new MologieDetours::Detour<SendSignature*>((SendSignature*) ADDRESS_SEND_FUNCTION, &DetourManager::onSend);
+	nextPacketDetour_ = new MologieDetours::Detour<NextPacketSignature*>((NextPacketSignature*) ADDRESS_NEXT_PACKET_FUNCTION, &DetourManager::onNextPacket);
 }
 
 DataQueue* DetourManager::clientQueue() {
@@ -39,7 +38,6 @@ DataQueue* DetourManager::serverQueue() {
  */
 void* DetourManager::onLoop() {
 	if (!serverQueue_.empty()) {
-		qDebug() << "onLoop serverQueue";
 		// Replace send buffer with new buffer
 		QByteArray buffer = serverQueue_.dequeue();
 		*((quint32*) ADDRESS_SEND_BUFFER_LENGTH) = buffer.length() + 8;
@@ -49,7 +47,6 @@ void* DetourManager::onLoop() {
 		sendDetour_->GetOriginalFunction()(encrypted_);
 	}
 	if (!clientQueue_.empty()) {
-		qDebug() << "onLoop clientQueue";
 		// Backup stream data
 		PacketStream recover = *stream_;
 		sendingToClient_ = true;
@@ -59,7 +56,7 @@ void* DetourManager::onLoop() {
 		stream_->position = 0;
 		stream_->size = buffer.length();
 		// Call parse function with modified stream
-		parserDetour_->GetOriginalFunction()();
+		parserFunction_();
 		// Restore stream data
 		sendingToClient_ = false;
 		*stream_ = recover;
@@ -71,24 +68,14 @@ void* DetourManager::onLoop() {
  * This function runs in the Tibia thread.
  */
 void DetourManager::onSend(bool encrypt) {
-	//qDebug() << "onSend" << encrypt;
 	encrypted_ = encrypt;
 	if (parent_) {
 		quint8* buffer = (quint8*) (ADDRESS_SEND_BUFFER + 8);
 		quint32 length = *((quint32*) ADDRESS_SEND_BUFFER_LENGTH) - 8;
-		QByteArray data((char*) buffer, length);
-		QCoreApplication::postEvent(parent_, new DataEvent(DataEvent::Client, data));
+		QCoreApplication::postEvent(parent_, new DataEvent(DataEvent::Client, buffer, length), Qt::HighEventPriority);
 		return;
 	}
 	sendDetour_->GetOriginalFunction()(encrypt);
-}
-
-/**
- * This function runs in the Tibia thread.
- */
-void DetourManager::onParse() {
-	//qDebug() << "onParse" << stream_->position << stream_->size;
-	parserDetour_->GetOriginalFunction()();
 }
 
 /**
@@ -106,11 +93,9 @@ int DetourManager::onNextPacket() {
 	if (parent_) {
 		int command = nextPacketDetour_->GetOriginalFunction()();
 		if (command != -1) {
-			//qDebug() << "onNextPacket" << stream_->position << stream_->size;
 			quint32 position = stream_->position - 1;
 			quint32 length = stream_->size - position;
-			QByteArray data((char*) (stream_->buffer + position), length);
-			QCoreApplication::postEvent(parent_, new DataEvent(DataEvent::Server, data));
+			QCoreApplication::postEvent(parent_, new DataEvent(DataEvent::Server, stream_->buffer + position, length), Qt::HighEventPriority);
 		}
 		return command;
 	}

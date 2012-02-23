@@ -7,17 +7,22 @@
 
 class DataEvent: public QEvent {
 public:
-	enum EventType {
-		Client = QEvent::User,
-		Server = QEvent::User + 1
+	static const QEvent::Type EventType = QEvent::User;
+
+	enum DataType {
+		Client,
+		Server
 	};
 
-	DataEvent(EventType, const QByteArray&);
+	DataEvent(DataType, const QByteArray&);
+	DataEvent(DataType, const quint8*, quint32);
 
 	const QByteArray& data() const;
+	DataType dataType() const;
 
 private:
 	QByteArray data_;
+	DataType dataType_;
 };
 
 #endif /* DATAEVENT_H_ */
