@@ -3,7 +3,7 @@
 #define max(a, b) a > b ? a : b
 
 ReadWritePacket::ReadWritePacket() :
-		data_(32, 0), length_(0) {
+		data_(256, 0), length_(0) {
 }
 
 quint16 ReadWritePacket::length() const {
@@ -37,14 +37,14 @@ void ReadWritePacket::writeU16(quint16 value) {
 
 void ReadWritePacket::writeU32(quint32 value) {
 	reserve(4);
-	*(quint16*) (data_.data() + position_) = value;
+	*(quint32*) (data_.data() + position_) = value;
 	position_ += 4;
 	length_ = max(length_, position_);
 }
 
 void ReadWritePacket::writeU64(quint64 value) {
 	reserve(8);
-	*(quint16*) (data_.data() + position_) = value;
+	*(quint64*) (data_.data() + position_) = value;
 	position_ += 8;
 	length_ = max(length_, position_);
 }
