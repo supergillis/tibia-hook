@@ -1,7 +1,6 @@
 #include "Hook.h"
 #include "DataEvent.h"
 #include "DetourManager.h"
-#include "ReadOnlyPacket.h"
 
 static int argc_ = 0;
 

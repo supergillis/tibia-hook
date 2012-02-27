@@ -37,6 +37,7 @@ public:
 
 	static DataQueue* clientQueue();
 	static DataQueue* serverQueue();
+
 private:
 	DetourManager();
 

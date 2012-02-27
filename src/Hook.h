@@ -2,12 +2,15 @@
 #define HOOK_H
 
 #include <QApplication>
-#include <QMainWindow>
+#include <QByteArray>
 #include <QEvent>
+#include <QMainWindow>
+
+#include <HookInterface.h>
 
 #include "Handler.h"
 
-class Hook: public QApplication {
+class Hook: public QApplication, public HookInterface {
 	Q_OBJECT
 
 public:

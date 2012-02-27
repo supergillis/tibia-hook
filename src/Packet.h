@@ -7,13 +7,10 @@
 
 #define PACKET_END_OF_FILE "reached the end of the buffer"
 
-class Packet: public QObject {
-	Q_OBJECT
-	Q_PROPERTY(quint16 length READ length)
-	Q_PROPERTY(quint16 position WRITE setPosition READ position)
-
+class Packet {
 public:
 	Packet();
+	virtual ~Packet() {};
 
 	virtual quint16 length() const = 0;
 	virtual const quint8* data() const = 0;
@@ -21,9 +18,7 @@ public:
 	quint16 position() const;
 	void setPosition(quint16);
 
-public slots:
-	void skip(quint16 = 1);
-
+	void skip(quint16);
 	bool has(quint16) const;
 
 	quint8 readU8();

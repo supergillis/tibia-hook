@@ -1,7 +1,7 @@
 #include "Packet.h"
 
 Packet::Packet() :
-		QObject(), position_(0) {
+		position_(0) {
 }
 
 quint16 Packet::position() const {

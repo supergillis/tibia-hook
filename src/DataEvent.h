@@ -1,9 +1,8 @@
 #ifndef DATAEVENT_H_
 #define DATAEVENT_H_
 
-#include <QObject>
-#include <QEvent>
 #include <QByteArray>
+#include <QEvent>
 
 class DataEvent: public QEvent {
 public:

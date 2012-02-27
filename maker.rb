@@ -15,7 +15,8 @@ class MoccerCommand < DebugCommand
   # Only accepts files that are more recently modified than the MOC files
   def accept(*args, file)
     output = moc_file(file)
-    if File.readlines(file).grep(/Q_OBJECT/).length > 0
+    lines = File.readlines(file)
+    if lines.grep(/Q_OBJECT/).length > 0
       if File.exists?(output)
         return File.ctime(file) > File.ctime(output)
       end

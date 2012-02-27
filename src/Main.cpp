@@ -21,25 +21,9 @@ void hook_destructor() {
 	pthread_join(hook_id, NULL);
 }
 
-#include "DebuggerModule.h"
-#include "ClassModule.h"
-#include "EnvironmentModule.h"
-#include "MemoryModule.h"
-#include "NetworkModule.h"
-#include "PacketModule.h"
-#include "SchedulerModule.h"
-
 void* hook_thread(void*) {
 	Hook* hook = new Hook();
 	ScriptHandler* handler = new ScriptHandler(hook);
-	handler->install(new DebuggerModule(hook));
-	handler->install(new ClassModule(hook));
-	handler->install(new EnvironmentModule(hook));
-	handler->install(new PacketModule(hook));
-	handler->install(new MemoryModule(hook));
-	handler->install(new NetworkModule(hook));
-	handler->install(new SchedulerModule(hook));
-	handler->reload();
 	hook->setHandler(handler);
 	hook->exec();
 	return NULL;

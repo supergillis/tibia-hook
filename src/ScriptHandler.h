@@ -1,33 +1,34 @@
 #ifndef SCRIPTHANDLER_H_
 #define SCRIPTHANDLER_H_
 
+#include <QByteArray>
+#include <QDir>
+#include <QList>
 #include <QObject>
 #include <QScriptEngine>
 #include <QScriptString>
 
-#include "Handler.h"
-#include "ModuleManager.h"
-#include "Hook.h"
+#include <ScriptPluginInterface.h>
 
-class ScriptHandler: public QObject, public Handler {
+#include "Handler.h"
+#include "Hook.h"
+#include "ScriptEngine.h"
+
+class ScriptHandler: public Handler {
 public:
 	ScriptHandler(Hook*);
-	~ScriptHandler();
-
-	Hook* hook();
-	QScriptEngine* engine();
-
-	void install(Module*);
-	void reload();
+	virtual ~ScriptHandler();
 
 	bool receiveFromClient(const QByteArray&);
 	void receiveFromServer(const QByteArray&);
 
 private:
-	Hook* hook_;
-	ModuleManager* moduleManager_;
+	void loadPlugins(const QDir&, QList<ScriptPluginInterface*>&);
 
-	QScriptEngine engine_;
+	ScriptEngine engine_;
+
+	QList<ScriptPluginInterface*> plugins_;
+
 	QScriptString receiveFromClientHandle_;
 	QScriptString receiveFromServerHandle_;
 };

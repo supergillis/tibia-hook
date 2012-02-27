@@ -29,10 +29,8 @@ $LDFLAGS = [
 
 $INCLUDES = [
   "-I./lib/mologie-detours",
+  "-I./include",
   "-I./src",
-  "-I./src/linux",
-  "-I./src/scripting",
-  "-I./src/scripting/modules",
   "-I/usr/include/qt4",
   "-I/usr/include/qt4/QtCore",
   "-I/usr/include/qt4/QtGui",

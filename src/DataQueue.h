@@ -2,9 +2,9 @@
 #define DATAQUEUE_H_
 
 #include <QByteArray>
-#include <QQueue>
 #include <QMutex>
 #include <QMutexLocker>
+#include <QQueue>
 
 class DataQueue {
 public:

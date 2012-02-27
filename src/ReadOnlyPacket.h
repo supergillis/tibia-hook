@@ -1,14 +1,13 @@
 #ifndef READONLYPACKET_H_
 #define READONLYPACKET_H_
 
+#include <QByteArray>
 #include <QObject>
+#include <QString>
 
 #include "Packet.h"
 
 class ReadOnlyPacket: public Packet {
-	Q_OBJECT
-	Q_PROPERTY(quint16 length READ length)
-
 public:
 	ReadOnlyPacket(const QByteArray&);
 	ReadOnlyPacket(const quint8*, quint16);
