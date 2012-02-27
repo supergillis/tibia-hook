@@ -15,52 +15,53 @@ class ReadOnlyPacketProxy: public ReadOnlyPacketInterface {
 	Q_PROPERTY(quint16 position WRITE setPosition READ position)
 
 public:
-	ReadOnlyPacketProxy(const QByteArray& data): ReadOnlyPacketInterface(), packet_(data) {}
-	ReadOnlyPacketProxy(const quint8* data, quint16 length): ReadOnlyPacketInterface(), packet_(data, length) {}
+	ReadOnlyPacketProxy(const QByteArray&);
+	ReadOnlyPacketProxy(const quint8*, quint16);
+
 	virtual ~ReadOnlyPacketProxy() {}
 
-	quint16 length() const {
+	inline quint16 length() const {
 		return packet_.length();
 	}
 
-	const quint8* data() const {
+	inline const quint8* data() const {
 		return packet_.data();
 	}
 
 public slots:
-	quint16 position() const {
+	inline quint16 position() const {
 		return packet_.position();
 	}
 
-	void setPosition(quint16 position) {
+	inline void setPosition(quint16 position) {
 		packet_.setPosition(position);
 	}
 
-	void skip(quint16 length) {
+	inline void skip(quint16 length) {
 		packet_.skip(length);
 	}
 
-	bool has(quint16 length) const {
+	inline bool has(quint16 length) const {
 		return packet_.has(length);
 	}
 
-	quint8 readU8() {
+	inline quint8 readU8() {
 		return packet_.readU8();
 	}
 
-	quint16 readU16() {
+	inline quint16 readU16() {
 		return packet_.readU16();
 	}
 
-	quint32 readU32() {
+	inline quint32 readU32() {
 		return packet_.readU32();
 	}
 
-	quint64 readU64() {
+	inline quint64 readU64() {
 		return packet_.readU64();
 	}
 
-	QString readString() {
+	inline QString readString() {
 		return packet_.readString();
 	}
 
