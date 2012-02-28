@@ -15,8 +15,8 @@ class ReadOnlyPacketProxy: public ReadOnlyPacketInterface {
 	Q_PROPERTY(quint16 position WRITE setPosition READ position)
 
 public:
-	ReadOnlyPacketProxy(const QByteArray&);
-	ReadOnlyPacketProxy(const quint8*, quint16);
+	ReadOnlyPacketProxy(const QByteArray& data): ReadOnlyPacketInterface(), packet_(data) {}
+	ReadOnlyPacketProxy(const quint8* data, quint16 length): ReadOnlyPacketInterface(), packet_(data, length) {}
 
 	virtual ~ReadOnlyPacketProxy() {}
 

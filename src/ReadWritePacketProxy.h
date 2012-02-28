@@ -15,9 +15,9 @@ class ReadWritePacketProxy: public ReadWritePacketInterface {
 	Q_PROPERTY(quint16 position WRITE setPosition READ position)
 
 public:
-	ReadWritePacketProxy();
+	ReadWritePacketProxy(): ReadWritePacketInterface(), packet_() {}
 
-	virtual ~ReadWritePacketProxy() {};
+	virtual ~ReadWritePacketProxy() {}
 
 	quint16 length() const {
 		return packet_.length();

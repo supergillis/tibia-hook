@@ -1,54 +1,27 @@
 #include "ScriptHandler.h"
 #include "ReadOnlyPacketProxy.h"
 
-#include <QFileInfo>
-#include <QLibrary>
-
-typedef ScriptPluginInterface* (*LoadPrototype)();
-
 ScriptHandler::ScriptHandler(Hook* hook) :
 		Handler(), engine_(hook) {
 	receiveFromClientHandle_ = engine_.toStringHandle("receiveFromClient");
 	receiveFromServerHandle_ = engine_.toStringHandle("receiveFromServer");
-
-	loadPlugins(QDir("plugins"), plugins_);
-
-	foreach(ScriptPluginInterface* plugin, plugins_) {
-		plugin->install(&engine_);
-		qDebug() << "installed plugin" << plugin->name();
-	}
-
-	engine_.reload();
 }
 
 ScriptHandler::~ScriptHandler() {
 	foreach(ScriptPluginInterface* plugin, plugins_) {
-		qDebug() << "uninstalling plugin" << plugin->name();
+		qDebug() << "uninstalling" << plugin->name();
 		plugin->uninstall();
 	}
 }
 
-void ScriptHandler::loadPlugins(const QDir& directory, QList<
-        ScriptPluginInterface*>& plugins) {
-	QList<QFileInfo> pluginsInfo = directory.entryInfoList(QStringList(), QDir::Dirs | QDir::NoDotAndDotDot);
-	foreach(const QFileInfo& pluginInfo, pluginsInfo) {
-		QDir pluginDir(pluginInfo.absoluteFilePath());
-		if (!pluginDir.exists("plugin.so")) {
-			qDebug() << "no plugin.so found in" << pluginDir.absolutePath();
-			continue;
-		}
-		QLibrary library(pluginDir.filePath("plugin.so"));
-		if (!library.load()) {
-			qDebug() << library.errorString();
-			continue;
-		}
-		LoadPrototype loadFunction = (LoadPrototype) library.resolve("load");
-		if (!loadFunction) {
-			qDebug() << "could not resolve \"load\" function";
-			continue;
-		}
-		plugins.append(loadFunction());
-	}
+void ScriptHandler::reload() {
+	engine_.reload();
+}
+
+void ScriptHandler::install(ScriptPluginInterface* plugin) {
+	qDebug() << "installing" << plugin->name();
+	plugin->install(&engine_);
+	plugins_.append(plugin);
 }
 
 bool ScriptHandler::receiveFromClient(const QByteArray& data) {

@@ -19,12 +19,13 @@ public:
 	ScriptHandler(Hook*);
 	virtual ~ScriptHandler();
 
+	void reload();
+	void install(ScriptPluginInterface*);
+
 	bool receiveFromClient(const QByteArray&);
 	void receiveFromServer(const QByteArray&);
 
 private:
-	void loadPlugins(const QDir&, QList<ScriptPluginInterface*>&);
-
 	ScriptEngine engine_;
 
 	QList<ScriptPluginInterface*> plugins_;

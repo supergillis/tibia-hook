@@ -53,7 +53,7 @@ void Hook::sendToServer(const QByteArray& data) {
  * This function runs in the injected thread.
  */
 void Hook::receiveFromClient(const QByteArray& data) {
-	if (handler_->receiveFromClient(data)) {
+	if (handler_ && handler_->receiveFromClient(data)) {
 		DetourManager::serverQueue()->enqueue(data);
 	}
 }
@@ -62,5 +62,7 @@ void Hook::receiveFromClient(const QByteArray& data) {
  * This function runs in the injected thread.
  */
 void Hook::receiveFromServer(const QByteArray& data) {
-	handler_->receiveFromServer(data);
+	if (handler_) {
+		handler_->receiveFromServer(data);
+	}
 }
