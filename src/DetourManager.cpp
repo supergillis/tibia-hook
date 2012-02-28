@@ -2,17 +2,17 @@
 #include "Hook.h"
 
 QObject* DetourManager::parent_ = NULL;
-PacketStream* DetourManager::stream_ = (PacketStream*) ADDRESS_PACKET_STREAM;
-ParserSignature* DetourManager::parserFunction_ = (ParserSignature*) ADDRESS_PARSER_FUNCTION;
+DetourManager::PacketStream* DetourManager::stream_ = (DetourManager::PacketStream*) ADDRESS_PACKET_STREAM;
+DetourManager::ParserSignature* DetourManager::parserFunction_ = (DetourManager::ParserSignature*) ADDRESS_PARSER_FUNCTION;
 
 bool DetourManager::sendingToClient_ = false;
 
 DataQueue DetourManager::clientQueue_;
 DataQueue DetourManager::serverQueue_;
 
-MologieDetours::Detour<LoopSignature*>* DetourManager::loopDetour_;
-MologieDetours::Detour<SendSignature*>* DetourManager::sendDetour_;
-MologieDetours::Detour<NextPacketSignature*>* DetourManager::nextPacketDetour_;
+MologieDetours::Detour<DetourManager::LoopSignature*>* DetourManager::loopDetour_;
+MologieDetours::Detour<DetourManager::SendSignature*>* DetourManager::sendDetour_;
+MologieDetours::Detour<DetourManager::NextPacketSignature*>* DetourManager::nextPacketDetour_;
 
 /**
  * This function runs in the Tibia thread.

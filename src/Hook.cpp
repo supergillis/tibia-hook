@@ -2,10 +2,10 @@
 #include "DataEvent.h"
 #include "DetourManager.h"
 
-static int argc_ = 0;
+int Hook::argc_ = 0;
 
 Hook::Hook() :
-		QApplication(argc_, NULL), handler_(NULL) {
+		QCoreApplication(Hook::argc_, NULL), handler_(NULL) {
 	DetourManager::initialize(this);
 }
 
@@ -32,7 +32,7 @@ bool Hook::event(QEvent* event) {
 				break;
 		}
 	}
-	return QApplication::event(event);
+	return QCoreApplication::event(event);
 }
 
 /**

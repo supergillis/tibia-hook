@@ -1,8 +1,8 @@
 #ifndef HOOK_H
 #define HOOK_H
 
-#include <QApplication>
 #include <QByteArray>
+#include <QCoreApplication>
 #include <QEvent>
 #include <QMainWindow>
 
@@ -10,8 +10,10 @@
 
 #include "Handler.h"
 
-class Hook: public QApplication, public HookInterface {
+class Hook: public QCoreApplication, public HookInterface {
 	Q_OBJECT
+
+	static int argc_;
 
 public:
 	Hook();

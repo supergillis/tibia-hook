@@ -1,12 +1,12 @@
 #include "ScriptPluginLoader.h"
 
-typedef ScriptPluginInterface* (*LoadPrototype)();
-
 ScriptPluginLoader::ScriptPluginLoader(const QString& path) :
 		path_(path), instance_(NULL) {
 }
 
 ScriptPluginInterface* ScriptPluginLoader::instance() {
+	typedef ScriptPluginInterface* (*LoadPrototype)();
+
 	if (!instance_) {
 		QLibrary library(path_);
 		if (library.load()) {

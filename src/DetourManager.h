@@ -1,21 +1,10 @@
 #ifndef DETOURMANAGER_H_
 #define DETOURMANAGER_H_
 
-#include "detours.h"
+#include <detours.h>
 
 #include "DataEvent.h"
 #include "DataQueue.h"
-
-struct PacketStream {
-	quint8* buffer;
-	quint32 size;
-	quint32 position;
-};
-
-typedef void LoopSignature();
-typedef void SendSignature( bool);
-typedef void ParserSignature();
-typedef int NextPacketSignature();
 
 #ifdef WIN32
 #else
@@ -32,6 +21,17 @@ typedef int NextPacketSignature();
 
 class Hook;
 class DetourManager {
+	struct PacketStream {
+		quint8* buffer;
+		quint32 size;
+		quint32 position;
+	};
+
+	typedef void LoopSignature();
+	typedef void SendSignature( bool);
+	typedef void ParserSignature();
+	typedef int NextPacketSignature();
+
 public:
 	static void initialize(QObject*);
 
