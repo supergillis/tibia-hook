@@ -5,6 +5,7 @@
 #include <QPointer>
 #include <QString>
 
+#include <ScriptPlugin.h>
 #include <ScriptPluginInterface.h>
 
 class ScriptPluginLoader {

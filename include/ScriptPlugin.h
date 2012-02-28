@@ -7,8 +7,11 @@
 #define EXPORT
 #endif
 
+#define EXPORT_FUNCTION_NAME load
+#define EXPORT_FUNCTION_STRING "load"
+
 #define EXPORT_PLUGIN(className) \
-	extern "C" EXPORT ScriptPluginInterface* load() { \
+	extern "C" EXPORT ScriptPluginInterface* EXPORT_FUNCTION_NAME() { \
 		return new className(); \
 	}
 

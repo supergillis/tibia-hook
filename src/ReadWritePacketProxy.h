@@ -19,68 +19,68 @@ public:
 
 	virtual ~ReadWritePacketProxy() {}
 
-	quint16 length() const {
+	inline quint16 length() const {
 		return packet_.length();
 	}
 
-	const quint8* data() const {
+	inline const quint8* data() const {
 		return packet_.data();
 	}
 
 public slots:
-	quint16 position() const {
+	inline quint16 position() const {
 		return packet_.position();
 	}
 
-	void setPosition(quint16 position) {
+	inline void setPosition(quint16 position) {
 		packet_.setPosition(position);
 	}
 
-	void skip(quint16 length) {
+	inline void skip(quint16 length) {
 		packet_.skip(length);
 	}
 
-	bool has(quint16 length) const {
+	inline bool has(quint16 length) const {
 		return packet_.has(length);
 	}
 
-	quint8 readU8() {
+	inline quint8 readU8() {
 		return packet_.readU8();
 	}
 
-	quint16 readU16() {
+	inline quint16 readU16() {
 		return packet_.readU16();
 	}
 
-	quint32 readU32() {
+	inline quint32 readU32() {
 		return packet_.readU32();
 	}
 
-	quint64 readU64() {
+	inline quint64 readU64() {
 		return packet_.readU64();
 	}
 
-	QString readString() {
+	inline QString readString() {
 		return packet_.readString();
 	}
 
-	void writeU8(quint8 value) {
+	inline void writeU8(quint8 value) {
 		packet_.writeU8(value);
 	}
 
-	void writeU16(quint16 value) {
+	inline void writeU16(quint16 value) {
 		packet_.writeU16(value);
 	}
 
-	void writeU32(quint32 value) {
+	inline void writeU32(quint32 value) {
 		packet_.writeU32(value);
 	}
 
-	void writeU64(quint64 value) {
+	inline void writeU64(quint64 value) {
 		packet_.writeU64(value);
 	}
 
-	void writeString(const QString& value) {
+	inline void writeString(const QString& value) {
 		packet_.writeString(value);
 	}
 
