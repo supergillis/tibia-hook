@@ -1,14 +1,9 @@
-Tibia Hook
-==========
-
-Introduction
-------------
+# Introduction
 
 Tibia Hook is a shared library that can be injected into the Tibia process. It can intercept and fake packets from client and server.
 Currently there is support for injecting the hook into the Linux client. In theory, support for the Windows client can be added too.
 
-Design
-------
+# Design
 
 The hook is written with Qt. This is because Qt can make cross-platform applications and because it has great support for multithreaded
 applications.
@@ -18,7 +13,7 @@ the injected Qt thread.
 
 The hook has three important elements. The `DetourManager` class, the `Hook` class and the `Handler` interface.
 
-### DetourManager
+## DetourManager
 
 The `DetourManager` class installs the detours, or function hooks. So when Tibia calls the function to send its buffer to the server, we
 can actually intercept it and send something different, or we can send nothing at all.
@@ -40,13 +35,20 @@ for real, then it puts it on `DetourManager`'s queue. Now remember the loop func
 we check if there is something on the queue. If this is the case, we replace Tibia's buffer with the buffer on the queue and call the real
 `send` function. That's how it'sdone. I hope it was clear...
 
-### Hook
+## Hook
 
-The `Hook` class runs in the Qt thread. It delegates client and server messages to an instance the `Handler` class. The handler decides if
-it blocks a packet or not. If it decides that a packet shouldn't be blocked, then the `Hook` puts the packet on `DetourManager`'s queue.
+The `Hook` class runs in the Qt thread. It delegates client and server messages to an instance of the `Handler` class. The handler decides
+if it blocks a packet or not. If it decides that a packet shouldn't be blocked, then the hook puts the packet on `DetourManager`'s queue.
 
-### Handler
+Currently only client packets can be blocked.
 
-The `Handler` class is actually an interface. It has no functionality, only pure virtual functions.
+## Handler
 
-Currently there is one handler available, the `ScriptHandler`. The name speaks for itself.
+The `Handler` class is actually an interface. It has no functionality, only pure virtual functions, namely `bool
+receiveFromClient(const QByteArray&)` and `void receiveFromServer(const QByteArray&)`.
+
+`receiveFromClient` should return `false` if the packet should be blocked.
+
+# Scripting
+
+Scripting is made possible with the `ScriptHandler`. It delegates everything to scripts written in Javascript.
