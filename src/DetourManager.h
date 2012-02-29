@@ -6,7 +6,7 @@
 #include "DataEvent.h"
 #include "DataQueue.h"
 
-#ifdef WIN32
+#ifdef Q_WS_WIN
 #else
 #define ADDRESS_LOOP_FUNCTION 0x8261e70
 
