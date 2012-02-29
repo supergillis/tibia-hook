@@ -21,11 +21,10 @@ public:
 	Handler* handler();
 	void setHandler(Handler*);
 
-	bool event(QEvent*);
-
 	void sendToClient(const QByteArray&);
 	void sendToServer(const QByteArray&);
 
+public slots:
 	void receiveFromClient(const QByteArray&);
 	void receiveFromServer(const QByteArray&);
 

@@ -1,9 +1,11 @@
 #ifndef DETOURMANAGER_H_
 #define DETOURMANAGER_H_
 
+#include <QDebug>
+#include <QObject>
+
 #include <detours.h>
 
-#include "DataEvent.h"
 #include "DataQueue.h"
 
 #ifdef Q_WS_WIN
@@ -20,35 +22,82 @@
 #endif
 
 class Hook;
-class DetourManager {
-	struct PacketStream {
-		quint8* buffer;
-		quint32 size;
-		quint32 position;
-	};
+class DetourManager: public QObject {
+	Q_OBJECT
 
 	typedef void LoopSignature();
 	typedef void SendSignature( bool);
 	typedef void ParserSignature();
 	typedef int NextPacketSignature();
 
-public:
-	static void initialize(QObject*);
+	struct PacketStream {
+		quint8* buffer;
+		quint32 size;
+		quint32 position;
+	};
 
-	static DataQueue* clientQueue();
-	static DataQueue* serverQueue();
+public:
+	inline static DetourManager* instance() {
+		if(instance_ == NULL) {
+			instance_ = new DetourManager();
+			initialize();
+		}
+		return instance_;
+	}
+
+	inline DataQueue* clientQueue() {
+		return &clientQueue_;
+	}
+
+	inline DataQueue* serverQueue() {
+		return &serverQueue_;
+	}
+
+signals:
+	void onClientMessage(QByteArray);
+	void onServerMessage(QByteArray);
+
+protected:
+	void connectNotify(const char* signal) {
+		if(strcmp(signal, SIGNAL(onClientMessage(QByteArray))) == 0) {
+			clientSignalConnected_++;
+			if(clientSignalConnected_ > 1) {
+				qWarning() << "connected more than once to onClientMessage";
+			}
+		}
+		else if(strcmp(signal, SIGNAL(onServerMessage(QByteArray))) == 0) {
+			serverSignalConnected_++;
+			if(serverSignalConnected_ > 1) {
+				qWarning() << "connected more than once to onServerMessage";
+			}
+		}
+	}
+
+	void disconnectNotify(const char* signal) {
+		if(strcmp(signal, SIGNAL(onClientMessage(QByteArray))) == 0) {
+			clientSignalConnected_--;
+		}
+		else if(strcmp(signal, SIGNAL(onServerMessage(QByteArray))) == 0) {
+			serverSignalConnected_--;
+		}
+	}
 
 private:
 	DetourManager();
 
-	static QObject* parent_;
-	static PacketStream* stream_;
-	static ParserSignature* parserFunction_;
+	PacketStream* stream_;
+	ParserSignature* parserFunction_;
 
-	static bool sendingToClient_;
+	DataQueue clientQueue_;
+	DataQueue serverQueue_;
+	bool sendingToClient_;
 
-	static DataQueue clientQueue_;
-	static DataQueue serverQueue_;
+	int clientSignalConnected_;
+	int serverSignalConnected_;
+
+	static DetourManager* instance_;
+
+	static void initialize();
 
 	static void onLoop();
 	static void onSend(bool);
