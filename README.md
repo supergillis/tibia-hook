@@ -63,8 +63,8 @@ project. It's probably a bit of overkill, but I couldn't have written it faster 
 
 ## Commands
 
-`cd your-projects-directory/tibia-hook
-make all`
+`cd your-projects-directory/tibia-hook`
+`make all`
 
 # Injecting in Tibia
 
@@ -72,15 +72,15 @@ The hook compiles into a shared library which you have to inject in the Tibia cl
 Script library.
 
 ## Linux
-First copy everything from the `bin` folder to the Tibia folder. Then add this script and call it `run.sh`
+First copy everything from the `bin` folder to the Tibia folder, or make links using `ln -s`. Then add this script to the Tibia folder too
+and call it `run.sh`
 
-`BIN=./Tibia
-
-LIB_HOOK=./hook.so
-LIB_QT_CORE=/usr/lib/i386-linux-gnu/libQtCore.so
-LIB_QT_SCRIPT=/usr/lib/i386-linux-gnu/libQtScript.so
-
-LD_PRELOAD=$LIB_QT_CORE:$LIB_QT_SCRIPT:$LIB_HOOK ./Tibia`
+`BIN=./Tibia`
+`LIB_HOOK=./hook.so`
+`LIB_QT_CORE=/usr/lib/i386-linux-gnu/libQtCore.so`
+`LIB_QT_SCRIPT=/usr/lib/i386-linux-gnu/libQtScript.so`
+``
+`LD_PRELOAD=$LIB_QT_CORE:$LIB_QT_SCRIPT:$LIB_HOOK ./Tibia`
 
 That's it.
 
@@ -91,3 +91,7 @@ Not supported (yet).
 # Scripting
 
 Scripting is made possible with the `ScriptHandler`. It delegates everything to scripts written in Javascript.
+
+## Core
+
+## Plugins
