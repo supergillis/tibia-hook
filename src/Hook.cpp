@@ -54,7 +54,7 @@ void Hook::sendToServer(const QByteArray& data) {
  */
 void Hook::receiveFromClient(const QByteArray& data) {
 	if (handler_ && handler_->receiveFromClient(data)) {
-		DetourManager::serverQueue()->enqueue(data);
+		sendToServer(data);
 	}
 }
 
