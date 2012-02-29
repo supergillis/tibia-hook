@@ -49,6 +49,45 @@ receiveFromClient(const QByteArray&)` and `void receiveFromServer(const QByteArr
 
 `receiveFromClient` should return `false` if the packet should be blocked.
 
+# Compiling
+
+There is something I need to confess first. I really suck in writing Makefiles. That's why I've written some stuff in Ruby to compile this
+project. It's probably a bit of overkill, but I couldn't have written it faster with a Makefile!
+
+## Requirements
+
+* Ruby (see above)
+* libqtcore library
+* libqtscript library
+* pthread library (for creating the Qt thread)
+
+## Commands
+
+`cd your-projects-directory/tibia-hook
+make all`
+
+# Injecting in Tibia
+
+The hook compiles into a shared library which you have to inject in the Tibia client. You will also need to inject the Qt Core and the Qt
+Script library.
+
+## Linux
+First copy everything from the `bin` folder to the Tibia folder. Then add this script and call it `run.sh`
+
+`BIN=./Tibia
+
+LIB_HOOK=./hook.so
+LIB_QT_CORE=/usr/lib/i386-linux-gnu/libQtCore.so
+LIB_QT_SCRIPT=/usr/lib/i386-linux-gnu/libQtScript.so
+
+LD_PRELOAD=$LIB_QT_CORE:$LIB_QT_SCRIPT:$LIB_HOOK ./Tibia`
+
+That's it.
+
+## Windows
+
+Not supported (yet).
+
 # Scripting
 
 Scripting is made possible with the `ScriptHandler`. It delegates everything to scripts written in Javascript.
