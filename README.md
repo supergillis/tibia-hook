@@ -33,7 +33,7 @@ we put a `DataEvent`, that contains the buffer, on the Qt thread. Then we exit t
 The `Hook`, running in the Qt thread then does all kinds of nasty things with this buffer. If it wants this buffer to be sent to the client
 for real, then it puts it on `DetourManager`'s queue. Now remember the loop function. It runs in the Tibia thread. When this function runs,
 we check if there is something on the queue. If this is the case, we replace Tibia's buffer with the buffer on the queue and call the real
-`send` function. That's how it'sdone. I hope it was clear...
+`send` function. That's how it's done. I hope it was clear...
 
 ## Hook
 
