@@ -33,7 +33,7 @@ Debugger::Debugger(QScriptEngine* engine) :
 
 void Debugger::exceptionThrow(qint64 scriptId, const QScriptValue& exception, bool hasHandler) {
 	if (!hasHandler) {
-		qDebug() << "uncaught exception" << exception.toString();
+		qDebug() << "uncaught exception" << exception.toString() << "on line" << engine()->uncaughtExceptionLineNumber();
 		qDebug() << "backtrace:";
 		foreach (const QString& value, engine()->uncaughtExceptionBacktrace()) {
 			qDebug() << "\t" << value;

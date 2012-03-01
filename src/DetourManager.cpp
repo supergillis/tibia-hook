@@ -64,7 +64,6 @@ void DetourManager::onSend(bool encrypt) {
 		quint32 length = *((quint32*) ADDRESS_SEND_BUFFER_LENGTH) - 8;
 		QByteArray data((char*) buffer, length);
 		emit instance_->onClientMessage(data);
-		//QCoreApplication::postEvent(parent_, new DataEvent(DataEvent::Client, buffer, length), Qt::HighEventPriority);
 		return;
 	}
 	sendDetour_->GetOriginalFunction()(encrypt);
@@ -91,7 +90,6 @@ int DetourManager::onNextPacket() {
 			quint32 length = stream->size - position;
 			QByteArray data((char*) (stream->buffer + position), length);
 			emit instance_->onServerMessage(data);
-			//QCoreApplication::postEvent(parent_, new DataEvent(DataEvent::Server, stream_->buffer + position, length), Qt::HighEventPriority);
 		}
 		return command;
 	}
