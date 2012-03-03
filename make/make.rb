@@ -2,10 +2,11 @@
 
 require "optparse"
 
-require_relative "getter"
-require_relative "transformer"
-require_relative "runner"
-require_relative "maker"
+$: << File.dirname(__FILE__)
+require "getter"
+require "transformer"
+require "runner"
+require "maker"
 
 $BIN_DIR = "bin"
 $LIB_DIR = "lib"

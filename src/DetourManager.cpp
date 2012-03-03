@@ -29,12 +29,6 @@ DetourManager::DetourManager():
 	serverSignalConnected_(0) {
 }
 
-void DetourManager::initialize() {
-	loopDetour_ = new MologieDetours::Detour<LoopSignature*>((LoopSignature*) ADDRESS_LOOP_FUNCTION, &DetourManager::onLoop);
-	sendDetour_ = new MologieDetours::Detour<SendSignature*>((SendSignature*) ADDRESS_SEND_FUNCTION, &DetourManager::onSend);
-	nextPacketDetour_ = new MologieDetours::Detour<NextPacketSignature*>((NextPacketSignature*) ADDRESS_NEXT_PACKET_FUNCTION, &DetourManager::onNextPacket);
-}
-
 /**
   * This function runs in the Tibia thread.
   */

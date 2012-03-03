@@ -13,38 +13,30 @@
  * limitations under the License.
  */
 
-#ifndef PACKET_H_
-#define PACKET_H_
+#ifndef SENDER_H
+#define SENDER_H
 
-#include <QDebug>
-#include <QObject>
-#include <QString>
+#include <SenderInterface.h>
 
-#define PACKET_END_OF_FILE "reached the end of the buffer"
+#include "DetourManager.h"
 
-class Packet {
+class Sender: public SenderInterface {
 public:
-	Packet();
-	virtual ~Packet() {}
+	Sender(DetourManager* manager): SenderInterface(), manager_(manager) {}
 
-	virtual quint16 length() const = 0;
-	virtual const quint8* data() const = 0;
+	inline void sendToClient(const QByteArray& data) {
+		manager_->clientQueue()->enqueue(data);
+	}
 
-	quint16 position() const;
-	void setPosition(quint16);
+	inline void sendToServer(const QByteArray& data) {
+		manager_->serverQueue()->enqueue(data);
+	}
 
-	void skip(quint16);
-	bool has(quint16) const;
+private:
+	Sender(const Sender&);
+	Sender& operator=(const Sender&);
 
-	quint8 readU8();
-	quint16 readU16();
-	quint32 readU32();
-	quint64 readU64();
-	QString readString();
-
-protected:
-	quint16 position_;
-
+	DetourManager* manager_;
 };
 
-#endif /* PACKET_H_ */
+#endif

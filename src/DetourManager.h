@@ -112,7 +112,11 @@ private:
 
 	static DetourManager* instance_;
 
-	static void initialize();
+	static void initialize() {
+		loopDetour_ = new MologieDetours::Detour<LoopSignature*>((LoopSignature*) ADDRESS_LOOP_FUNCTION, &DetourManager::onLoop);
+		sendDetour_ = new MologieDetours::Detour<SendSignature*>((SendSignature*) ADDRESS_SEND_FUNCTION, &DetourManager::onSend);
+		nextPacketDetour_ = new MologieDetours::Detour<NextPacketSignature*>((NextPacketSignature*) ADDRESS_NEXT_PACKET_FUNCTION, &DetourManager::onNextPacket);
+	}
 
 	static void onLoop();
 	static void onSend(bool);

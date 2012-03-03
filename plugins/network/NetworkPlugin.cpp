@@ -51,7 +51,7 @@ QScriptValue NetworkPlugin::sendToClient(QScriptContext* context, QScriptEngine*
 			if (packet) {
 				QByteArray data((const char*) packet->data(), packet->length());
 				ScriptEngineInterface* scriptEngine = (ScriptEngineInterface*) engine;
-				scriptEngine->hook()->sendToClient(data);
+				scriptEngine->sender()->sendToClient(data);
 				return true;
 			}
 		}
@@ -67,7 +67,7 @@ QScriptValue NetworkPlugin::sendToServer(QScriptContext* context, QScriptEngine*
 			if (packet) {
 				QByteArray data((const char*) packet->data(), packet->length());
 				ScriptEngineInterface* scriptEngine = (ScriptEngineInterface*) engine;
-				scriptEngine->hook()->sendToServer(data);
+				scriptEngine->sender()->sendToServer(data);
 				return true;
 			}
 		}

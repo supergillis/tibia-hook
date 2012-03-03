@@ -15,9 +15,11 @@
 
 #include <pthread.h>
 
-#include "Hook.h"
-#include "ScriptHandler.h"
+#include "Application.h"
+#include "Connector.h"
+#include "ScriptReceiver.h"
 #include "ScriptPluginLoader.h"
+#include "Sender.h"
 
 #include <QDir>
 #include <QFileInfo>
@@ -48,8 +50,10 @@ void hook_constructor() {
   * This function runs when the thread is created. Qt runs in this thread.
   */
 void* hook_thread(void*) {
-	Hook* hook = new Hook();
-	ScriptHandler* handler = new ScriptHandler(hook);
+	Application* application = new Application();
+
+	SenderInterface* sender = new Sender(DetourManager::instance());
+	ScriptReceiver* receiver = new ScriptReceiver(sender);
 
 	// Load plugins
 	QList<QFileInfo> pluginsInfo = QDir("plugins").entryInfoList(QStringList(), QDir::Dirs | QDir::NoDotAndDotDot);
@@ -57,14 +61,15 @@ void* hook_thread(void*) {
 		ScriptPluginLoader loader(QDir(pluginInfo.absoluteFilePath()).filePath(PLUGIN_NAME));
 		ScriptPluginInterface* plugin = loader.instance();
 		if (plugin) {
-			handler->install(plugin);
+			receiver->install(plugin);
 		}
 	}
 
 	// Load the main script
-	handler->reload();
+	receiver->reload();
 
-	hook->setHandler(handler);
-	hook->exec();
+	new Connector(receiver, sender);
+
+	application->exec();
 	return NULL;
 }

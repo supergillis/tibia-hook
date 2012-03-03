@@ -13,38 +13,22 @@
  * limitations under the License.
  */
 
-#ifndef PACKET_H_
-#define PACKET_H_
+#ifndef APPLICATION_H
+#define APPLICATION_H
 
-#include <QDebug>
-#include <QObject>
-#include <QString>
+#include <QApplication>
 
-#define PACKET_END_OF_FILE "reached the end of the buffer"
+class Application: public QApplication {
+	Q_OBJECT
 
-class Packet {
+	static int argc_;
+
 public:
-	Packet();
-	virtual ~Packet() {}
+	Application();
 
-	virtual quint16 length() const = 0;
-	virtual const quint8* data() const = 0;
-
-	quint16 position() const;
-	void setPosition(quint16);
-
-	void skip(quint16);
-	bool has(quint16) const;
-
-	quint8 readU8();
-	quint16 readU16();
-	quint32 readU32();
-	quint64 readU64();
-	QString readString();
-
-protected:
-	quint16 position_;
-
+private:
+	Application(const Application&);
+	Application& operator=(const Application&);
 };
 
-#endif /* PACKET_H_ */
+#endif

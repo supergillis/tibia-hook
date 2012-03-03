@@ -5,7 +5,7 @@
 #include <QByteArray>
 #include <QString>
 
-#include <HookInterface.h>
+#include <SenderInterface.h>
 #include <ReadOnlyPacketInterface.h>
 #include <ReadWritePacketInterface.h>
 
@@ -14,7 +14,7 @@ public:
 	ScriptEngineInterface(QObject* parent = 0): QScriptEngine(parent) {}
 	virtual ~ScriptEngineInterface() {}
 
-	virtual HookInterface* hook() = 0;
+	virtual SenderInterface* sender() = 0;
 
 	virtual bool reload() = 0;
 	virtual bool require(const QString&) = 0;

@@ -20,12 +20,14 @@
 #include <QDir>
 #include <QFile>
 
-ScriptEngine::ScriptEngine(Hook* hook) :
-		ScriptEngineInterface(hook), hook_(hook) {
+ScriptEngine::ScriptEngine(SenderInterface* sender, QObject* parent) :
+	ScriptEngineInterface(parent), sender_(sender) {
+    importExtension("qt.core");
+    importExtension("qt.gui");
 }
 
-HookInterface* ScriptEngine::hook() {
-	return hook_;
+SenderInterface* ScriptEngine::sender() {
+	return sender_;
 }
 
 bool ScriptEngine::reload() {

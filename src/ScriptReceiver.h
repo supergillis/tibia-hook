@@ -13,36 +13,40 @@
  * limitations under the License.
  */
 
-#ifndef SCRIPTENGINE_H_
-#define SCRIPTENGINE_H_
+#ifndef SCRIPTRECEIVER_H_
+#define SCRIPTRECEIVER_H_
 
+#include <QByteArray>
+#include <QDir>
+#include <QList>
+#include <QObject>
 #include <QScriptEngine>
-#include <QStringList>
+#include <QScriptString>
 
-#include <ScriptEngineInterface.h>
+#include <ReceiverInterface.h>
+#include <ScriptPluginInterface.h>
 #include <SenderInterface.h>
-#include <ReadOnlyPacketInterface.h>
-#include <ReadWritePacketInterface.h>
 
-#include "Application.h"
+#include "ScriptEngine.h"
 
-class ScriptEngine: public ScriptEngineInterface {
+class ScriptReceiver: public ReceiverInterface {
 public:
-	ScriptEngine(SenderInterface*, QObject* = 0);
-	virtual ~ScriptEngine() {}
+	ScriptReceiver(SenderInterface*, QObject* = 0);
+	virtual ~ScriptReceiver();
 
-	SenderInterface* sender();
+	void reload();
+	void install(ScriptPluginInterface*);
 
-	bool reload();
-	bool require(const QString&);
-
-	ReadOnlyPacketInterface* createReadOnlyPacket(const QByteArray&);
-	ReadOnlyPacketInterface* createReadOnlyPacket(const quint8*, quint16);
-	ReadWritePacketInterface* createReadWritePacket();
+	bool receiveFromClient(const QByteArray&);
+	bool receiveFromServer(const QByteArray&);
 
 private:
-	SenderInterface* sender_;
-	QStringList requiredFiles_;
+	ScriptEngine engine_;
+
+	QList<ScriptPluginInterface*> plugins_;
+
+	QScriptString receiveFromClientHandle_;
+	QScriptString receiveFromServerHandle_;
 };
 
-#endif /* SCRIPTENGINE_H_ */
+#endif
