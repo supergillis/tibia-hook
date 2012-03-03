@@ -10,7 +10,7 @@
 #ifndef _HDE64_H_
 #define _HDE64_H_
 
-#include <boost/cstdint.hpp>
+#include <QtGlobal>
 
 #define F_MODRM         0x00000001
 #define F_SIB           0x00000002
@@ -52,39 +52,39 @@
 #pragma pack(push,1)
 
 typedef struct {
-	boost::uint8_t len;
-	boost::uint8_t p_rep;
-	boost::uint8_t p_lock;
-	boost::uint8_t p_seg;
-	boost::uint8_t p_66;
-	boost::uint8_t p_67;
-	boost::uint8_t rex;
-	boost::uint8_t rex_w;
-	boost::uint8_t rex_r;
-	boost::uint8_t rex_x;
-	boost::uint8_t rex_b; 
-	boost::uint8_t opcode;
-	boost::uint8_t opcode2;
-	boost::uint8_t modrm;
-	boost::uint8_t modrm_mod;
-	boost::uint8_t modrm_reg;
-	boost::uint8_t modrm_rm;
-	boost::uint8_t sib;
-	boost::uint8_t sib_scale;
-	boost::uint8_t sib_index;
-	boost::uint8_t sib_base;
+	quint8 len;
+	quint8 p_rep;
+	quint8 p_lock;
+	quint8 p_seg;
+	quint8 p_66;
+	quint8 p_67;
+	quint8 rex;
+	quint8 rex_w;
+	quint8 rex_r;
+	quint8 rex_x;
+	quint8 rex_b; 
+	quint8 opcode;
+	quint8 opcode2;
+	quint8 modrm;
+	quint8 modrm_mod;
+	quint8 modrm_reg;
+	quint8 modrm_rm;
+	quint8 sib;
+	quint8 sib_scale;
+	quint8 sib_index;
+	quint8 sib_base;
 	union {
-		boost::uint8_t imm8;
-		boost::uint16_t imm16;
-		boost::uint32_t imm32;
-		boost::uint64_t imm64;
+		quint8 imm8;
+		quint16 imm16;
+		quint32 imm32;
+		quint64 imm64;
 	} imm;
 	union {
-		boost::uint8_t disp8;
-		boost::uint16_t disp16;
-		boost::uint32_t disp32;
+		quint8 disp8;
+		quint16 disp16;
+		quint32 disp32;
 	} disp;
-	boost::uint32_t flags;
+	quint32 flags;
 } hde64s;
 
 #pragma pack(pop)
