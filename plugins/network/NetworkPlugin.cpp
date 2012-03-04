@@ -30,17 +30,24 @@ int NetworkPlugin::version() const {
 	return PLUGIN_VERSION;
 }
 
-void NetworkPlugin::install(ScriptEngineInterface* engine) {
-	engine_ = engine;
+void NetworkPlugin::install(HookInterface* hook) {
+	hook_ = hook;
+	engine_ = hook->engine();
 	QScriptValue object = engine_->newObject();
-	object.setProperty("sendToClient", engine->newFunction(NetworkPlugin::sendToClient), QScriptValue::ReadOnly | QScriptValue::Undeletable);
-	object.setProperty("sendToServer", engine->newFunction(NetworkPlugin::sendToServer), QScriptValue::ReadOnly | QScriptValue::Undeletable);
+	QScriptValue thisObject = engine_->newQObject(this);
+	QScriptValue sendToClient = engine_->newFunction(NetworkPlugin::sendToClient);
+	QScriptValue sendToServer = engine_->newFunction(NetworkPlugin::sendToServer);
+	sendToClient.setData(thisObject);
+	sendToServer.setData(thisObject);
+	object.setProperty("sendToClient", sendToClient, QScriptValue::ReadOnly | QScriptValue::Undeletable);
+	object.setProperty("sendToServer", sendToServer, QScriptValue::ReadOnly | QScriptValue::Undeletable);
 	engine_->globalObject().setProperty(VARIABLE_NAME, object, QScriptValue::ReadOnly | QScriptValue::Undeletable);
 }
 
 void NetworkPlugin::uninstall() {
 	engine_->globalObject().setProperty(VARIABLE_NAME, QScriptValue::UndefinedValue);
 	engine_ = NULL;
+	hook_;
 }
 
 QScriptValue NetworkPlugin::sendToClient(QScriptContext* context, QScriptEngine* engine) {
@@ -50,8 +57,8 @@ QScriptValue NetworkPlugin::sendToClient(QScriptContext* context, QScriptEngine*
 			PacketInterface* packet = dynamic_cast<PacketInterface*>(argument.toQObject());
 			if (packet) {
 				QByteArray data((const char*) packet->data(), packet->length());
-				ScriptEngineInterface* scriptEngine = (ScriptEngineInterface*) engine;
-				scriptEngine->sender()->sendToClient(data);
+				NetworkPlugin* plugin = dynamic_cast<NetworkPlugin*>(context->callee().data().toQObject());
+				plugin->hook_->sender()->sendToClient(data);
 				return true;
 			}
 		}
@@ -66,8 +73,8 @@ QScriptValue NetworkPlugin::sendToServer(QScriptContext* context, QScriptEngine*
 			PacketInterface* packet = dynamic_cast<PacketInterface*>(argument.toQObject());
 			if (packet) {
 				QByteArray data((const char*) packet->data(), packet->length());
-				ScriptEngineInterface* scriptEngine = (ScriptEngineInterface*) engine;
-				scriptEngine->sender()->sendToServer(data);
+				NetworkPlugin* plugin = dynamic_cast<NetworkPlugin*>(context->callee().data().toQObject());
+				plugin->hook_->sender()->sendToServer(data);
 				return true;
 			}
 		}

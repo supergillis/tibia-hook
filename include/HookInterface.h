@@ -13,10 +13,9 @@
  * limitations under the License.
  */
 
-#ifndef SCRIPTENGINEINTERFACE_H_
-#define SCRIPTENGINEINTERFACE_H_
+#ifndef HOOKINTERFACE_H_
+#define HOOKINTERFACE_H_
 
-#include <QtGlobal>
 #include <QByteArray>
 #include <QScriptEngine>
 #include <QString>
@@ -24,13 +23,16 @@
 #include <SenderInterface.h>
 #include <ReadOnlyPacketInterface.h>
 #include <ReadWritePacketInterface.h>
+#include <ReceiverInterface.h>
 
-class ScriptEngineInterface: public QScriptEngine {
+class HookInterface {
 public:
-	ScriptEngineInterface(QObject* parent = 0): QScriptEngine(parent) {}
-	virtual ~ScriptEngineInterface() {}
+	virtual ~HookInterface() {}
 
-	virtual SenderInterface* sender() const = 0;
+	virtual QScriptEngine* engine() = 0;
+
+	virtual SenderInterface* sender() = 0;
+	virtual ReceiverInterface* receiver() = 0;
 
 	virtual bool reload() = 0;
 	virtual bool require(const QString&) = 0;

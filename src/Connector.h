@@ -21,9 +21,7 @@ public:
 
 private slots:
 	void receiveFromClient(const QByteArray& data) {
-		qDebug() << "receiveFromClient";
 		if(receiver_->receiveFromClient(data)) {
-			qDebug() << "send to server";
 			sender_->sendToServer(data);
 		}
 	}

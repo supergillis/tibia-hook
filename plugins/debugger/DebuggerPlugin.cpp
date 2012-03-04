@@ -31,9 +31,9 @@ int DebuggerPlugin::version() const {
 	return PLUGIN_VERSION;
 }
 
-void DebuggerPlugin::install(ScriptEngineInterface* engine) {
-	debugger_ = new Debugger(engine);
-	engine->setAgent(debugger_);
+void DebuggerPlugin::install(HookInterface* hook) {
+	debugger_ = new Debugger(hook->engine());
+	hook->engine()->setAgent(debugger_);
 }
 
 void DebuggerPlugin::uninstall() {

@@ -32,8 +32,8 @@ int BattleListPlugin::version() const {
 	return PLUGIN_VERSION;
 }
 
-void BattleListPlugin::install(ScriptEngineInterface* engine) {
-	engine_ = engine;
+void BattleListPlugin::install(HookInterface* hook) {
+	engine_ = hook->engine();
 	entries_ = new BattleListEntries(engine_);
 	QScriptValue object = engine_->newObject();
 	object.setData(engine_->newQObject(this));

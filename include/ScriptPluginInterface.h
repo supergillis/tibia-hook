@@ -19,7 +19,7 @@
 #include <QString>
 #include <QScriptEngine>
 
-#include <ScriptEngineInterface.h>
+#include <HookInterface.h>
 
 class ScriptPluginInterface {
 public:
@@ -28,7 +28,7 @@ public:
 	virtual QString name() const = 0;
 	virtual int version() const = 0;
 
-	virtual void install(ScriptEngineInterface*) = 0;
+	virtual void install(HookInterface*) = 0;
 	virtual void uninstall() = 0;
 };
 

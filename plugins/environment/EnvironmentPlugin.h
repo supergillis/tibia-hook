@@ -22,9 +22,9 @@
 #include <QScriptEngine>
 #include <QScriptContext>
 
+#include <HookInterface.h>
 #include <ScriptPlugin.h>
 #include <ScriptPluginInterface.h>
-#include <ScriptEngineInterface.h>
 
 class EnvironmentPlugin: public QObject, public ScriptPluginInterface {
 Q_OBJECT
@@ -38,7 +38,7 @@ public:
 	QString name() const;
 	int version() const;
 
-	void install(ScriptEngineInterface*);
+	void install(HookInterface*);
 	void uninstall();
 
 public slots:
@@ -46,7 +46,8 @@ public slots:
 	bool require(const QString&);
 
 private:
-	ScriptEngineInterface* engine_;
+	HookInterface* hook_;
+	QScriptEngine* engine_;
 };
 
 #endif /* ENVIRONMENTPLUGIN_H */

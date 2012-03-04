@@ -28,13 +28,13 @@
 #endif
 
 ScriptEngine::ScriptEngine(SenderInterface* sender, QObject* parent) :
-	ScriptEngineInterface(parent), sender_(sender) {
-	receiveFromClientHandle_ = toStringHandle("receiveFromClient");
-	receiveFromServerHandle_ = toStringHandle("receiveFromServer");
+	HookInterface(), sender_(sender), engine_(parent) {
+	receiveFromClientHandle_ = engine_.toStringHandle("receiveFromClient");
+	receiveFromServerHandle_ = engine_.toStringHandle("receiveFromServer");
 
 	// Load extensions
-    importExtension("qt.core");
-    importExtension("qt.gui");
+	engine_.importExtension("qt.core");
+	engine_.importExtension("qt.gui");
 
 	// Load plugins
 	QList<QFileInfo> pluginsInfo = QDir("plugins").entryInfoList(QStringList(), QDir::Dirs | QDir::NoDotAndDotDot);
@@ -59,15 +59,23 @@ ScriptEngine::~ScriptEngine() {
 	}
 }
 
-SenderInterface* ScriptEngine::sender() const {
+QScriptEngine* ScriptEngine::engine() {
+	return &engine_;
+}
+
+SenderInterface* ScriptEngine::sender() {
 	return sender_;
 }
 
+ReceiverInterface* ScriptEngine::receiver() {
+	return this;
+}
+
 bool ScriptEngine::reload() {
-	pushContext();
+	engine_.pushContext();
 	requiredFiles_.clear();
 	require("Main.js");
-	popContext();
+	engine_.popContext();
 	return true;
 }
 
@@ -78,7 +86,7 @@ bool ScriptEngine::require(const QString& path) {
 		QFile file(fileName);
 		if (!requiredFiles_.contains(fileName)) {
 			if (file.open(QFile::ReadOnly)) {
-				evaluate(file.readAll(), fileName);
+				engine_.evaluate(file.readAll(), fileName);
 				requiredFiles_ << fileName;
 				return true;
 			}
@@ -100,24 +108,24 @@ ReadWritePacketInterface* ScriptEngine::createReadWritePacket() {
 }
 
 bool ScriptEngine::receiveFromClient(const QByteArray& data) {
-	QScriptValue callback = globalObject().property(receiveFromClientHandle_);
+	QScriptValue callback = engine_.globalObject().property(receiveFromClientHandle_);
 	if (callback.isFunction()) {
 		ReadOnlyPacketInterface* packet = new ReadOnlyPacketProxy(data);
-		QScriptValue value = newQObject(packet, QScriptEngine::ScriptOwnership);
+		QScriptValue value = engine_.newQObject(packet, QScriptEngine::ScriptOwnership);
 		QScriptValueList args;
-		QScriptValue result = callback.call(globalObject(), args << value);
+		QScriptValue result = callback.call(engine_.globalObject(), args << value);
 		return result.isBool() ? result.toBool() : true;
 	}
 	return true;
 }
 
 bool ScriptEngine::receiveFromServer(const QByteArray& data) {
-	QScriptValue callback = globalObject().property(receiveFromServerHandle_);
+	QScriptValue callback = engine_.globalObject().property(receiveFromServerHandle_);
 	if (callback.isFunction()) {
 		ReadOnlyPacketInterface* packet = new ReadOnlyPacketProxy(data);
-		QScriptValue value = newQObject(packet, QScriptEngine::ScriptOwnership);
+		QScriptValue value = engine_.newQObject(packet, QScriptEngine::ScriptOwnership);
 		QScriptValueList args;
-		QScriptValue result = callback.call(globalObject(), args << value);
+		QScriptValue result = callback.call(engine_.globalObject(), args << value);
 		return result.isBool() ? result.toBool() : true;
 	}
 	return true;

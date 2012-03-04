@@ -30,9 +30,9 @@ int MemoryPlugin::version() const {
 	return PLUGIN_VERSION;
 }
 
-void MemoryPlugin::install(ScriptEngineInterface* engine) {
-	engine_ = engine;
-	engine_->globalObject().setProperty(VARIABLE_NAME, engine->newQObject(this), QScriptValue::ReadOnly | QScriptValue::Undeletable);
+void MemoryPlugin::install(HookInterface* hook) {
+	engine_ = hook->engine();
+	engine_->globalObject().setProperty(VARIABLE_NAME, engine_->newQObject(this), QScriptValue::ReadOnly | QScriptValue::Undeletable);
 }
 
 void MemoryPlugin::uninstall() {

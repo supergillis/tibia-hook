@@ -19,9 +19,9 @@
 #include <QScriptEngine>
 #include <QScriptEngineAgent>
 
+#include <HookInterface.h>
 #include <ScriptPlugin.h>
 #include <ScriptPluginInterface.h>
-#include <ScriptEngineInterface.h>
 
 class Debugger;
 class DebuggerPlugin: public QObject, public ScriptPluginInterface {
@@ -34,7 +34,7 @@ public:
 	QString name() const;
 	int version() const;
 
-	void install(ScriptEngineInterface*);
+	void install(HookInterface*);
 	void uninstall();
 
 private:

@@ -32,20 +32,22 @@ int EnvironmentPlugin::version() const {
 	return PLUGIN_VERSION;
 }
 
-void EnvironmentPlugin::install(ScriptEngineInterface* engine) {
-	engine_ = engine;
+void EnvironmentPlugin::install(HookInterface* hook) {
+	hook_ = hook;
+	engine_ = hook->engine();
 	engine_->globalObject().setProperty(VARIABLE_NAME, engine_->newQObject(this), QScriptValue::ReadOnly | QScriptValue::Undeletable);
 }
 
 void EnvironmentPlugin::uninstall() {
 	engine_->globalObject().setProperty(VARIABLE_NAME, QScriptValue::UndefinedValue);
 	engine_ = NULL;
+	hook_ = NULL;
 }
 
 bool EnvironmentPlugin::reload() {
-	return engine_->reload();
+	return hook_->reload();
 }
 
 bool EnvironmentPlugin::require(const QString& path) {
-	return engine_->require(path);
+	return hook_->require(path);
 }

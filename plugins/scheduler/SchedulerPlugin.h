@@ -23,9 +23,9 @@
 #include <QScriptContext>
 #include <QTimerEvent>
 
+#include <HookInterface.h>
 #include <ScriptPlugin.h>
 #include <ScriptPluginInterface.h>
-#include <ScriptEngineInterface.h>
 
 class SchedulerPlugin: public QObject, public ScriptPluginInterface {
 	Q_OBJECT
@@ -39,7 +39,7 @@ public:
 	QString name() const;
 	int version() const;
 
-	void install(ScriptEngineInterface*);
+	void install(HookInterface*);
 	void uninstall();
 
 public slots:
@@ -51,7 +51,7 @@ protected:
 	void timerEvent(QTimerEvent*);
 
 private:
-	ScriptEngineInterface* engine_;
+	QScriptEngine* engine_;
 	QHash<int, QPair<bool, QScriptValue> > callbacks_;
 };
 

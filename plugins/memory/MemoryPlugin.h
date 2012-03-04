@@ -20,9 +20,9 @@
 #include <QScriptEngine>
 #include <QScriptContext>
 
+#include <HookInterface.h>
 #include <ScriptPlugin.h>
 #include <ScriptPluginInterface.h>
-#include <ScriptEngineInterface.h>
 
 class MemoryPlugin: public QObject, public ScriptPluginInterface {
 	Q_OBJECT
@@ -36,7 +36,7 @@ public:
 	QString name() const;
 	int version() const;
 
-	void install(ScriptEngineInterface*);
+	void install(HookInterface*);
 	void uninstall();
 
 public slots:
@@ -46,7 +46,7 @@ public slots:
 	QString readString(quint32);
 
 private:
-	ScriptEngineInterface* engine_;
+	QScriptEngine* engine_;
 };
 
 #endif /* MEMORYMODULE_H */

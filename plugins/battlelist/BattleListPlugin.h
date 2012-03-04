@@ -25,9 +25,9 @@
 #include <QScriptEngine>
 #include <QTimerEvent>
 
+#include <HookInterface.h>
 #include <ScriptPlugin.h>
 #include <ScriptPluginInterface.h>
-#include <ScriptEngineInterface.h>
 
 #include "InternalBattleList.h"
 
@@ -44,7 +44,7 @@ public:
 	QString name() const;
 	int version() const;
 
-	void install(ScriptEngineInterface*);
+	void install(HookInterface*);
 	void uninstall();
 
 	static QScriptValue newBattleListEntry(QScriptEngine*, quint32);
