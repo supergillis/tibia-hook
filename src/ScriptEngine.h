@@ -20,18 +20,20 @@
 #include <QStringList>
 
 #include <ScriptEngineInterface.h>
+#include <ScriptPluginInterface.h>
 #include <SenderInterface.h>
 #include <ReadOnlyPacketInterface.h>
 #include <ReadWritePacketInterface.h>
+#include <ReceiverInterface.h>
 
 #include "Application.h"
 
-class ScriptEngine: public ScriptEngineInterface {
+class ScriptEngine: public ScriptEngineInterface, public ReceiverInterface {
 public:
 	ScriptEngine(SenderInterface*, QObject* = 0);
-	virtual ~ScriptEngine() {}
+	~ScriptEngine();
 
-	SenderInterface* sender();
+	SenderInterface* sender() const;
 
 	bool reload();
 	bool require(const QString&);
@@ -40,9 +42,17 @@ public:
 	ReadOnlyPacketInterface* createReadOnlyPacket(const quint8*, quint16);
 	ReadWritePacketInterface* createReadWritePacket();
 
+	bool receiveFromClient(const QByteArray&);
+	bool receiveFromServer(const QByteArray&);
+
 private:
 	SenderInterface* sender_;
+
 	QStringList requiredFiles_;
+	QList<ScriptPluginInterface*> plugins_;
+
+	QScriptString receiveFromClientHandle_;
+	QScriptString receiveFromServerHandle_;
 };
 
 #endif /* SCRIPTENGINE_H_ */

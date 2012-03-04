@@ -17,20 +17,9 @@
 
 #include "Application.h"
 #include "Connector.h"
-#include "ScriptReceiver.h"
-#include "ScriptPluginLoader.h"
-#include "Sender.h"
-
-#include <QDir>
-#include <QFileInfo>
-#include <QLibrary>
-#include <QList>
-
-#ifdef Q_WS_WIN
-#define PLUGIN_NAME "plugin.dll"
-#else
-#define PLUGIN_NAME "plugin.so"
-#endif
+#include "DetourManager.h"
+#include "DetourSender.h"
+#include "ScriptEngine.h"
 
 void hook_constructor() __attribute__((constructor));
 void* hook_thread(void*);
@@ -52,23 +41,9 @@ void hook_constructor() {
 void* hook_thread(void*) {
 	Application* application = new Application();
 
-	SenderInterface* sender = new Sender(DetourManager::instance());
-	ScriptReceiver* receiver = new ScriptReceiver(sender);
-
-	// Load plugins
-	QList<QFileInfo> pluginsInfo = QDir("plugins").entryInfoList(QStringList(), QDir::Dirs | QDir::NoDotAndDotDot);
-	foreach(const QFileInfo& pluginInfo, pluginsInfo) {
-		ScriptPluginLoader loader(QDir(pluginInfo.absoluteFilePath()).filePath(PLUGIN_NAME));
-		ScriptPluginInterface* plugin = loader.instance();
-		if (plugin) {
-			receiver->install(plugin);
-		}
-	}
-
-	// Load the main script
-	receiver->reload();
-
-	new Connector(receiver, sender);
+	SenderInterface* sender = new DetourSender(DetourManager::instance());
+	ReceiverInterface* receiver = new ScriptEngine(sender);
+	Connector* connector = new Connector(receiver, sender);
 
 	application->exec();
 	return NULL;
