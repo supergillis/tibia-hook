@@ -47,18 +47,17 @@ def compile(header_getter, source_getter, object_getter, output)
   moccer = MoccerCommand.new(ChainedTransformer.new(PrefixPathJoinTransformer.new($MOC_DIR), ChangeSuffixTransformer.new("h", "moc.cpp")), $INCLUDES)
   compiler = CompilerCommand.new(ChainedTransformer.new(PrefixPathJoinTransformer.new($OBJECTS_DIR), ChangeSuffixTransformer.new("cpp", "o")), $INCLUDES, $CFLAGS)
 
-  ListRunner.new(header_getter.get, moccer).run
-  ListRunner.new(source_getter.get, compiler).run
+  if ListRunner.new(header_getter.get, moccer).run and ListRunner.new(source_getter.get, compiler).run
+    linker = LinkerCommand.new(output, $LDFLAGS)
+    return linker.run(object_getter.get)
+  end
 
-  linker = LinkerCommand.new(output, $LDFLAGS)
-  linker.run(object_getter.get)
+  return false
 end
 
 def clean
   cleaner = DebugCommand.new("rm")
-
-  ListRunner.new(Dir[File.join($OBJECTS_DIR, "**", "*.o")], cleaner).run
-  ListRunner.new(Dir[File.join($MOC_DIR, "**", "*.moc.cpp")], cleaner).run
+  return ListRunner.new(Dir[File.join($OBJECTS_DIR, "**", "*.o")], cleaner).run && ListRunner.new(Dir[File.join($MOC_DIR, "**", "*.moc.cpp")], cleaner).run
 end
 
 def core
@@ -69,7 +68,7 @@ def core
   # Ensure the directory exists
   FileUtils.mkpath(File.dirname(output))
   # Compile the core
-  compile(header_getter, source_getter, object_getter, output)
+  return compile(header_getter, source_getter, object_getter, output)
 end
 
 def plugins
@@ -81,23 +80,31 @@ def plugins
     # Ensure the directory exists
     FileUtils.mkpath(File.dirname(output))
     # Compile the plugin
-    compile(header_getter, source_getter, object_getter, output)
+    return compile(header_getter, source_getter, object_getter, output)
   end
+  return true
 end
 
 OptionParser.new do |opts|
   opts.banner = "Usage: make.rb option"
   opts.on("--all", "Build everything.") do
-    core
-    plugins
+    if not (core && plugins)
+      exit 1
+	end
   end
   opts.on("--core", "Build the core system.") do
-    core
+    if not core
+      exit 1
+	end
   end
   opts.on("--plugins", "Build the plugins.") do
-    plugins
+    if not plugins
+      exit 1
+	end
   end
   opts.on("--clean", "Clean all object files.") do
-    clean
+    if not clean
+      exit 1
+	end
   end
 end.parse!

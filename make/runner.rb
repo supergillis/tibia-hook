@@ -31,8 +31,9 @@ class Command < Runner
       result = `#{program}`
       debug(program)
       status = $?.exitstatus
-      exit unless status == 0
+      return status == 0
     end
+    return 0
   end
 end
 
