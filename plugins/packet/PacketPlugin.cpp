@@ -32,7 +32,7 @@ int PacketPlugin::version() const {
 	return PLUGIN_VERSION;
 }
 
-void PacketPlugin::install(HookInterface* hook) {
+void PacketPlugin::install(HookInterface* hook) throw(Exception) {
 	hook_ = hook;
 	engine_ = hook->engine();
 	QScriptValue constructor = engine_->newFunction(PacketPlugin::constructor);

@@ -13,24 +13,16 @@
  * limitations under the License.
  */
 
-#ifndef SCRIPTPLUGININTERFACE_H_
-#define SCRIPTPLUGININTERFACE_H_
+#ifndef CONFIGINTERFACE_H_
+#define CONFIGINTERFACE_H_
 
-#include <QString>
-#include <QScriptEngine>
+#include <QVariant>
 
-#include <Exception.h>
-#include <HookInterface.h>
-
-class ScriptPluginInterface {
+class ConfigInterface {
 public:
-	virtual ~ScriptPluginInterface() {}
+	virtual ~ConfigInterface() {}
 
-	virtual QString name() const = 0;
-	virtual int version() const = 0;
-
-	virtual void install(HookInterface*) throw(Exception) = 0;
-	virtual void uninstall() = 0;
+	virtual QVariant value(const QString&) = 0;
 };
 
 #endif

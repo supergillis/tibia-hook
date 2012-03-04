@@ -20,6 +20,7 @@
 #include <QScriptEngine>
 #include <QString>
 
+#include <ConfigInterface.h>
 #include <SenderInterface.h>
 #include <ReadOnlyPacketInterface.h>
 #include <ReadWritePacketInterface.h>
@@ -30,6 +31,8 @@ public:
 	virtual ~HookInterface() {}
 
 	virtual QScriptEngine* engine() = 0;
+
+	virtual ConfigInterface* config() = 0;
 
 	virtual SenderInterface* sender() = 0;
 	virtual ReceiverInterface* receiver() = 0;

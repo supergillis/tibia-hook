@@ -24,6 +24,7 @@
 #include <QScriptContext>
 #include <QScriptEngine>
 #include <QTimerEvent>
+#include <QVariantMap>
 
 #include <HookInterface.h>
 #include <ScriptPlugin.h>
@@ -44,33 +45,36 @@ public:
 	QString name() const;
 	int version() const;
 
-	void install(HookInterface*);
+	void install(HookInterface*) throw(Exception);
 	void uninstall();
 
-	static QScriptValue newBattleListEntry(QScriptEngine*, quint32);
-
 private:
-	static QScriptValue newBattleListEntry(QScriptEngine*, const InternalBattleList::Entry&);
-
-	static QScriptValue findById(QScriptEngine*, quint32);
-	static QScriptValue findByName(QScriptEngine*, const QString&);
-
 	static QScriptValue findById(QScriptContext*, QScriptEngine*);
 	static QScriptValue findByName(QScriptContext*, QScriptEngine*);
 
-	static const InternalBattleList::List* battleList;
-
 	QScriptEngine* engine_;
+	QVariantMap config_;
 	BattleListEntries* entries_;
 };
 
-class BattleListEntries: public QScriptClass {
+class BattleListEntries: public QObject, public QScriptClass {
+	Q_OBJECT
+
 public:
-	BattleListEntries(QScriptEngine* engine): QScriptClass(engine) {}
+	BattleListEntries(InternalBattleList::List* list, QScriptEngine* engine): QScriptClass(engine), list_(list) {}
 
 	QScriptValue property(const QScriptValue&, const QScriptString&, uint);
 	QueryFlags queryProperty(const QScriptValue&, const QScriptString&, QueryFlags, uint*);
 	QScriptClassPropertyIterator* newIterator(const QScriptValue&);
+
+	QScriptValue newBattleListEntry(QScriptEngine*, quint32);
+	QScriptValue newBattleListEntry(QScriptEngine*, const InternalBattleList::Entry&);
+
+	QScriptValue findById(QScriptEngine*, quint32);
+	QScriptValue findByName(QScriptEngine*, const QString&);
+
+private:
+	InternalBattleList::List* list_;
 };
 
 class BattleListEntriesIterator: public QScriptClassPropertyIterator {

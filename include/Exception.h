@@ -13,37 +13,21 @@
  * limitations under the License.
  */
 
-#ifndef PACKETMODULE_H
-#define PACKETMODULE_H
+#ifndef EXCEPTION_H_
+#define EXCEPTION_H_
 
-#include <QObject>
-#include <QScriptEngine>
-#include <QScriptContext>
+#include <QString>
 
-#include <HookInterface.h>
-#include <ScriptPlugin.h>
-#include <ScriptPluginInterface.h>
-
-class PacketPlugin: public QObject, public ScriptPluginInterface {
-Q_OBJECT
-
+class Exception {
 public:
-	static const QString PLUGIN_NAME;
-	static const int PLUGIN_VERSION;
+	Exception(const QString& message): message_(message) {}
 
-	static const QString VARIABLE_NAME;
-
-	QString name() const;
-	int version() const;
-
-	void install(HookInterface*) throw(Exception);
-	void uninstall();
+	virtual const QString& message() const {
+		return message_;
+	}
 
 private:
-	static QScriptValue constructor(QScriptContext*, QScriptEngine*);
-
-	HookInterface* hook_;
-	QScriptEngine* engine_;
+	QString message_;
 };
 
-#endif /* PACKETMODULE_H */
+#endif

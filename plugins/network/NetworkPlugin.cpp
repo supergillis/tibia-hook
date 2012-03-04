@@ -30,7 +30,7 @@ int NetworkPlugin::version() const {
 	return PLUGIN_VERSION;
 }
 
-void NetworkPlugin::install(HookInterface* hook) {
+void NetworkPlugin::install(HookInterface* hook) throw(Exception) {
 	hook_ = hook;
 	engine_ = hook->engine();
 	QScriptValue object = engine_->newObject();

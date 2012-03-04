@@ -31,7 +31,7 @@ int DebuggerPlugin::version() const {
 	return PLUGIN_VERSION;
 }
 
-void DebuggerPlugin::install(HookInterface* hook) {
+void DebuggerPlugin::install(HookInterface* hook) throw(Exception) {
 	debugger_ = new Debugger(hook->engine());
 	hook->engine()->setAgent(debugger_);
 }

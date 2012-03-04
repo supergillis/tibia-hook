@@ -30,7 +30,7 @@ int SchedulerPlugin::version() const {
 	return PLUGIN_VERSION;
 }
 
-void SchedulerPlugin::install(HookInterface* hook) {
+void SchedulerPlugin::install(HookInterface* hook) throw(Exception) {
 	engine_ = hook->engine();
 	engine_->globalObject().setProperty(VARIABLE_NAME, engine_->newQObject(this), QScriptValue::ReadOnly | QScriptValue::Undeletable);
 }

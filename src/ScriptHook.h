@@ -13,12 +13,13 @@
  * limitations under the License.
  */
 
-#ifndef SCRIPTENGINE_H_
-#define SCRIPTENGINE_H_
+#ifndef SCRIPTHOOK_H_
+#define SCRIPTHOOK_H_
 
 #include <QScriptEngine>
 #include <QStringList>
 
+#include <ConfigInterface.h>
 #include <HookInterface.h>
 #include <ScriptPluginInterface.h>
 #include <SenderInterface.h>
@@ -26,12 +27,14 @@
 #include <ReadWritePacketInterface.h>
 #include <ReceiverInterface.h>
 
-class ScriptEngine: public HookInterface, public ReceiverInterface {
+class ScriptHook: public HookInterface, public ReceiverInterface {
 public:
-	ScriptEngine(SenderInterface*, QObject* = 0);
-	~ScriptEngine();
+	ScriptHook(ConfigInterface*, SenderInterface*, QObject* = 0);
+	~ScriptHook();
 
 	QScriptEngine* engine();
+
+	ConfigInterface* config();
 
 	SenderInterface* sender();
 	ReceiverInterface* receiver();
@@ -47,7 +50,11 @@ public:
 	bool receiveFromServer(const QByteArray&);
 
 private:
+	ConfigInterface* config_;
 	SenderInterface* sender_;
+
+	QString scriptDirectory_;
+	QString scriptMain_;
 
 	QScriptEngine engine_;
 	QScriptString receiveFromClientHandle_;
@@ -57,4 +64,4 @@ private:
 	QList<ScriptPluginInterface*> plugins_;
 };
 
-#endif /* SCRIPTENGINE_H_ */
+#endif

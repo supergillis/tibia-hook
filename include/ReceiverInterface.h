@@ -13,8 +13,8 @@
  * limitations under the License.
  */
 
-#ifndef RECEIVERINTERFACE_H
-#define RECEIVERINTERFACE_H
+#ifndef RECEIVERINTERFACE_H_
+#define RECEIVERINTERFACE_H_
 
 #include <QByteArray>
 

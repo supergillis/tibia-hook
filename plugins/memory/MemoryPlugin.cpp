@@ -30,7 +30,7 @@ int MemoryPlugin::version() const {
 	return PLUGIN_VERSION;
 }
 
-void MemoryPlugin::install(HookInterface* hook) {
+void MemoryPlugin::install(HookInterface* hook) throw(Exception) {
 	engine_ = hook->engine();
 	engine_->globalObject().setProperty(VARIABLE_NAME, engine_->newQObject(this), QScriptValue::ReadOnly | QScriptValue::Undeletable);
 }

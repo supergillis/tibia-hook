@@ -34,7 +34,7 @@ public:
 	QString name() const;
 	int version() const;
 
-	void install(HookInterface*);
+	void install(HookInterface*) throw(Exception);
 	void uninstall();
 
 private:

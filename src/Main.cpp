@@ -19,7 +19,12 @@
 #include "Connector.h"
 #include "DetourManager.h"
 #include "DetourSender.h"
-#include "ScriptEngine.h"
+#include "JsonConfig.h"
+#include "ScriptHook.h"
+
+#include <QMessageBox>
+
+#include <Exception.h>
 
 void hook_constructor() __attribute__((constructor));
 void* hook_thread(void*);
@@ -39,12 +44,28 @@ void hook_constructor() {
   * This function runs when the thread is created. Qt runs in this thread.
   */
 void* hook_thread(void*) {
+	QApplication::setApplicationName("Tibia Hook");
+	QApplication::setApplicationVersion("beta");
+
 	Application* application = new Application();
+	QFile configFile("config.js");
+	try {
+		if(!configFile.open(QFile::ReadOnly))
+			throw Exception("Could not load config.js!");
 
-	SenderInterface* sender = new DetourSender(DetourManager::instance());
-	ReceiverInterface* receiver = new ScriptEngine(sender);
-	Connector* connector = new Connector(receiver, sender);
-
-	application->exec();
+		ConfigInterface* config = new JsonConfig(configFile.readAll());
+		SenderInterface* sender = new DetourSender(DetourManager::instance());
+		ReceiverInterface* receiver = new ScriptHook(config, sender);
+		Connector* connector = new Connector(receiver, sender);
+		application->exec();
+	}
+	catch(Exception& exception) {
+		QMessageBox message;
+		message.setWindowTitle(QApplication::applicationName());
+		message.setText("Something terrible happened!");
+		message.setDetailedText(exception.message());
+		message.setDefaultButton(QMessageBox::Ignore);
+		message.exec();
+	}
 	return NULL;
 }

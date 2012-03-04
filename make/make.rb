@@ -34,6 +34,7 @@ $LDFLAGS = [
 
 $INCLUDES = [
   "-I./lib/mologie-detours",
+  "-I./lib/qt-json",
   "-I./include",
   "-I./src",
   "-I/usr/include/qt4",
@@ -62,7 +63,7 @@ end
 
 def core
   header_getter = DirectoryGetter.new(File.join($SOURCE_DIR, "**", "*.h"))
-  source_getter = ChainedGetter.new(DirectoryGetter.new(File.join($SOURCE_DIR, "**", "*.cpp")), DirectoryGetter.new(File.join($MOC_DIR, $SOURCE_DIR, "**", "*.cpp")), FixedGetter.new(["lib/mologie-detours/hde32/src/hde32.cpp"]))
+  source_getter = ChainedGetter.new(DirectoryGetter.new(File.join($SOURCE_DIR, "**", "*.cpp")), DirectoryGetter.new(File.join($MOC_DIR, $SOURCE_DIR, "**", "*.cpp")), FixedGetter.new(["lib/mologie-detours/hde32/src/hde32.cpp", "lib/qt-json/json.cpp"]))
   object_getter = ChainedGetter.new(DirectoryGetter.new(File.join($OBJECTS_DIR, $SOURCE_DIR, "**", "*.o")), DirectoryGetter.new(File.join($OBJECTS_DIR, $MOC_DIR, $SOURCE_DIR, "**", "*.o")), DirectoryGetter.new(File.join($OBJECTS_DIR, $LIB_DIR, "**", "*.o")))
   output = File.join($BIN_DIR, $OUTPUT)
   # Ensure the directory exists

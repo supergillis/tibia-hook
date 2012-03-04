@@ -32,7 +32,7 @@ int EnvironmentPlugin::version() const {
 	return PLUGIN_VERSION;
 }
 
-void EnvironmentPlugin::install(HookInterface* hook) {
+void EnvironmentPlugin::install(HookInterface* hook) throw(Exception) {
 	hook_ = hook;
 	engine_ = hook->engine();
 	engine_->globalObject().setProperty(VARIABLE_NAME, engine_->newQObject(this), QScriptValue::ReadOnly | QScriptValue::Undeletable);

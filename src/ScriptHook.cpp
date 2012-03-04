@@ -13,13 +13,15 @@
  * limitations under the License.
  */
 
-#include "ScriptEngine.h"
+#include "ScriptHook.h"
 #include "ScriptPluginLoader.h"
 #include "ReadOnlyPacketProxy.h"
 #include "ReadWritePacketProxy.h"
 
+#include <QApplication>
 #include <QDir>
 #include <QFile>
+#include <QMessageBox>
 
 #ifdef Q_WS_WIN
 #define PLUGIN_NAME "plugin.dll"
@@ -27,10 +29,20 @@
 #define PLUGIN_NAME "plugin.so"
 #endif
 
-ScriptEngine::ScriptEngine(SenderInterface* sender, QObject* parent) :
-	HookInterface(), sender_(sender), engine_(parent) {
+ScriptHook::ScriptHook(ConfigInterface* config, SenderInterface* sender, QObject* parent) :
+	HookInterface(), config_(config), sender_(sender), engine_(parent) {
 	receiveFromClientHandle_ = engine_.toStringHandle("receiveFromClient");
 	receiveFromServerHandle_ = engine_.toStringHandle("receiveFromServer");
+
+	// Load scripting directory and main script
+	QVariantMap scripting = config->value("scripting").toMap();
+	if(!scripting.value("directory").isValid())
+		throw Exception("Could not script directory!");
+	else if(!scripting.value("script").isValid())
+		throw Exception("Could not main script!");
+
+	scriptDirectory_ = scripting.value("directory").toString();
+	scriptMain_ = scripting.value("script").toString();
 
 	// Load extensions
 	engine_.importExtension("qt.core");
@@ -43,8 +55,18 @@ ScriptEngine::ScriptEngine(SenderInterface* sender, QObject* parent) :
 		ScriptPluginInterface* plugin = loader.instance();
 		if (plugin) {
 			qDebug() << "installing" << plugin->name();
-			plugin->install(this);
-			plugins_.append(plugin);
+			try {
+				plugin->install(this);
+				plugins_.append(plugin);
+			}
+			catch(Exception& exception) {
+				QMessageBox message;
+				message.setWindowTitle(QApplication::applicationName());
+				message.setText("Could not load \"" + plugin->name() + "\" plugin!");
+				message.setDetailedText(exception.message());
+				message.setDefaultButton(QMessageBox::Ignore);
+				message.exec();
+			}
 		}
 	}
 
@@ -52,36 +74,40 @@ ScriptEngine::ScriptEngine(SenderInterface* sender, QObject* parent) :
 	reload();
 }
 
-ScriptEngine::~ScriptEngine() {
+ScriptHook::~ScriptHook() {
 	foreach(ScriptPluginInterface* plugin, plugins_) {
 		qDebug() << "uninstalling" << plugin->name();
 		plugin->uninstall();
 	}
 }
 
-QScriptEngine* ScriptEngine::engine() {
+QScriptEngine* ScriptHook::engine() {
 	return &engine_;
 }
 
-SenderInterface* ScriptEngine::sender() {
+ConfigInterface* ScriptHook::config() {
+	return config_;
+}
+
+SenderInterface* ScriptHook::sender() {
 	return sender_;
 }
 
-ReceiverInterface* ScriptEngine::receiver() {
+ReceiverInterface* ScriptHook::receiver() {
 	return this;
 }
 
-bool ScriptEngine::reload() {
+bool ScriptHook::reload() {
 	engine_.pushContext();
 	requiredFiles_.clear();
-	require("Main.js");
+	require(scriptMain_);
 	engine_.popContext();
 	return true;
 }
 
-bool ScriptEngine::require(const QString& path) {
+bool ScriptHook::require(const QString& path) {
 	QDir scripts(QDir::current());
-	if (scripts.cd("scripts")) {
+	if (scripts.cd(scriptDirectory_)) {
 		QString fileName = scripts.absoluteFilePath(path);
 		QFile file(fileName);
 		if (!requiredFiles_.contains(fileName)) {
@@ -95,19 +121,19 @@ bool ScriptEngine::require(const QString& path) {
 	return false;
 }
 
-ReadOnlyPacketInterface* ScriptEngine::createReadOnlyPacket(const QByteArray& data) {
+ReadOnlyPacketInterface* ScriptHook::createReadOnlyPacket(const QByteArray& data) {
 	return new ReadOnlyPacketProxy(data);
 }
 
-ReadOnlyPacketInterface* ScriptEngine::createReadOnlyPacket(const quint8* data, quint16 length) {
+ReadOnlyPacketInterface* ScriptHook::createReadOnlyPacket(const quint8* data, quint16 length) {
 	return new ReadOnlyPacketProxy(data, length);
 }
 
-ReadWritePacketInterface* ScriptEngine::createReadWritePacket() {
+ReadWritePacketInterface* ScriptHook::createReadWritePacket() {
 	return new ReadWritePacketProxy();
 }
 
-bool ScriptEngine::receiveFromClient(const QByteArray& data) {
+bool ScriptHook::receiveFromClient(const QByteArray& data) {
 	QScriptValue callback = engine_.globalObject().property(receiveFromClientHandle_);
 	if (callback.isFunction()) {
 		ReadOnlyPacketInterface* packet = new ReadOnlyPacketProxy(data);
@@ -119,7 +145,7 @@ bool ScriptEngine::receiveFromClient(const QByteArray& data) {
 	return true;
 }
 
-bool ScriptEngine::receiveFromServer(const QByteArray& data) {
+bool ScriptHook::receiveFromServer(const QByteArray& data) {
 	QScriptValue callback = engine_.globalObject().property(receiveFromServerHandle_);
 	if (callback.isFunction()) {
 		ReadOnlyPacketInterface* packet = new ReadOnlyPacketProxy(data);
