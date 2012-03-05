@@ -15,7 +15,8 @@
 
 #include "MemoryPlugin.h"
 
-EXPORT_PLUGIN(MemoryPlugin)
+#include <QtPlugin>
+Q_EXPORT_PLUGIN2(memory, MemoryPlugin)
 
 const QString MemoryPlugin::PLUGIN_NAME("memory");
 const int MemoryPlugin::PLUGIN_VERSION(1);

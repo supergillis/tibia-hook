@@ -14,7 +14,6 @@
  */
 
 #include "ScriptHook.h"
-#include "ScriptPluginLoader.h"
 #include "ReadOnlyPacketProxy.h"
 #include "ReadWritePacketProxy.h"
 
@@ -22,6 +21,7 @@
 #include <QDir>
 #include <QFile>
 #include <QMessageBox>
+#include <QPluginLoader>
 
 #ifdef Q_WS_WIN
 #define PLUGIN_NAME "plugin.dll"
@@ -49,10 +49,10 @@ ScriptHook::ScriptHook(ConfigInterface* config, SenderInterface* sender, QObject
 	engine_.importExtension("qt.gui");
 
 	// Load plugins
-	QList<QFileInfo> pluginsInfo = QDir("plugins").entryInfoList(QStringList(), QDir::Dirs | QDir::NoDotAndDotDot);
+	QList<QFileInfo> pluginsInfo = QDir("plugins").entryInfoList(QStringList(), QDir::Files);
 	foreach(const QFileInfo& pluginInfo, pluginsInfo) {
-		ScriptPluginLoader loader(QDir(pluginInfo.absoluteFilePath()).filePath(PLUGIN_NAME));
-		ScriptPluginInterface* plugin = loader.instance();
+		QPluginLoader loader(pluginInfo.absoluteFilePath());
+		ScriptPluginInterface* plugin = dynamic_cast<ScriptPluginInterface*>(loader.instance());
 		if (plugin) {
 			qDebug() << "installing" << plugin->name();
 			try {

@@ -20,12 +20,12 @@
 #include <QScriptEngineAgent>
 
 #include <HookInterface.h>
-#include <ScriptPlugin.h>
 #include <ScriptPluginInterface.h>
 
 class Debugger;
 class DebuggerPlugin: public QObject, public ScriptPluginInterface {
 	Q_OBJECT
+	Q_INTERFACES(ScriptPluginInterface)
 
 public:
 	static const QString PLUGIN_NAME;

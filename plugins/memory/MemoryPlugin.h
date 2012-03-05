@@ -21,11 +21,11 @@
 #include <QScriptContext>
 
 #include <HookInterface.h>
-#include <ScriptPlugin.h>
 #include <ScriptPluginInterface.h>
 
 class MemoryPlugin: public QObject, public ScriptPluginInterface {
 	Q_OBJECT
+	Q_INTERFACES(ScriptPluginInterface)
 
 public:
 	static const QString PLUGIN_NAME;

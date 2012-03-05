@@ -33,4 +33,6 @@ public:
 	virtual void uninstall() = 0;
 };
 
+Q_DECLARE_INTERFACE(ScriptPluginInterface, "ScriptPluginInterface")
+
 #endif

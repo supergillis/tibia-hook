@@ -15,7 +15,8 @@
 
 #include "SchedulerPlugin.h"
 
-EXPORT_PLUGIN(SchedulerPlugin)
+#include <QtPlugin>
+Q_EXPORT_PLUGIN2(scheduler, SchedulerPlugin)
 
 const QString SchedulerPlugin::PLUGIN_NAME("scheduler");
 const int SchedulerPlugin::PLUGIN_VERSION(1);

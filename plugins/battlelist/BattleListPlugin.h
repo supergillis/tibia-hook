@@ -27,7 +27,6 @@
 #include <QVariantMap>
 
 #include <HookInterface.h>
-#include <ScriptPlugin.h>
 #include <ScriptPluginInterface.h>
 
 #include "InternalBattleList.h"
@@ -35,6 +34,7 @@
 class BattleListEntries;
 class BattleListPlugin: public QObject, public ScriptPluginInterface {
 	Q_OBJECT
+	Q_INTERFACES(ScriptPluginInterface)
 
 public:
 	static const QString PLUGIN_NAME;

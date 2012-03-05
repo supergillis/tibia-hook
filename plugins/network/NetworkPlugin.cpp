@@ -15,7 +15,8 @@
 
 #include "NetworkPlugin.h"
 
-EXPORT_PLUGIN(NetworkPlugin)
+#include <QtPlugin>
+Q_EXPORT_PLUGIN2(network, NetworkPlugin)
 
 const QString NetworkPlugin::PLUGIN_NAME("network");
 const int NetworkPlugin::PLUGIN_VERSION(1);
@@ -47,10 +48,10 @@ void NetworkPlugin::install(HookInterface* hook) throw(Exception) {
 void NetworkPlugin::uninstall() {
 	engine_->globalObject().setProperty(VARIABLE_NAME, QScriptValue::UndefinedValue);
 	engine_ = NULL;
-	hook_;
+	hook_ = NULL;
 }
 
-QScriptValue NetworkPlugin::sendToClient(QScriptContext* context, QScriptEngine* engine) {
+QScriptValue NetworkPlugin::sendToClient(QScriptContext* context, QScriptEngine*) {
 	if (context->argumentCount() == 1) {
 		QScriptValue argument = context->argument(0);
 		if (argument.isQObject()) {
@@ -66,7 +67,7 @@ QScriptValue NetworkPlugin::sendToClient(QScriptContext* context, QScriptEngine*
 	return false;
 }
 
-QScriptValue NetworkPlugin::sendToServer(QScriptContext* context, QScriptEngine* engine) {
+QScriptValue NetworkPlugin::sendToServer(QScriptContext* context, QScriptEngine*) {
 	if (context->argumentCount() == 1) {
 		QScriptValue argument = context->argument(0);
 		if (argument.isQObject()) {

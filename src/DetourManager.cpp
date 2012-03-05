@@ -22,9 +22,9 @@ MologieDetours::Detour<DetourManager::SendSignature*>* DetourManager::sendDetour
 MologieDetours::Detour<DetourManager::NextPacketSignature*>* DetourManager::nextPacketDetour_;
 
 DetourManager::DetourManager():
-	sendingToClient_(false),
 	stream_((PacketStream*) ADDRESS_PACKET_STREAM),
 	parserFunction_((ParserSignature*) ADDRESS_PARSER_FUNCTION),
+	sendingToClient_(false),
 	clientSignalConnected_(0),
 	serverSignalConnected_(0) {
 }

@@ -15,9 +15,8 @@
 
 #include "EnvironmentPlugin.h"
 
-#include <ScriptPlugin.h>
-
-EXPORT_PLUGIN(EnvironmentPlugin)
+#include <QtPlugin>
+Q_EXPORT_PLUGIN2(environment, EnvironmentPlugin)
 
 const QString EnvironmentPlugin::PLUGIN_NAME("environment");
 const int EnvironmentPlugin::PLUGIN_VERSION(1);

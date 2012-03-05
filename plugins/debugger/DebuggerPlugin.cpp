@@ -18,7 +18,8 @@
 #include <QDebug>
 #include <QStringList>
 
-EXPORT_PLUGIN(DebuggerPlugin)
+#include <QtPlugin>
+Q_EXPORT_PLUGIN2(debugger, DebuggerPlugin)
 
 const QString DebuggerPlugin::PLUGIN_NAME("debugger");
 const int DebuggerPlugin::PLUGIN_VERSION(1);
@@ -46,7 +47,7 @@ Debugger::Debugger(QScriptEngine* engine) :
 		QScriptEngineAgent(engine) {
 }
 
-void Debugger::exceptionThrow(qint64 scriptId, const QScriptValue& exception, bool hasHandler) {
+void Debugger::exceptionThrow(qint64, const QScriptValue& exception, bool hasHandler) {
 	if (!hasHandler) {
 		qDebug() << "uncaught exception" << exception.toString() << "on line" << engine()->uncaughtExceptionLineNumber();
 		qDebug() << "backtrace:";

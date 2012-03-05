@@ -15,9 +15,8 @@
 
 #include "PacketPlugin.h"
 
-#include <QDebug>
-
-EXPORT_PLUGIN(PacketPlugin)
+#include <QtPlugin>
+Q_EXPORT_PLUGIN2(packet, PacketPlugin)
 
 const QString PacketPlugin::PLUGIN_NAME("packet");
 const int PacketPlugin::PLUGIN_VERSION(1);

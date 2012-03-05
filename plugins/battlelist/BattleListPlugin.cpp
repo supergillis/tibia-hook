@@ -17,7 +17,8 @@
 
 #include <Exception.h>
 
-EXPORT_PLUGIN(BattleListPlugin)
+#include <QtPlugin>
+Q_EXPORT_PLUGIN2(battlelist, BattleListPlugin)
 
 const QString BattleListPlugin::PLUGIN_NAME("battlelist");
 const int BattleListPlugin::PLUGIN_VERSION(1);
@@ -122,7 +123,7 @@ QScriptValue BattleListEntries::findByName(QScriptEngine* engine, const QString&
 	return array;
 }
 
-QScriptValue BattleListEntries::property(const QScriptValue& object, const QScriptString&, uint id) {
+QScriptValue BattleListEntries::property(const QScriptValue&, const QScriptString&, uint id) {
 	/* The variable id contains the index that we want to access. */
 	return newBattleListEntry(engine(), id);
 }
