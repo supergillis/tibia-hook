@@ -12,9 +12,7 @@ SOURCES = Application.cpp \
 	Packet.cpp \
 	ReadOnlyPacket.cpp \
 	ReadWritePacket.cpp \
-	ScriptHook.cpp \
-	../lib/mologie-detours/hde.cpp \
-	../lib/qt-json/json.cpp
+	ScriptHook.cpp
 
 HEADERS = Application.h \
 	Connector.h \
@@ -27,6 +25,4 @@ HEADERS = Application.h \
 	ReadOnlyPacketProxy.h \
 	ReadWritePacket.h \
 	ReadWritePacketProxy.h \
-	ScriptHook.h \
-	../lib/mologie-detours/hde.h \
-	../lib/qt-json/json.h
+	ScriptHook.h

@@ -15,6 +15,9 @@
 
 #include "DetourManager.h"
 
+#include <hde.h>
+#include <hde.cpp>
+
 DetourManager* DetourManager::instance_ = NULL;
 
 MologieDetours::Detour<DetourManager::LoopSignature*>* DetourManager::loopDetour_;

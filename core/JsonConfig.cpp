@@ -1,6 +1,7 @@
 #include "JsonConfig.h"
 
 #include <json.h>
+#include <json.cpp>
 
 JsonConfig::JsonConfig(const QString& json) throw (Exception) {
 	bool parsed = true;
