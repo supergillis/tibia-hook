@@ -9,7 +9,6 @@ SOURCES = Application.cpp \
 	DetourManager.cpp \
 	JsonConfig.cpp \
 	Main.cpp \
-	Packet.cpp \
 	ReadOnlyPacket.cpp \
 	ReadWritePacket.cpp \
 	ScriptHook.cpp

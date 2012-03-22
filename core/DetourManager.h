@@ -25,27 +25,31 @@
 
 #ifdef Q_WS_WIN
 #else
-#define ADDRESS_LOOP_FUNCTION 0x8261e70
+#define LOOP_FUNCTION_ADDRESS 0x804c768
+#define LOOP_FUNCTION_ARG_NAME1 one
+#define LOOP_FUNCTION_ARG_NAME2 two
+#define LOOP_FUNCTION_ARGUMENTS LOOP_FUNCTION_ARG_NAME1, LOOP_FUNCTION_ARG_NAME2
+#define LOOP_FUNCTION_PARAMETERS void* LOOP_FUNCTION_ARG_NAME1, void* LOOP_FUNCTION_ARG_NAME2
 
-#define ADDRESS_SEND_BUFFER 0x85d3b60
-#define ADDRESS_SEND_BUFFER_LENGTH 0x85d4368
-#define ADDRESS_SEND_FUNCTION 0x08264920
+#define SEND_BUFFER_ADDRESS 0x85d3b20
+#define SEND_BUFFER_LENGTH_ADDRESS 0x85d4328
+#define SEND_FUNCTION_ADDRESS 0x82648e0
 
-#define ADDRESS_PACKET_STREAM 0x85d8390
-#define ADDRESS_PARSER_FUNCTION 0x81320f0
-#define ADDRESS_NEXT_PACKET_FUNCTION 0x82703c0
+#define PARSER_STREAM_ADDRESS 0x85d8350
+#define PARSER_FUNCTION_ADDRESS 0x81320f0
+#define PARSER_NEXT_FUNCTION_ADDRESS 0x8270370
 #endif
 
 class Hook;
 class DetourManager: public QObject {
 	Q_OBJECT
 
-	typedef void LoopSignature();
-	typedef void SendSignature( bool);
+	typedef void LoopSignature(LOOP_FUNCTION_PARAMETERS);
+	typedef void SendSignature(bool);
 	typedef void ParserSignature();
-	typedef int NextPacketSignature();
+	typedef int ParserNextSignature();
 
-	struct PacketStream {
+	struct ParserStream {
 		quint8* buffer;
 		quint32 size;
 		quint32 position;
@@ -100,7 +104,7 @@ protected:
 private:
 	DetourManager();
 
-	PacketStream* stream_;
+	ParserStream* parserStream_;
 	ParserSignature* parserFunction_;
 
 	DataQueue clientQueue_;
@@ -113,18 +117,18 @@ private:
 	static DetourManager* instance_;
 
 	static void initialize() {
-		loopDetour_ = new MologieDetours::Detour<LoopSignature*>((LoopSignature*) ADDRESS_LOOP_FUNCTION, &DetourManager::onLoop);
-		sendDetour_ = new MologieDetours::Detour<SendSignature*>((SendSignature*) ADDRESS_SEND_FUNCTION, &DetourManager::onSend);
-		nextPacketDetour_ = new MologieDetours::Detour<NextPacketSignature*>((NextPacketSignature*) ADDRESS_NEXT_PACKET_FUNCTION, &DetourManager::onNextPacket);
+		loopDetour_ = new MologieDetours::Detour<LoopSignature*>((LoopSignature*) LOOP_FUNCTION_ADDRESS, &DetourManager::onLoop);
+		sendDetour_ = new MologieDetours::Detour<SendSignature*>((SendSignature*) SEND_FUNCTION_ADDRESS, &DetourManager::onSend);
+		parserNextDetour_ = new MologieDetours::Detour<ParserNextSignature*>((ParserNextSignature*) PARSER_NEXT_FUNCTION_ADDRESS, &DetourManager::onParserNext);
 	}
 
-	static void onLoop();
+	static void onLoop(LOOP_FUNCTION_PARAMETERS);
 	static void onSend(bool);
-	static int onNextPacket();
+	static int onParserNext();
 
 	static MologieDetours::Detour<LoopSignature*>* loopDetour_;
 	static MologieDetours::Detour<SendSignature*>* sendDetour_;
-	static MologieDetours::Detour<NextPacketSignature*>* nextPacketDetour_;
+	static MologieDetours::Detour<ParserNextSignature*>* parserNextDetour_;
 };
 
 #endif /* DETOURMANAGER_H_ */
