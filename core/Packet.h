@@ -13,8 +13,8 @@
  * limitations under the License.
  */
 
-#ifndef PACKET_H_
-#define PACKET_H_
+#ifndef PACKET_H
+#define PACKET_H
 
 #include <QDebug>
 #include <QObject>
@@ -89,4 +89,4 @@ private:
 	}
 };
 
-#endif /* PACKET_H_ */
+#endif

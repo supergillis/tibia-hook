@@ -13,8 +13,8 @@
  * limitations under the License.
  */
 
-#ifndef SENDERINTERFACE_H_
-#define SENDERINTERFACE_H_
+#ifndef SENDERINTERFACE_H
+#define SENDERINTERFACE_H
 
 #include <QByteArray>
 

@@ -19,12 +19,11 @@
 #include "Connector.h"
 #include "DetourManager.h"
 #include "DetourSender.h"
-#include "JsonConfig.h"
-#include "ScriptHook.h"
+#include "Hook.h"
+#include "Settings.h"
+#include "StringException.h"
 
 #include <QMessageBox>
-
-#include <Exception.h>
 
 void hook_constructor() __attribute__((constructor));
 void* hook_thread(void*);
@@ -51,12 +50,13 @@ void* hook_thread(void*) {
 	QFile configFile("config.js");
 	try {
 		if(!configFile.open(QFile::ReadOnly))
-			throw Exception("Could not load config.js!");
+			throw StringException("Could not load config.js!");
 
-		ConfigInterface* config = new JsonConfig(configFile.readAll());
+		SettingsInterface* settings = new Settings(configFile.readAll());
 		SenderInterface* sender = new DetourSender(DetourManager::instance());
-		ReceiverInterface* receiver = new ScriptHook(config, sender);
-		Connector* connector = new Connector(receiver, sender);
+		ReceiverInterface* receiver = new Hook(settings, sender, application);
+		Connector connector(sender, receiver);
+
 		application->exec();
 	}
 	catch(Exception& exception) {

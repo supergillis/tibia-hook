@@ -27,7 +27,7 @@
 #include <QVariantMap>
 
 #include <HookInterface.h>
-#include <ScriptPluginInterface.h>
+#include <PluginInterface.h>
 
 #include "InternalBattleList.h"
 

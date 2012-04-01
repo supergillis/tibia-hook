@@ -1,17 +1,17 @@
-#ifndef JSONCONFIG_H_
-#define JSONCONFIG_H_
+#ifndef JSONCONFIG_H
+#define JSONCONFIG_H
 
 #include <QDebug>
 #include <QFile>
 #include <QString>
 
-#include <ConfigInterface.h>
+#include <SettingsInterface.h>
 #include <Exception.h>
 
-class JsonConfig: public ConfigInterface
+class Settings: public SettingsInterface
 {
 public:
-	JsonConfig(const QString&) throw (Exception);
+	Settings(const QString&) throw (Exception);
 
 	QVariant value(const QString&);
 

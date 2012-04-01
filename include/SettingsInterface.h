@@ -13,14 +13,14 @@
  * limitations under the License.
  */
 
-#ifndef CONFIGINTERFACE_H_
-#define CONFIGINTERFACE_H_
+#ifndef SETTINGSINTERFACE_H
+#define SETTINGSINTERFACE_H
 
 #include <QVariant>
 
-class ConfigInterface {
+class SettingsInterface {
 public:
-	virtual ~ConfigInterface() {}
+	virtual ~SettingsInterface() {}
 
 	virtual QVariant value(const QString&) = 0;
 };

@@ -13,8 +13,8 @@
  * limitations under the License.
  */
 
-#ifndef READWRITEPACKET_H_
-#define READWRITEPACKET_H_
+#ifndef READWRITEPACKET_H
+#define READWRITEPACKET_H
 
 #include <QByteArray>
 #include <QObject>
@@ -44,4 +44,4 @@ private:
 	quint16 length_;
 };
 
-#endif /* READWRITEPACKET_H_ */
+#endif

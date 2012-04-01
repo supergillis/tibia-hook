@@ -13,26 +13,19 @@
  * limitations under the License.
  */
 
-#ifndef SCRIPTPLUGININTERFACE_H_
-#define SCRIPTPLUGININTERFACE_H_
-
-#include <QString>
-#include <QScriptEngine>
+#ifndef STRINGEXCEPTION_H
+#define STRINGEXCEPTION_H
 
 #include <Exception.h>
-#include <HookInterface.h>
 
-class ScriptPluginInterface {
+class StringException: public Exception {
 public:
-	virtual ~ScriptPluginInterface() {}
+	StringException(const QString& message): message_(message) {}
 
-	virtual QString name() const = 0;
-	virtual int version() const = 0;
+	const QString& message() const { return message_; }
 
-	virtual void install(HookInterface*) throw(Exception) = 0;
-	virtual void uninstall() = 0;
+private:
+	QString message_;
 };
-
-Q_DECLARE_INTERFACE(ScriptPluginInterface, "ScriptPluginInterface")
 
 #endif

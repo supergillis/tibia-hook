@@ -13,8 +13,8 @@
  * limitations under the License.
  */
 
-#ifndef DATAQUEUE_H_
-#define DATAQUEUE_H_
+#ifndef DATAQUEUE_H
+#define DATAQUEUE_H
 
 #include <QByteArray>
 #include <QMutex>
@@ -34,4 +34,4 @@ private:
 	QMutex mutex_;
 };
 
-#endif /* DATAQUEUE_H_ */
+#endif

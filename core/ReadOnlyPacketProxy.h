@@ -13,8 +13,8 @@
  * limitations under the License.
  */
 
-#ifndef READONLYPACKETPROXY_H_
-#define READONLYPACKETPROXY_H_
+#ifndef READONLYPACKETPROXY_H
+#define READONLYPACKETPROXY_H
 
 #include <QByteArray>
 #include <QObject>
@@ -35,53 +35,24 @@ public:
 
 	virtual ~ReadOnlyPacketProxy() {}
 
-	inline quint16 length() const {
-		return packet_.length();
-	}
-
-	inline const quint8* data() const {
-		return packet_.data();
-	}
+	inline quint16 length() const { return packet_.length(); }
+	inline const quint8* data() const { return packet_.data(); }
 
 public slots:
-	inline quint16 position() const {
-		return packet_.position();
-	}
+	inline quint16 position() const { return packet_.position(); }
+	inline void setPosition(quint16 position) { packet_.setPosition(position); }
 
-	inline void setPosition(quint16 position) {
-		packet_.setPosition(position);
-	}
+	inline void skip(quint16 length) { packet_.skip(length); }
+	inline bool has(quint16 length) const { return packet_.has(length); }
 
-	inline void skip(quint16 length) {
-		packet_.skip(length);
-	}
-
-	inline bool has(quint16 length) const {
-		return packet_.has(length);
-	}
-
-	inline quint8 readU8() {
-		return packet_.readU8();
-	}
-
-	inline quint16 readU16() {
-		return packet_.readU16();
-	}
-
-	inline quint32 readU32() {
-		return packet_.readU32();
-	}
-
-	inline quint64 readU64() {
-		return packet_.readU64();
-	}
-
-	inline QString readString() {
-		return packet_.readString();
-	}
+	inline quint8 readU8() { return packet_.readU8(); }
+	inline quint16 readU16() { return packet_.readU16(); }
+	inline quint32 readU32() { return packet_.readU32(); }
+	inline quint64 readU64() { return packet_.readU64(); }
+	inline QString readString() { return packet_.readString(); }
 
 private:
 	ReadOnlyPacket packet_;
 };
 
-#endif /* READONLYPACKETPROXY_H_ */
+#endif

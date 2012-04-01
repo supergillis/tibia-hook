@@ -13,8 +13,8 @@
  * limitations under the License.
  */
 
-#ifndef READWRITEPACKETINTERFACE_H_
-#define READWRITEPACKETINTERFACE_H_
+#ifndef READWRITEPACKETINTERFACE_H
+#define READWRITEPACKETINTERFACE_H
 
 #include <PacketInterface.h>
 

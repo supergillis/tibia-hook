@@ -13,8 +13,8 @@
  * limitations under the License.
  */
 
-#ifndef SENDER_H
-#define SENDER_H
+#ifndef DETOURSENDER_H
+#define DETOURSENDER_H
 
 #include <SenderInterface.h>
 

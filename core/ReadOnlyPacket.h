@@ -13,8 +13,8 @@
  * limitations under the License.
  */
 
-#ifndef READONLYPACKET_H_
-#define READONLYPACKET_H_
+#ifndef READONLYPACKET_H
+#define READONLYPACKET_H
 
 #include <QByteArray>
 #include <QObject>
@@ -34,4 +34,4 @@ private:
 	QByteArray raw_;
 };
 
-#endif /* READONLYPACKET_H_ */
+#endif

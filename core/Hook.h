@@ -13,55 +13,45 @@
  * limitations under the License.
  */
 
-#ifndef SCRIPTHOOK_H_
-#define SCRIPTHOOK_H_
+#ifndef SCRIPTHOOK_H
+#define SCRIPTHOOK_H
 
-#include <QScriptEngine>
 #include <QStringList>
 
-#include <ConfigInterface.h>
 #include <HookInterface.h>
-#include <ScriptPluginInterface.h>
-#include <SenderInterface.h>
+#include <PluginInterface.h>
 #include <ReadOnlyPacketInterface.h>
 #include <ReadWritePacketInterface.h>
 #include <ReceiverInterface.h>
+#include <SenderInterface.h>
+#include <SettingsInterface.h>
 
-class ScriptHook: public HookInterface, public ReceiverInterface {
+#include "DetourManager.h"
+#include "Settings.h"
+
+class Hook: public QObject, public HookInterface, public ReceiverInterface {
+	Q_OBJECT
+
 public:
-	ScriptHook(ConfigInterface*, SenderInterface*, QObject* = 0);
-	~ScriptHook();
+	Hook(SettingsInterface*, SenderInterface*, QObject* = 0);
+	~Hook();
 
-	QScriptEngine* engine();
-
-	ConfigInterface* config();
-
-	SenderInterface* sender();
-	ReceiverInterface* receiver();
-
-	bool reload();
-	bool require(const QString&);
+	SettingsInterface* settings() { return settings_; }
+	SenderInterface* sender() { return sender_; }
+	ReceiverInterface* receiver() { return this; }
 
 	ReadOnlyPacketInterface* createReadOnlyPacket(const QByteArray&);
 	ReadOnlyPacketInterface* createReadOnlyPacket(const quint8*, quint16);
 	ReadWritePacketInterface* createReadWritePacket();
 
 	bool receiveFromClient(const QByteArray&);
-	bool receiveFromServer(const QByteArray&);
+	void receiveFromServer(const QByteArray&);
 
 private:
-	ConfigInterface* config_;
+	SettingsInterface* settings_;
 	SenderInterface* sender_;
 
-	QString scriptDirectory_;
-	QString scriptMain_;
-
-	QScriptEngine engine_;
-	QScriptString receiveFromClientHandle_;
-	QScriptString receiveFromServerHandle_;
-
-	QStringList requiredFiles_;
-	QList<ScriptPluginInterface*> plugins_;
+	QList<PluginInterface*> plugins_;
 };
 
 #endif

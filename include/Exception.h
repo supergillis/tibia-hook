@@ -13,21 +13,16 @@
  * limitations under the License.
  */
 
-#ifndef EXCEPTION_H_
-#define EXCEPTION_H_
+#ifndef EXCEPTION_H
+#define EXCEPTION_H
 
 #include <QString>
 
 class Exception {
 public:
-	Exception(const QString& message): message_(message) {}
+	virtual ~Exception() {}
 
-	virtual const QString& message() const {
-		return message_;
-	}
-
-private:
-	QString message_;
+	virtual const QString& message() const = 0;
 };
 
 #endif

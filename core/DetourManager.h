@@ -13,8 +13,8 @@
  * limitations under the License.
  */
 
-#ifndef DETOURMANAGER_H_
-#define DETOURMANAGER_H_
+#ifndef DETOURMANAGER_H
+#define DETOURMANAGER_H
 
 #include <QDebug>
 #include <QObject>
@@ -131,4 +131,4 @@ private:
 	static MologieDetours::Detour<ParserNextSignature*>* parserNextDetour_;
 };
 
-#endif /* DETOURMANAGER_H_ */
+#endif

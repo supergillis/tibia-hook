@@ -13,15 +13,25 @@
  * limitations under the License.
  */
 
-#ifndef READONLYPACKETINTERFACE_H
-#define READONLYPACKETINTERFACE_H
+#ifndef PLUGININTERFACE_H
+#define PLUGININTERFACE_H
 
-#include <PacketInterface.h>
+#include <QString>
 
-class ReadOnlyPacketInterface: public PacketInterface {
+#include <Exception.h>
+#include <HookInterface.h>
+
+class PluginInterface {
 public:
-	ReadOnlyPacketInterface(QObject* parent = 0): PacketInterface(parent) {}
-	virtual ~ReadOnlyPacketInterface() {}
+	virtual ~PluginInterface() {}
+
+	virtual QString name() const = 0;
+	virtual int version() const = 0;
+
+	virtual void install(HookInterface*) throw(Exception) = 0;
+	virtual void uninstall() = 0;
 };
+
+Q_DECLARE_INTERFACE(PluginInterface, "PluginInterface")
 
 #endif

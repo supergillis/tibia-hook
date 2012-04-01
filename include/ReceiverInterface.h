@@ -13,8 +13,8 @@
  * limitations under the License.
  */
 
-#ifndef RECEIVERINTERFACE_H_
-#define RECEIVERINTERFACE_H_
+#ifndef RECEIVERINTERFACE_H
+#define RECEIVERINTERFACE_H
 
 #include <QByteArray>
 
@@ -23,7 +23,7 @@ public:
 	virtual ~ReceiverInterface() {}
 
 	virtual bool receiveFromClient(const QByteArray&) = 0;
-	virtual bool receiveFromServer(const QByteArray&) = 0;
+	virtual void receiveFromServer(const QByteArray&) = 0;
 };
 
 #endif
