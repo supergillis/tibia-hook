@@ -16,77 +16,21 @@
 #ifndef PACKET_H
 #define PACKET_H
 
-#include <QDebug>
-#include <QObject>
-#include <QString>
+#include <QtGlobal>
+#include <QByteArray>
 
-#define PACKET_END_OF_FILE "reached the end of the buffer"
+#include <PacketInterface.h>
 
-class Packet {
+class Packet: public PacketInterface {
 public:
-	Packet(): position_(0) {}
-	virtual ~Packet() {}
+    Packet(const QByteArray& data);
+    Packet(const quint8* buffer, quint16 length);
 
-	virtual quint16 length() const = 0;
-	virtual const quint8* data() const = 0;
-
-	inline quint16 position() const {
-		return position_;
-	}
-
-	inline void setPosition(quint16 position) {
-		position_ = position;
-	}
-
-	void skip(quint16 count) {
-		position_ += count;
-	}
-
-	inline bool has(quint16 count) const {
-		return length() - position_ >= count;
-	}
-
-	inline quint8 readU8() {
-		return read<quint8, 1>();
-	}
-
-	inline quint16 readU16() {
-		return read<quint16, 2>();
-	}
-
-	inline quint32 readU32() {
-		return read<quint32, 4>();
-	}
-
-	inline quint64 readU64() {
-		return read<quint64, 8>();
-	}
-
-	QString readString() {
-		quint16 length = readU16();
-		if (has(length)) {
-			QString value = QString::fromAscii((const char*) (data() + position_), length);
-			position_ += length;
-			return value;
-		}
-		qWarning() << PACKET_END_OF_FILE;
-		return QString();
-	}
-
-protected:
-	quint16 position_;
+    quint16 length() const;
+    const quint8* data() const;
 
 private:
-	template<typename T, int size>
-	inline T read() {
-		if (!has(size)) {
-			qWarning() << PACKET_END_OF_FILE;
-			return 0;
-		}
-		T value = *((T*) (data() + position_));
-		position_ += size;
-		return value;
-	}
+    QByteArray raw_;
 };
 
-#endif
+#endif // PACKET_H

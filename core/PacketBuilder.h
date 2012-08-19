@@ -13,40 +13,38 @@
  * limitations under the License.
  */
 
-#ifndef MEMORYMODULE_H
-#define MEMORYMODULE_H
+#ifndef PACKETBUILDER_H
+#define PACKETBUILDER_H
 
+#include <QByteArray>
 #include <QObject>
-#include <QScriptEngine>
-#include <QScriptContext>
+#include <QString>
 
-#include <HookInterface.h>
-#include <ScriptPluginInterface.h>
+#include <PacketBuilderInterface.h>
 
-class MemoryPlugin: public QObject, public ScriptPluginInterface {
-	Q_OBJECT
-	Q_INTERFACES(ScriptPluginInterface)
+#include "Packet.h"
 
+class PacketBuilder: public PacketBuilderInterface {
 public:
-	static const QString PLUGIN_NAME;
-	static const int PLUGIN_VERSION;
+    PacketBuilder();
+    PacketBuilder(const PacketInterface*);
+    PacketBuilder(const QByteArray&);
+    PacketBuilder(const quint8*, quint16 length);
 
-	static const QString VARIABLE_NAME;
+    PacketInterface* build() const;
 
-	QString name() const;
-	int version() const;
-
-	void install(HookInterface*) throw(Exception);
-	void uninstall();
-
-public slots:
-	quint8 readU8(quint32);
-	quint16 readU16(quint32);
-	quint32 readU32(quint32);
-	QString readString(quint32);
+    void writeU8(quint8);
+    void writeU16(quint16);
+    void writeU32(quint32);
+    void writeU64(quint64);
+    void writeString(const QString&);
 
 private:
-	QScriptEngine* engine_;
+    void reserve(quint16);
+
+    QByteArray data_;
+    quint16 position_;
+    quint16 length_;
 };
 
-#endif /* MEMORYMODULE_H */
+#endif

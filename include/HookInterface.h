@@ -21,9 +21,10 @@
 
 #include <SettingsInterface.h>
 #include <SenderInterface.h>
-#include <ReadOnlyPacketInterface.h>
-#include <ReadWritePacketInterface.h>
+#include <PacketInterface.h>
+#include <PacketBuilderInterface.h>
 #include <ReceiverInterface.h>
+#include <PluginManagerInterface.h>
 
 class HookInterface {
 public:
@@ -31,11 +32,13 @@ public:
 
 	virtual SettingsInterface* settings() = 0;
 	virtual SenderInterface* sender() = 0;
-	virtual ReceiverInterface* receiver() = 0;
+    virtual ReceiverInterface* receiver() = 0;
+    virtual PluginManagerInterface* plugins() = 0;
 
-	virtual ReadOnlyPacketInterface* createReadOnlyPacket(const QByteArray&) = 0;
-	virtual ReadOnlyPacketInterface* createReadOnlyPacket(const quint8*, quint16) = 0;
-	virtual ReadWritePacketInterface* createReadWritePacket() = 0;
+    virtual PacketBuilderInterface* createPacketBuilder() const = 0;
+    virtual PacketBuilderInterface* createPacketBuilder(const PacketInterface*) const = 0;
+    virtual PacketBuilderInterface* createPacketBuilder(const QByteArray& data) const = 0;
+    virtual PacketBuilderInterface* createPacketBuilder(const quint8* data, quint16 length) const = 0;
 };
 
 #endif

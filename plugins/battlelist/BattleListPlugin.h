@@ -13,34 +13,38 @@
  * limitations under the License.
  */
 
-#ifndef SCHEDULERMODULE_H
-#define SCHEDULERMODULE_H
+#ifndef BATTELLISTPLUGIN_H
+#define BATTELLISTPLUGIN_H
 
 #include <QHash>
 #include <QPair>
 #include <QObject>
-#include <QScriptClass>
-#include <QScriptClassPropertyIterator>
-#include <QScriptContext>
-#include <QScriptEngine>
 #include <QTimerEvent>
 #include <QVariantMap>
 
 #include <HookInterface.h>
 #include <PluginInterface.h>
+#include <Exception.h>
 
-#include "InternalBattleList.h"
+#include "BattleList.h"
 
-class BattleListEntries;
-class BattleListPlugin: public QObject, public ScriptPluginInterface {
+class StringException: public Exception {
+public:
+    StringException(const QString& message): message_(message) {}
+
+    const QString& message() const { return message_; }
+
+private:
+    QString message_;
+};
+
+class BattleListPlugin: public QObject, public PluginInterface {
 	Q_OBJECT
-	Q_INTERFACES(ScriptPluginInterface)
+    Q_INTERFACES(PluginInterface)
 
 public:
 	static const QString PLUGIN_NAME;
-	static const int PLUGIN_VERSION;
-
-	static const QString VARIABLE_NAME;
+    static const int PLUGIN_VERSION;
 
 	QString name() const;
 	int version() const;
@@ -48,54 +52,11 @@ public:
 	void install(HookInterface*) throw(Exception);
 	void uninstall();
 
-private:
-	static QScriptValue findById(QScriptContext*, QScriptEngine*);
-	static QScriptValue findByName(QScriptContext*, QScriptEngine*);
-
-	QScriptEngine* engine_;
-	QVariantMap config_;
-	BattleListEntries* entries_;
-};
-
-class BattleListEntries: public QObject, public QScriptClass {
-	Q_OBJECT
-
-public:
-	BattleListEntries(InternalBattleList::List* list, QScriptEngine* engine): QScriptClass(engine), list_(list) {}
-
-	QScriptValue property(const QScriptValue&, const QScriptString&, uint);
-	QueryFlags queryProperty(const QScriptValue&, const QScriptString&, QueryFlags, uint*);
-	QScriptClassPropertyIterator* newIterator(const QScriptValue&);
-
-	QScriptValue newBattleListEntry(QScriptEngine*, quint32);
-	QScriptValue newBattleListEntry(QScriptEngine*, const InternalBattleList::Entry&);
-
-	QScriptValue findById(QScriptEngine*, quint32);
-	QScriptValue findByName(QScriptEngine*, const QString&);
+    const BattleListEntry* findById(const quint32 id);
+    const BattleListEntry* findByName(const QString& name);
 
 private:
-	InternalBattleList::List* list_;
+    BattleList* list_;
 };
 
-class BattleListEntriesIterator: public QScriptClassPropertyIterator {
-public:
-	BattleListEntriesIterator(const QScriptValue&);
-
-	QScriptString name() const;
-	uint id() const;
-
-	bool hasNext() const;
-	bool hasPrevious() const;
-
-	void next();
-	void previous();
-
-	void toBack();
-	void toFront();
-
-private:
-	uint index_;
-	uint last_;
-};
-
-#endif /* SCHEDULERMODULE_H */
+#endif

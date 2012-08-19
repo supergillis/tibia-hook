@@ -13,15 +13,23 @@
  * limitations under the License.
  */
 
-#ifndef READONLYPACKETINTERFACE_H
-#define READONLYPACKETINTERFACE_H
+#ifndef PACKETBUILDERINTERFACE_H_
+#define PACKETBUILDERINTERFACE_H_
 
-#include <PacketInterface.h>
+#include <QtGlobal>
+#include <QObject>
+#include <QString>
 
-class ReadOnlyPacketInterface: public PacketInterface {
+class PacketBuilderInterface: public QObject {
 public:
-	ReadOnlyPacketInterface(QObject* parent = 0): PacketInterface(parent) {}
-	virtual ~ReadOnlyPacketInterface() {}
+	PacketBuilderInterface(QObject* parent = 0): QObject(parent) {}
+	virtual ~PacketBuilderInterface() {}
+
+    virtual void writeU8(quint8) = 0;
+	virtual void writeU16(quint16) = 0;
+	virtual void writeU32(quint32) = 0;
+	virtual void writeU64(quint64) = 0;
+	virtual void writeString(const QString&) = 0;
 };
 
 #endif

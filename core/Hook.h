@@ -20,8 +20,8 @@
 
 #include <HookInterface.h>
 #include <PluginInterface.h>
-#include <ReadOnlyPacketInterface.h>
-#include <ReadWritePacketInterface.h>
+#include <PluginManagerInterface.h>
+#include <PacketBuilderInterface.h>
 #include <ReceiverInterface.h>
 #include <SenderInterface.h>
 #include <SettingsInterface.h>
@@ -29,7 +29,7 @@
 #include "DetourManager.h"
 #include "Settings.h"
 
-class Hook: public QObject, public HookInterface, public ReceiverInterface {
+class Hook: public QObject, public HookInterface, public ReceiverInterface, public PluginManagerInterface {
 	Q_OBJECT
 
 public:
@@ -37,15 +37,19 @@ public:
 	~Hook();
 
 	SettingsInterface* settings() { return settings_; }
-	SenderInterface* sender() { return sender_; }
-	ReceiverInterface* receiver() { return this; }
+    SenderInterface* sender() { return sender_; }
+    ReceiverInterface* receiver() { return this; }
+    PluginManagerInterface* plugins() { return this; }
 
-	ReadOnlyPacketInterface* createReadOnlyPacket(const QByteArray&);
-	ReadOnlyPacketInterface* createReadOnlyPacket(const quint8*, quint16);
-	ReadWritePacketInterface* createReadWritePacket();
+    PacketBuilderInterface* createPacketBuilder() const;
+    PacketBuilderInterface* createPacketBuilder(const PacketInterface*) const;
+    PacketBuilderInterface* createPacketBuilder(const QByteArray&) const;
+    PacketBuilderInterface* createPacketBuilder(const quint8*, quint16) const;
 
 	bool receiveFromClient(const QByteArray&);
 	void receiveFromServer(const QByteArray&);
+
+    PluginInterface* findPluginByName(const QString& name);
 
 private:
 	SettingsInterface* settings_;

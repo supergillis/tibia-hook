@@ -13,20 +13,20 @@
  * limitations under the License.
  */
 
-#include "ReadOnlyPacket.h"
+#include "Packet.h"
 
-ReadOnlyPacket::ReadOnlyPacket(const QByteArray& data) :
-		Packet(), raw_(data) {
+Packet::Packet(const QByteArray& data):
+    raw_(data) {
 }
 
-ReadOnlyPacket::ReadOnlyPacket(const quint8* buffer, quint16 length) :
-		Packet(), raw_((const char*) buffer, length) {
+Packet::Packet(const quint8* buffer, quint16 length):
+    raw_((const char*) buffer, length) {
 }
 
-quint16 ReadOnlyPacket::length() const {
-	return raw_.length();
+quint16 Packet::length() const {
+    return raw_.length();
 }
 
-const quint8* ReadOnlyPacket::data() const {
-	return (const quint8*) raw_.data();
+const quint8* Packet::data() const {
+    return (const quint8*) raw_.data();
 }

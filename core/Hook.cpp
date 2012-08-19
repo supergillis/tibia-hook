@@ -14,11 +14,10 @@
  */
 
 #include "Hook.h"
-#include "Message.h"
-#include "ReadOnlyPacketProxy.h"
-#include "ReadWritePacketProxy.h"
-
-#include "messages/ServerPlayerStatus.h"
+#include "Packet.h"
+#include "PacketReader.h"
+#include "PacketBuilder.h"
+#include "StringException.h"
 
 #include <QApplication>
 #include <QDir>
@@ -26,49 +25,82 @@
 #include <QMessageBox>
 #include <QPluginLoader>
 
+#define SETTING_PLUGINS_DIRECTORY "plugins_directory"
+
 Hook::Hook(SettingsInterface* settings, SenderInterface* sender, QObject* parent) :
-	HookInterface(), settings_(settings), sender_(sender) {
-	Message::registerServerMessage(new ServerPlayerStatus);
+    QObject(parent), settings_(settings), sender_(sender) {
+    if(!settings_->contains(SETTING_PLUGINS_DIRECTORY)) {
+        throw StringException("Could not load plugins directory!");
+    }
+
+    QString pluginsDir = settings->value(SETTING_PLUGINS_DIRECTORY).toString();
+
+    // Load plugins
+    QList<QFileInfo> pluginsInfo = QDir(pluginsDir).entryInfoList(QStringList(), QDir::Files);
+    foreach(const QFileInfo& pluginInfo, pluginsInfo) {
+        QPluginLoader loader(pluginInfo.absoluteFilePath());
+        PluginInterface* plugin = dynamic_cast<PluginInterface*>(loader.instance());
+        if (plugin) {
+            qDebug() << "installing" << plugin->name();
+            try {
+                plugin->install(this);
+                plugins_.append(plugin);
+            }
+            catch(Exception& exception) {
+                QMessageBox message;
+                message.setWindowTitle(QApplication::applicationName());
+                message.setText("Could not load \"" + plugin->name() + "\" plugin!");
+                message.setDetailedText(exception.message());
+                message.setDefaultButton(QMessageBox::Ignore);
+                message.exec();
+            }
+        }
+    }
 }
 
 Hook::~Hook() {
-	foreach(PluginInterface* plugin, plugins_) {
-		qDebug() << "uninstalling" << plugin->name();
-		plugin->uninstall();
-	}
-}
-
-ReadOnlyPacketInterface* Hook::createReadOnlyPacket(const QByteArray& data) {
-	return new ReadOnlyPacketProxy(data);
-}
-
-ReadOnlyPacketInterface* Hook::createReadOnlyPacket(const quint8* data, quint16 length) {
-	return new ReadOnlyPacketProxy(data, length);
-}
-
-ReadWritePacketInterface* Hook::createReadWritePacket() {
-	return new ReadWritePacketProxy();
+    foreach(PluginInterface* plugin, plugins_) {
+        qDebug() << "uninstalling" << plugin->name();
+        plugin->uninstall();
+    }
 }
 
 bool Hook::receiveFromClient(const QByteArray& data) {
-	ReadOnlyPacket packet(data);
-	quint8 type = packet.readU8();
-	qDebug() << "client" << type;
-	return true;
+    Packet packet(data);
+    PacketReader reader(&packet);
+    quint8 type = reader.readU8();
+    qDebug() << "client" << type;
+    return true;
 }
 
 void Hook::receiveFromServer(const QByteArray& data) {
-	ReadOnlyPacket packet(data);
-	quint8 type = packet.readU8();
-	qDebug() << "server" << type;
-	Message* message = Message::lookupServerMessage(type);
-	if(message != NULL) {
-		qDebug() << "message found";
-		MessageData* data = message->deserialize(&packet);
-		if(type == 0xA0) {
-			ServerPlayerStatusData* status = (ServerPlayerStatusData*) data;
-			qDebug() << "health" << status->health;
-		}
-		delete data;
-	}
+    Packet packet(data);
+    PacketReader reader(&packet);
+    quint8 type = reader.readU8();
+    qDebug() << "server" << type;
+}
+
+PluginInterface* Hook::findPluginByName(const QString& name) {
+    foreach(PluginInterface* plugin, plugins_) {
+        if(plugin->name().compare(name) == 0) {
+            return plugin;
+        }
+    }
+    return NULL;
+}
+
+PacketBuilderInterface* Hook::createPacketBuilder() const {
+    return new PacketBuilder();
+}
+
+PacketBuilderInterface* Hook::createPacketBuilder(const PacketInterface* packet) const {
+    return new PacketBuilder(packet);
+}
+
+PacketBuilderInterface* Hook::createPacketBuilder(const QByteArray& data) const {
+    return new PacketBuilder(data);
+}
+
+PacketBuilderInterface* Hook::createPacketBuilder(const quint8* data, quint16 length) const {
+    return new PacketBuilder(data, length);
 }

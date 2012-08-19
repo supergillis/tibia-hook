@@ -22,7 +22,8 @@ class SettingsInterface {
 public:
 	virtual ~SettingsInterface() {}
 
-	virtual QVariant value(const QString&) = 0;
+    virtual bool contains(const QString&) const = 0;
+    virtual QVariant value(const QString&) const = 0;
 };
 
 #endif

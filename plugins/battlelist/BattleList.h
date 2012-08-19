@@ -13,8 +13,8 @@
  * limitations under the License.
  */
 
-#ifndef INTERNALBATTLELIST_H
-#define INTERNALBATTLELIST_H
+#ifndef BATTLELIST_H
+#define BATTLELIST_H
 
 #define BATTLELIST_LENGTH 250
 #define BATTLELIST_NAME_LENGTH 32
@@ -24,9 +24,8 @@
   *
   * http://tpforums.org/forum/thread-7914-post-71664.html#pid71664
   */
-namespace InternalBattleList {
 
-struct Outfit
+struct BattleListOutfit
 {
 	quint32 id;
 	quint32 colorHead;
@@ -37,18 +36,18 @@ struct Outfit
 	quint32 mount;
 } __attribute__((packed));
 
-struct Position
+struct BattleListPosition
 {
 	quint32 x;
 	quint32 y;
 	quint32 z;
 } __attribute__((packed));
 
-struct Entry
+struct BattleListEntry
 {
 	quint32 id; //+0
-	quint8 name[BATTLELIST_NAME_LENGTH]; //+4
-	Position position; //+36
+    qint8 name[BATTLELIST_NAME_LENGTH]; //+4
+    BattleListPosition position; //+36
 	quint32 screenOffsetHorizontal; //+48
 	quint32 screenOffsetVertical; //+52
 	quint32 unknown1; //+56
@@ -61,7 +60,7 @@ struct Entry
 	quint32 unknown6; //+84
 	quint32 unknown7; //+88
 	quint32 unknown8; //+92
-	Outfit outfit; //+96
+    BattleListOutfit outfit; //+96
 	quint32 lightType; //+124
 	quint32 lightColor; //+128
 	quint32 squareColor; //+132
@@ -76,11 +75,9 @@ struct Entry
 	quint32 isBlocking; //+168
 } __attribute__((packed));
 
-struct List
+struct BattleList
 {
-	Entry entries[BATTLELIST_LENGTH];
+    BattleListEntry entries[BATTLELIST_LENGTH];
 } __attribute__((packed));
 
-}
-
-#endif // INTERNALBATTLELIST_H
+#endif

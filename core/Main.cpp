@@ -46,7 +46,7 @@ void* hook_thread(void*) {
 	QApplication::setApplicationName("Tibia Hook");
 	QApplication::setApplicationVersion("beta");
 
-	Application* application = new Application();
+    Application* application = new Application();
 	QFile configFile("config.js");
 	try {
 		if(!configFile.open(QFile::ReadOnly))
@@ -62,7 +62,7 @@ void* hook_thread(void*) {
 	catch(Exception& exception) {
 		QMessageBox message;
 		message.setWindowTitle(QApplication::applicationName());
-		message.setText("Something terrible happened!");
+        message.setText("Something terrible has happened!");
 		message.setDetailedText(exception.message());
 		message.setDefaultButton(QMessageBox::Ignore);
 		message.exec();
