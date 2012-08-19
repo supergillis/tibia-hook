@@ -25,110 +25,111 @@
 
 #ifdef Q_WS_WIN
 #else
-#define LOOP_FUNCTION_ADDRESS 0x804c768
+/* Tibia 9.61 Adresses */
+#define LOOP_FUNCTION_ADDRESS 0x804c874 // XNextEvent
 #define LOOP_FUNCTION_ARG_NAME1 one
 #define LOOP_FUNCTION_ARG_NAME2 two
 #define LOOP_FUNCTION_ARGUMENTS LOOP_FUNCTION_ARG_NAME1, LOOP_FUNCTION_ARG_NAME2
 #define LOOP_FUNCTION_PARAMETERS void* LOOP_FUNCTION_ARG_NAME1, void* LOOP_FUNCTION_ARG_NAME2
 
-#define SEND_BUFFER_ADDRESS 0x85d3b20
-#define SEND_BUFFER_LENGTH_ADDRESS 0x85d4328
-#define SEND_FUNCTION_ADDRESS 0x82648e0
+#define SEND_BUFFER_ADDRESS 0x85d6960
+#define SEND_BUFFER_LENGTH_ADDRESS 0x85d7168
+#define SEND_FUNCTION_ADDRESS 0x82f5e30
 
-#define PARSER_STREAM_ADDRESS 0x85d8350
-#define PARSER_FUNCTION_ADDRESS 0x81320f0
-#define PARSER_NEXT_FUNCTION_ADDRESS 0x8270370
+#define PARSER_STREAM_ADDRESS 0x85db190
+#define PARSER_FUNCTION_ADDRESS 0x814aa40
+#define PARSER_NEXT_FUNCTION_ADDRESS 0x8301440
 #endif
 
 class Hook;
 class DetourManager: public QObject {
-	Q_OBJECT
+    Q_OBJECT
 
-	typedef void LoopSignature(LOOP_FUNCTION_PARAMETERS);
-	typedef void SendSignature(bool);
-	typedef void ParserSignature();
-	typedef int ParserNextSignature();
+    typedef void LoopSignature(LOOP_FUNCTION_PARAMETERS);
+    typedef void SendSignature(bool);
+    typedef void ParserSignature();
+    typedef int ParserNextSignature();
 
-	struct ParserStream {
-		quint8* buffer;
-		quint32 size;
-		quint32 position;
-	};
+    struct ParserStream {
+        quint8* buffer;
+        quint32 size;
+        quint32 position;
+    };
 
 public:
-	inline static DetourManager* instance() {
-		if(instance_ == NULL) {
-			instance_ = new DetourManager();
-			initialize();
-		}
-		return instance_;
-	}
+    inline static DetourManager* instance() {
+        if(instance_ == NULL) {
+            instance_ = new DetourManager();
+            initialize();
+        }
+        return instance_;
+    }
 
-	inline DataQueue* clientQueue() {
-		return &clientQueue_;
-	}
+    inline DataQueue* clientQueue() {
+        return &clientQueue_;
+    }
 
-	inline DataQueue* serverQueue() {
-		return &serverQueue_;
-	}
+    inline DataQueue* serverQueue() {
+        return &serverQueue_;
+    }
 
 signals:
-	void onClientMessage(QByteArray);
-	void onServerMessage(QByteArray);
+    void onClientMessage(QByteArray);
+    void onServerMessage(QByteArray);
 
 protected:
-	void connectNotify(const char* signal) {
-		if(strcmp(signal, SIGNAL(onClientMessage(QByteArray))) == 0) {
-			clientSignalConnected_++;
-			if(clientSignalConnected_ > 1) {
-				qWarning() << "connected more than once to onClientMessage";
-			}
-		}
-		else if(strcmp(signal, SIGNAL(onServerMessage(QByteArray))) == 0) {
-			serverSignalConnected_++;
-			if(serverSignalConnected_ > 1) {
-				qWarning() << "connected more than once to onServerMessage";
-			}
-		}
-	}
+    void connectNotify(const char* signal) {
+        if(strcmp(signal, SIGNAL(onClientMessage(QByteArray))) == 0) {
+            clientSignalConnected_++;
+            if(clientSignalConnected_ > 1) {
+                qWarning() << "connected more than once to onClientMessage";
+            }
+        }
+        else if(strcmp(signal, SIGNAL(onServerMessage(QByteArray))) == 0) {
+            serverSignalConnected_++;
+            if(serverSignalConnected_ > 1) {
+                qWarning() << "connected more than once to onServerMessage";
+            }
+        }
+    }
 
-	void disconnectNotify(const char* signal) {
-		if(strcmp(signal, SIGNAL(onClientMessage(QByteArray))) == 0) {
-			clientSignalConnected_--;
-		}
-		else if(strcmp(signal, SIGNAL(onServerMessage(QByteArray))) == 0) {
-			serverSignalConnected_--;
-		}
-	}
+    void disconnectNotify(const char* signal) {
+        if(strcmp(signal, SIGNAL(onClientMessage(QByteArray))) == 0) {
+            clientSignalConnected_--;
+        }
+        else if(strcmp(signal, SIGNAL(onServerMessage(QByteArray))) == 0) {
+            serverSignalConnected_--;
+        }
+    }
 
 private:
-	DetourManager();
+    DetourManager();
 
-	ParserStream* parserStream_;
-	ParserSignature* parserFunction_;
+    ParserStream* parserStream_;
+    ParserSignature* parserFunction_;
 
-	DataQueue clientQueue_;
-	DataQueue serverQueue_;
-	bool sendingToClient_;
+    DataQueue clientQueue_;
+    DataQueue serverQueue_;
+    bool sendingToClient_;
 
-	int clientSignalConnected_;
-	int serverSignalConnected_;
+    int clientSignalConnected_;
+    int serverSignalConnected_;
 
-	static DetourManager* instance_;
+    static DetourManager* instance_;
 
-	static void initialize() {
-		loopDetour_ = new MologieDetours::Detour<LoopSignature*>((LoopSignature*) LOOP_FUNCTION_ADDRESS, &DetourManager::onLoop);
-		sendDetour_ = new MologieDetours::Detour<SendSignature*>((SendSignature*) SEND_FUNCTION_ADDRESS, &DetourManager::onSend);
-		parserNextDetour_ = new MologieDetours::Detour<ParserNextSignature*>((ParserNextSignature*) PARSER_NEXT_FUNCTION_ADDRESS, &DetourManager::onParserNext);
-	}
+    static void initialize() {
+        loopDetour_ = new MologieDetours::Detour<LoopSignature*>((LoopSignature*) LOOP_FUNCTION_ADDRESS, &DetourManager::onLoop);
+        sendDetour_ = new MologieDetours::Detour<SendSignature*>((SendSignature*) SEND_FUNCTION_ADDRESS, &DetourManager::onSend);
+        parserNextDetour_ = new MologieDetours::Detour<ParserNextSignature*>((ParserNextSignature*) PARSER_NEXT_FUNCTION_ADDRESS, &DetourManager::onParserNext);
+    }
 
-	static void onLoop(LOOP_FUNCTION_PARAMETERS);
-	static void onSend(bool);
-	static int onParserNext();
+    static void onLoop(LOOP_FUNCTION_PARAMETERS);
+    static void onSend(bool);
+    static int onParserNext();
 
-	static MologieDetours::Detour<LoopSignature*>* loopDetour_;
-	static MologieDetours::Detour<SendSignature*>* sendDetour_;
-	static MologieDetours::Detour<ParserNextSignature*>* parserNextDetour_;
+    static MologieDetours::Detour<LoopSignature*>* loopDetour_;
+    static MologieDetours::Detour<SendSignature*>* sendDetour_;
+    static MologieDetours::Detour<ParserNextSignature*>* parserNextDetour_;
 };
 
 #endif
