@@ -21,12 +21,11 @@
 #include <QString>
 
 #include <SettingsInterface.h>
-#include <Exception.h>
 
 class Settings: public SettingsInterface
 {
 public:
-	Settings(const QString&) throw (Exception);
+    Settings(const QString&) throw (std::exception);
 
     bool contains(const QString&) const;
     QVariant value(const QString&) const;

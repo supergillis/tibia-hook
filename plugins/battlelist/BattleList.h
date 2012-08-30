@@ -46,7 +46,7 @@ struct BattleListPosition
 struct BattleListEntry
 {
 	quint32 id; //+0
-    qint8 name[BATTLELIST_NAME_LENGTH]; //+4
+    quint8 name[BATTLELIST_NAME_LENGTH]; //+4
     BattleListPosition position; //+36
 	quint32 screenOffsetHorizontal; //+48
 	quint32 screenOffsetVertical; //+52

@@ -14,16 +14,17 @@
  */
 
 #include "Settings.h"
-#include "StringException.h"
+
+#include <stdexcept>
 
 #include <json.h>
 #include <json.cpp>
 
-Settings::Settings(const QString& json) throw (Exception) {
+Settings::Settings(const QString& json) throw (std::exception) {
 	bool parsed = true;
 	QVariant result = QtJson::Json::parse(json, parsed);
 	if(!parsed)
-		throw StringException("Could not parse JSON string!");
+        throw std::runtime_error("Could not parse JSON string!");
 
 	values_ = result.toMap();
 }

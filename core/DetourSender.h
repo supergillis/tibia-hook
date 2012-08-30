@@ -24,12 +24,12 @@ class DetourSender: public SenderInterface {
 public:
 	DetourSender(DetourManager* manager): SenderInterface(), manager_(manager) {}
 
-	inline void sendToClient(const QByteArray& data) {
-		manager_->clientQueue()->enqueue(data);
+    inline void sendToClient(const QByteArray& data) {
+        manager_->clientQueue()->enqueue(data);
 	}
 
-	inline void sendToServer(const QByteArray& data) {
-		manager_->serverQueue()->enqueue(data);
+    inline void sendToServer(const QByteArray& data) {
+        manager_->serverQueue()->enqueue(data);
 	}
 
 private:

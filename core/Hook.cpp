@@ -17,7 +17,9 @@
 #include "Packet.h"
 #include "PacketReader.h"
 #include "PacketBuilder.h"
-#include "StringException.h"
+#include "UIManager.h"
+
+#include <stdexcept>
 
 #include <QApplication>
 #include <QDir>
@@ -29,8 +31,10 @@
 
 Hook::Hook(SettingsInterface* settings, SenderInterface* sender, QObject* parent) :
     QObject(parent), settings_(settings), sender_(sender) {
+    ui_ = new UIManager();
+
     if(!settings_->contains(SETTING_PLUGINS_DIRECTORY)) {
-        throw StringException("Could not load plugins directory!");
+        throw std::runtime_error("Could not load plugins directory!");
     }
 
     QString pluginsDir = settings->value(SETTING_PLUGINS_DIRECTORY).toString();
@@ -46,11 +50,11 @@ Hook::Hook(SettingsInterface* settings, SenderInterface* sender, QObject* parent
                 plugin->install(this);
                 plugins_.append(plugin);
             }
-            catch(Exception& exception) {
+            catch(std::exception& exception) {
                 QMessageBox message;
                 message.setWindowTitle(QApplication::applicationName());
                 message.setText("Could not load \"" + plugin->name() + "\" plugin!");
-                message.setDetailedText(exception.message());
+                message.setDetailedText(exception.what());
                 message.setDefaultButton(QMessageBox::Ignore);
                 message.exec();
             }
@@ -89,18 +93,18 @@ PluginInterface* Hook::findPluginByName(const QString& name) {
     return NULL;
 }
 
-PacketBuilderInterface* Hook::createPacketBuilder() const {
+PacketBuilderInterface* Hook::buildPacket() const {
     return new PacketBuilder();
 }
 
-PacketBuilderInterface* Hook::createPacketBuilder(const PacketInterface* packet) const {
+PacketBuilderInterface* Hook::buildPacket(const PacketInterface* packet) const {
     return new PacketBuilder(packet);
 }
 
-PacketBuilderInterface* Hook::createPacketBuilder(const QByteArray& data) const {
+PacketBuilderInterface* Hook::buildPacket(const QByteArray& data) const {
     return new PacketBuilder(data);
 }
 
-PacketBuilderInterface* Hook::createPacketBuilder(const quint8* data, quint16 length) const {
+PacketBuilderInterface* Hook::buildPacket(const quint8* data, quint16 length) const {
     return new PacketBuilder(data, length);
 }

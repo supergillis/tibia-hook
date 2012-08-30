@@ -12,10 +12,10 @@ SOURCES = Application.cpp \
 	Main.cpp \
     Packet.cpp \
 	PacketBuilder.cpp \
-	Settings.cpp
+	Settings.cpp \
+    UIManager.cpp
 
 HEADERS = Application.h \
-	Connector.h \
 	DataQueue.h \
 	DetourManager.h \
 	DetourSender.h \
@@ -24,4 +24,4 @@ HEADERS = Application.h \
     PacketBuilder.h \
 	PacketReader.h \
 	Settings.h \
-	StringException.h
+    UIManager.h

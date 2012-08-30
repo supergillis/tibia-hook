@@ -13,19 +13,18 @@
  * limitations under the License.
  */
 
-#ifndef STRINGEXCEPTION_H
-#define STRINGEXCEPTION_H
+#ifndef BATTLELISTPLUGININTERFACE_H
+#define BATTLELISTPLUGININTERFACE_H
 
-#include <Exception.h>
+#include <PluginInterface.h>
 
-class StringException: public Exception {
+#include "BattleList.h"
+
+class BattleListPluginInterface: public PluginInterface {
 public:
-	StringException(const QString& message): message_(message) {}
-
-	const QString& message() const { return message_; }
-
-private:
-	QString message_;
+    virtual const BattleList* entries() const = 0;
+    virtual const BattleListEntry* findById(const quint32 id) const = 0;
+    virtual const BattleListEntry* findByName(const QString& name) const = 0;
 };
 
 #endif

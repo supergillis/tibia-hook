@@ -1,2 +1,2 @@
 TEMPLATE = subdirs
-SUBDIRS = battlelist
+SUBDIRS = battlelist battlelistui

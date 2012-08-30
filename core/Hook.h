@@ -40,11 +40,12 @@ public:
     SenderInterface* sender() { return sender_; }
     ReceiverInterface* receiver() { return this; }
     PluginManagerInterface* plugins() { return this; }
+    UIManagerInterface* ui() { return ui_; }
 
-    PacketBuilderInterface* createPacketBuilder() const;
-    PacketBuilderInterface* createPacketBuilder(const PacketInterface*) const;
-    PacketBuilderInterface* createPacketBuilder(const QByteArray&) const;
-    PacketBuilderInterface* createPacketBuilder(const quint8*, quint16) const;
+    PacketBuilderInterface* buildPacket() const;
+    PacketBuilderInterface* buildPacket(const PacketInterface*) const;
+    PacketBuilderInterface* buildPacket(const QByteArray&) const;
+    PacketBuilderInterface* buildPacket(const quint8*, quint16) const;
 
 	bool receiveFromClient(const QByteArray&);
 	void receiveFromServer(const QByteArray&);
@@ -52,8 +53,9 @@ public:
     PluginInterface* findPluginByName(const QString& name);
 
 private:
-	SettingsInterface* settings_;
-	SenderInterface* sender_;
+    SettingsInterface* settings_;
+    SenderInterface* sender_;
+    UIManagerInterface* ui_;
 
 	QList<PluginInterface*> plugins_;
 };

@@ -13,16 +13,35 @@
  * limitations under the License.
  */
 
-#ifndef EXCEPTION_H
-#define EXCEPTION_H
+#ifndef BATTELLISTUIPLUGIN_H
+#define BATTELLISTUIPLUGIN_H
 
-#include <QString>
+#include <QObject>
 
-class Exception {
+#include <HookInterface.h>
+#include <PluginInterface.h>
+
+#include "BattleListWidget.h"
+
+class BattleListUIPlugin: public QObject, public PluginInterface {
+	Q_OBJECT
+    Q_INTERFACES(PluginInterface)
+
 public:
-	virtual ~Exception() {}
+    static const QString PLUGIN_NAME;
+    static const int PLUGIN_VERSION;
 
-	virtual const QString& message() const = 0;
+    BattleListUIPlugin();
+
+	QString name() const;
+	int version() const;
+
+    void install(HookInterface*) throw(std::exception);
+    void uninstall();
+
+private:
+    UIManagerInterface* ui_;
+    BattleListWidget* widget_;
 };
 
 #endif

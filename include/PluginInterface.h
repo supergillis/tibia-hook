@@ -18,7 +18,6 @@
 
 #include <QString>
 
-#include <Exception.h>
 #include <HookInterface.h>
 
 class PluginInterface {
@@ -28,7 +27,7 @@ public:
 	virtual QString name() const = 0;
 	virtual int version() const = 0;
 
-	virtual void install(HookInterface*) throw(Exception) = 0;
+    virtual void install(HookInterface*) throw(std::exception) = 0;
 	virtual void uninstall() = 0;
 };
 

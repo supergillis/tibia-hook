@@ -27,9 +27,17 @@ MologieDetours::Detour<DetourManager::ParserNextSignature*>* DetourManager::pars
 DetourManager::DetourManager():
 	parserStream_((ParserStream*) PARSER_STREAM_ADDRESS),
 	parserFunction_((ParserSignature*) PARSER_FUNCTION_ADDRESS),
-	sendingToClient_(false),
-	clientSignalConnected_(0),
-	serverSignalConnected_(0) {
+    sendingToClient_(false),
+    clientHandler_(NULL),
+    serverHandler_(NULL) {
+}
+
+void DetourManager::setClientBufferHandler(BufferHandler* clientHandler) {
+    clientHandler_ = clientHandler;
+}
+
+void DetourManager::setServerBufferHandler(BufferHandler* serverHandler) {
+    serverHandler_ = serverHandler;
 }
 
 /**
@@ -71,11 +79,12 @@ void DetourManager::onLoop(LOOP_FUNCTION_PARAMETERS) {
   * This function runs in the Tibia thread.
   */
 void DetourManager::onSend(bool encrypt) {
-	if (encrypt && instance_->clientSignalConnected_ > 0) {
+    if (encrypt && instance_->clientHandler_ != NULL) {
 		quint8* buffer = (quint8*) (SEND_BUFFER_ADDRESS + 8);
-		quint32 length = *((quint32*) SEND_BUFFER_LENGTH_ADDRESS) - 8;
-		QByteArray data((char*) buffer, length);
-		emit instance_->onClientMessage(data);
+        quint32 length = *((quint32*) SEND_BUFFER_LENGTH_ADDRESS) - 8;
+
+        QByteArray data((char*) buffer, length);
+        instance_->clientHandler_->handle(data);
 		return;
 	}
 	sendDetour_->GetOriginalFunction()(encrypt);
@@ -94,16 +103,17 @@ int DetourManager::onParserNext() {
 		}
 		return -1;
 	}
-	if (instance_->serverSignalConnected_ > 0) {
+    if (instance_->serverHandler_ != NULL) {
 		int command = parserNextDetour_->GetOriginalFunction()();
 		if (command != -1) {
 			ParserStream* stream = instance_->parserStream_;
 			quint32 position = stream->position - 1;
-			quint32 length = stream->size - position;
-			QByteArray data((char*) (stream->buffer + position), length);
-			emit instance_->onServerMessage(data);
+            quint32 length = stream->size - position;
+
+            QByteArray data((char*) (stream->buffer + position), length);
+            instance_->serverHandler_->handle(data);
 		}
 		return command;
 	}
-	return parserNextDetour_->GetOriginalFunction()();
+    return parserNextDetour_->GetOriginalFunction()();
 }

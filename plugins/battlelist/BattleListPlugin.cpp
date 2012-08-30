@@ -15,6 +15,9 @@
 
 #include "BattleListPlugin.h"
 
+#include <stdexcept>
+
+#include <QVariantMap>
 #include <QtPlugin>
 Q_EXPORT_PLUGIN2(battlelist, BattleListPlugin)
 
@@ -31,18 +34,23 @@ int BattleListPlugin::version() const {
     return PLUGIN_VERSION;
 }
 
-void BattleListPlugin::install(HookInterface* hook) throw(Exception) {
+void BattleListPlugin::install(HookInterface* hook) throw(std::exception) {
     QVariantMap settings = hook->settings()->value(PLUGIN_NAME).toMap();
     if(!settings.value(SETTING_ADDRESS).isValid())
-        throw StringException("Could not load battlelist address!");
+        throw std::runtime_error("Could not load battlelist address!");
 
     list_ = (BattleList*) settings.value(SETTING_ADDRESS).toUInt();
 }
 
 void BattleListPlugin::uninstall() {
+    list_ = NULL;
 }
 
-const BattleListEntry* BattleListPlugin::findById(const quint32 id) {
+const BattleList* BattleListPlugin::entries() const {
+    return list_;
+}
+
+const BattleListEntry* BattleListPlugin::findById(const quint32 id) const {
     for(int index = 0; index < BATTLELIST_LENGTH; ++index) {
         if(list_->entries[index].id == id) {
             return &list_->entries[index];
@@ -51,7 +59,7 @@ const BattleListEntry* BattleListPlugin::findById(const quint32 id) {
     return NULL;
 }
 
-const BattleListEntry* BattleListPlugin::findByName(const QString& name) {
+const BattleListEntry* BattleListPlugin::findByName(const QString& name) const {
     for(int index = 0; index < BATTLELIST_LENGTH; ++index) {
         if(name.compare((char*) list_->entries[index].name) == 0) {
             return &list_->entries[index];

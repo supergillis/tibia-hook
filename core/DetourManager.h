@@ -16,35 +16,35 @@
 #ifndef DETOURMANAGER_H
 #define DETOURMANAGER_H
 
-#include <QDebug>
-#include <QObject>
-
 #include <detours.h>
 
 #include "DataQueue.h"
 
 #ifdef Q_WS_WIN
 #else
-/* Tibia 9.61 Adresses */
-#define LOOP_FUNCTION_ADDRESS 0x804c874 // XNextEvent
+/* Tibia 9.63 Adresses */
+#define LOOP_FUNCTION_ADDRESS 0x804cd24 // XNextEvent
 #define LOOP_FUNCTION_ARG_NAME1 one
 #define LOOP_FUNCTION_ARG_NAME2 two
 #define LOOP_FUNCTION_ARGUMENTS LOOP_FUNCTION_ARG_NAME1, LOOP_FUNCTION_ARG_NAME2
 #define LOOP_FUNCTION_PARAMETERS void* LOOP_FUNCTION_ARG_NAME1, void* LOOP_FUNCTION_ARG_NAME2
 
-#define SEND_BUFFER_ADDRESS 0x85d6960
-#define SEND_BUFFER_LENGTH_ADDRESS 0x85d7168
-#define SEND_FUNCTION_ADDRESS 0x82f5e30
+#define SEND_BUFFER_ADDRESS 0x85d4980
+#define SEND_BUFFER_LENGTH_ADDRESS 0x85d5188
+#define SEND_FUNCTION_ADDRESS 0x82f3e90
 
-#define PARSER_STREAM_ADDRESS 0x85db190
-#define PARSER_FUNCTION_ADDRESS 0x814aa40
-#define PARSER_NEXT_FUNCTION_ADDRESS 0x8301440
+#define PARSER_STREAM_ADDRESS 0x85d91b0
+#define PARSER_FUNCTION_ADDRESS 0x814c2d0
+#define PARSER_NEXT_FUNCTION_ADDRESS 0x82ff4a0
 #endif
 
-class Hook;
-class DetourManager: public QObject {
-    Q_OBJECT
+class BufferHandler {
+public:
+    virtual void handle(const QByteArray& data) = 0;
+};
 
+class Hook;
+class DetourManager {
     typedef void LoopSignature(LOOP_FUNCTION_PARAMETERS);
     typedef void SendSignature(bool);
     typedef void ParserSignature();
@@ -73,34 +73,8 @@ public:
         return &serverQueue_;
     }
 
-signals:
-    void onClientMessage(QByteArray);
-    void onServerMessage(QByteArray);
-
-protected:
-    void connectNotify(const char* signal) {
-        if(strcmp(signal, SIGNAL(onClientMessage(QByteArray))) == 0) {
-            clientSignalConnected_++;
-            if(clientSignalConnected_ > 1) {
-                qWarning() << "connected more than once to onClientMessage";
-            }
-        }
-        else if(strcmp(signal, SIGNAL(onServerMessage(QByteArray))) == 0) {
-            serverSignalConnected_++;
-            if(serverSignalConnected_ > 1) {
-                qWarning() << "connected more than once to onServerMessage";
-            }
-        }
-    }
-
-    void disconnectNotify(const char* signal) {
-        if(strcmp(signal, SIGNAL(onClientMessage(QByteArray))) == 0) {
-            clientSignalConnected_--;
-        }
-        else if(strcmp(signal, SIGNAL(onServerMessage(QByteArray))) == 0) {
-            serverSignalConnected_--;
-        }
-    }
+    void setClientBufferHandler(BufferHandler*);
+    void setServerBufferHandler(BufferHandler*);
 
 private:
     DetourManager();
@@ -112,8 +86,8 @@ private:
     DataQueue serverQueue_;
     bool sendingToClient_;
 
-    int clientSignalConnected_;
-    int serverSignalConnected_;
+    BufferHandler* clientHandler_;
+    BufferHandler* serverHandler_;
 
     static DetourManager* instance_;
 

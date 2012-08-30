@@ -16,44 +16,31 @@
 #ifndef BATTELLISTPLUGIN_H
 #define BATTELLISTPLUGIN_H
 
-#include <QHash>
-#include <QPair>
 #include <QObject>
-#include <QTimerEvent>
 #include <QVariantMap>
 
 #include <HookInterface.h>
-#include <PluginInterface.h>
-#include <Exception.h>
 
 #include "BattleList.h"
+#include "BattleListPluginInterface.h"
 
-class StringException: public Exception {
-public:
-    StringException(const QString& message): message_(message) {}
-
-    const QString& message() const { return message_; }
-
-private:
-    QString message_;
-};
-
-class BattleListPlugin: public QObject, public PluginInterface {
+class BattleListPlugin: public QObject, public BattleListPluginInterface {
 	Q_OBJECT
     Q_INTERFACES(PluginInterface)
 
 public:
-	static const QString PLUGIN_NAME;
+    static const QString PLUGIN_NAME;
     static const int PLUGIN_VERSION;
 
 	QString name() const;
 	int version() const;
 
-	void install(HookInterface*) throw(Exception);
+    void install(HookInterface*) throw(std::exception);
 	void uninstall();
 
-    const BattleListEntry* findById(const quint32 id);
-    const BattleListEntry* findByName(const QString& name);
+    const BattleList* entries() const;
+    const BattleListEntry* findById(const quint32 id) const;
+    const BattleListEntry* findByName(const QString& name) const;
 
 private:
     BattleList* list_;

@@ -16,14 +16,41 @@
 #include <pthread.h>
 
 #include "Application.h"
-#include "Connector.h"
 #include "DetourManager.h"
 #include "DetourSender.h"
 #include "Hook.h"
 #include "Settings.h"
-#include "StringException.h"
+
+#include <stdexcept>
 
 #include <QMessageBox>
+
+class ClientBufferHandler: public BufferHandler {
+public:
+    ClientBufferHandler(SenderInterface* sender, ReceiverInterface* receiver): sender_(sender), receiver_(receiver) {}
+
+    inline void handle(const QByteArray& data) {
+        if(receiver_->receiveFromClient(data)) {
+            sender_->sendToServer(data);
+        }
+    }
+
+private:
+    SenderInterface* sender_;
+    ReceiverInterface* receiver_;
+};
+
+class ServerBufferHandler: public BufferHandler {
+public:
+    ServerBufferHandler(ReceiverInterface* receiver): receiver_(receiver) {}
+
+    inline void handle(const QByteArray& data) {
+        receiver_->receiveFromServer(data);
+    }
+
+private:
+    ReceiverInterface* receiver_;
+};
 
 void hook_constructor() __attribute__((constructor));
 void* hook_thread(void*);
@@ -50,20 +77,23 @@ void* hook_thread(void*) {
 	QFile configFile("config.js");
 	try {
 		if(!configFile.open(QFile::ReadOnly))
-			throw StringException("Could not load config.js!");
+            throw std::runtime_error("Could not load config.js!");
 
 		SettingsInterface* settings = new Settings(configFile.readAll());
 		SenderInterface* sender = new DetourSender(DetourManager::instance());
 		ReceiverInterface* receiver = new Hook(settings, sender, application);
-		Connector connector(sender, receiver);
+
+        // Connect the DetourManager with the sender and receiver
+        DetourManager::instance()->setClientBufferHandler(new ClientBufferHandler(sender, receiver));
+        DetourManager::instance()->setServerBufferHandler(new ServerBufferHandler(receiver));
 
 		application->exec();
 	}
-	catch(Exception& exception) {
+    catch(std::exception& exception) {
 		QMessageBox message;
 		message.setWindowTitle(QApplication::applicationName());
         message.setText("Something terrible has happened!");
-		message.setDetailedText(exception.message());
+        message.setDetailedText(exception.what());
 		message.setDefaultButton(QMessageBox::Ignore);
 		message.exec();
 	}

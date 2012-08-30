@@ -25,6 +25,7 @@
 #include <PacketBuilderInterface.h>
 #include <ReceiverInterface.h>
 #include <PluginManagerInterface.h>
+#include <UIManagerInterface.h>
 
 class HookInterface {
 public:
@@ -34,11 +35,12 @@ public:
 	virtual SenderInterface* sender() = 0;
     virtual ReceiverInterface* receiver() = 0;
     virtual PluginManagerInterface* plugins() = 0;
+    virtual UIManagerInterface* ui() = 0;
 
-    virtual PacketBuilderInterface* createPacketBuilder() const = 0;
-    virtual PacketBuilderInterface* createPacketBuilder(const PacketInterface*) const = 0;
-    virtual PacketBuilderInterface* createPacketBuilder(const QByteArray& data) const = 0;
-    virtual PacketBuilderInterface* createPacketBuilder(const quint8* data, quint16 length) const = 0;
+    virtual PacketBuilderInterface* buildPacket() const = 0;
+    virtual PacketBuilderInterface* buildPacket(const PacketInterface*) const = 0;
+    virtual PacketBuilderInterface* buildPacket(const QByteArray& data) const = 0;
+    virtual PacketBuilderInterface* buildPacket(const quint8* data, quint16 length) const = 0;
 };
 
 #endif
