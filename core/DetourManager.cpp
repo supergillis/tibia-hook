@@ -49,10 +49,10 @@ void DetourManager::onLoop(LOOP_FUNCTION_PARAMETERS) {
 
 	if (!serverQueue->empty()) {
 		// Replace send buffer with new buffer
-		QByteArray buffer = serverQueue->dequeue();
+        QByteArray buffer = serverQueue->dequeue();
 		*((quint32*) SEND_BUFFER_LENGTH_ADDRESS) = buffer.length() + 8;
-		memset((quint8*) SEND_BUFFER_ADDRESS, 0, 8);
-		memcpy((quint8*) SEND_BUFFER_ADDRESS + 8, buffer.constData(), buffer.length());
+        memset((quint8*) SEND_BUFFER_ADDRESS, 0, 8);
+        memcpy((quint8*) SEND_BUFFER_ADDRESS + 8, buffer.constData(), buffer.length());
 		// Call send function with modified buffer
 		sendDetour_->GetOriginalFunction()(true);
 	}
@@ -85,8 +85,8 @@ void DetourManager::onSend(bool encrypt) {
 
         QByteArray data((char*) buffer, length);
         instance_->clientHandler_->handle(data);
-		return;
-	}
+        return;
+    }
 	sendDetour_->GetOriginalFunction()(encrypt);
 }
 
@@ -94,7 +94,7 @@ void DetourManager::onSend(bool encrypt) {
   * This function runs in the Tibia thread.
   */
 int DetourManager::onParserNext() {
-	if (instance_->sendingToClient_) {
+    if (instance_->sendingToClient_) {
 		ParserStream* stream = instance_->parserStream_;
 		if (stream->position < stream->size) {
 			quint8 command = *((quint8*) (stream->buffer + stream->position));
@@ -102,7 +102,7 @@ int DetourManager::onParserNext() {
 			return command;
 		}
 		return -1;
-	}
+    }
     if (instance_->serverHandler_ != NULL) {
 		int command = parserNextDetour_->GetOriginalFunction()();
 		if (command != -1) {
@@ -114,6 +114,6 @@ int DetourManager::onParserNext() {
             instance_->serverHandler_->handle(data);
 		}
 		return command;
-	}
+    }
     return parserNextDetour_->GetOriginalFunction()();
 }

@@ -1,2 +1,2 @@
 TEMPLATE = subdirs
-SUBDIRS = core plugins include
+SUBDIRS = core plugins

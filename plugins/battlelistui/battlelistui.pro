@@ -6,13 +6,13 @@ TARGET = battlelistui
 SOURCES = \
     BattleListUIPlugin.cpp \
     BattleListWidget.cpp \
-    BattleListTable.cpp \
-    BattleListTableModel.cpp
+    BattleListView.cpp \
+    BattleListModel.cpp
 HEADERS = \
     BattleListUIPlugin.h \
     BattleListWidget.h \
-    BattleListTable.h \
-    BattleListTableModel.h
+    BattleListView.h \
+    BattleListModel.h
 
 FORMS += \
     BattleListWidget.ui

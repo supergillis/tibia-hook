@@ -15,15 +15,15 @@
   </property>
   <layout class="QHBoxLayout" name="horizontalLayout">
    <item>
-    <widget class="BattleListTable" name="tableView"/>
+	<widget class="BattleListView" name="tableView"/>
    </item>
   </layout>
  </widget>
  <customwidgets>
   <customwidget>
-   <class>BattleListTable</class>
+   <class>BattleListView</class>
    <extends>QTableView</extends>
-   <header>BattleListTable.h</header>
+   <header>BattleListView.h</header>
   </customwidget>
  </customwidgets>
  <resources/>

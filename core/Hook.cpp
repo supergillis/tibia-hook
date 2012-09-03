@@ -73,7 +73,7 @@ bool Hook::receiveFromClient(const QByteArray& data) {
     Packet packet(data);
     PacketReader reader(&packet);
     quint8 type = reader.readU8();
-    qDebug() << "client" << type;
+    qDebug() << "client" << type << " length " << data.length();
     return true;
 }
 
@@ -81,7 +81,7 @@ void Hook::receiveFromServer(const QByteArray& data) {
     Packet packet(data);
     PacketReader reader(&packet);
     quint8 type = reader.readU8();
-    qDebug() << "server" << type;
+    qDebug() << "server" << type << " length " << data.length();
 }
 
 PluginInterface* Hook::findPluginByName(const QString& name) {

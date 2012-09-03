@@ -13,24 +13,11 @@
  * limitations under the License.
  */
 
-#include "DataQueue.h"
+#include "MiniMapModel.h"
 
-int DataQueue::size() {
-	QMutexLocker locker(&mutex_);
-	return queue_.size();
+MiniMapModel::MiniMapModel(MiniMapInterface* miniMap): miniMap_(miniMap) {
 }
 
-bool DataQueue::empty() {
-	QMutexLocker locker(&mutex_);
-	return queue_.empty();
-}
-
-void DataQueue::enqueue(const QByteArray& data) {
-    QMutexLocker locker(&mutex_);
-	queue_.enqueue(data);
-}
-
-QByteArray DataQueue::dequeue() {
-	QMutexLocker locker(&mutex_);
-	return queue_.dequeue();
+QImage MiniMapModel::image(int z) const {
+    return miniMap_->imageForFloor(z);
 }

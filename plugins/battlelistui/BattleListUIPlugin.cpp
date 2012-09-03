@@ -14,14 +14,14 @@
  */
 
 #include "BattleListUIPlugin.h"
-#include "BattleListTableModel.h"
+#include "BattleListModel.h"
 
 #include <BattleListPluginInterface.h>
 
 #include <stdexcept>
 
 #include <QtPlugin>
-Q_EXPORT_PLUGIN2(battlelist, BattleListUIPlugin)
+Q_EXPORT_PLUGIN2(battlelistui, BattleListUIPlugin)
 
 const QString BattleListUIPlugin::PLUGIN_NAME("battlelistui");
 const int BattleListUIPlugin::PLUGIN_VERSION(1);
@@ -44,10 +44,10 @@ void BattleListUIPlugin::install(HookInterface* hook) throw(std::exception) {
         throw std::runtime_error("The 'battlelist' plugin must be loaded before loading the 'battlelistui' plugin!");
     }
 
-    BattleListPluginInterface* battleList = (BattleListPluginInterface*) plugin;
+    BattleListPluginInterface* battleListPlugin = (BattleListPluginInterface*) plugin;
 
     widget_ = new BattleListWidget();
-    widget_->battleListTable()->setModel(new BattleListTableModel(battleList->entries()));
+    widget_->battleListView()->setModel(new BattleListModel(battleListPlugin->entries()));
     ui_ = hook->ui();
     ui_->addTab(widget_, "Battle List");
 }

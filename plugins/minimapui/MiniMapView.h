@@ -13,28 +13,40 @@
  * limitations under the License.
  */
 
-#ifndef BATTLELISTVIEW_H
-#define BATTLELISTVIEW_H
+#ifndef MINIMAPVIEW_H
+#define MINIMAPVIEW_H
 
 #include <QWidget>
+#include <QLabel>
+#include <QScrollArea>
+#include <QScrollBar>
+#include <QWheelEvent>
 
-#include "BattleListView.h"
+#include "MiniMapModel.h"
 
-namespace Ui {
-class BattleListWidget;
-}
-
-class BattleListWidget: public QWidget {
+class MiniMapView: public QScrollArea {
     Q_OBJECT
     
 public:
-    BattleListWidget(QWidget* parent = 0);
-    ~BattleListWidget();
-    
-    BattleListView* battleListView();
+    MiniMapView(QWidget* = 0);
+    ~MiniMapView();
 
+    void setModel(MiniMapModel*);
+
+    void wheelEvent(QWheelEvent*);
+
+public slots:
+    void refresh();
+    void scaleFactor(double);
+    
 private:
-    Ui::BattleListWidget* ui_;
+    static void adjustScrollBar(QScrollBar* scrollBar, double factor);
+
+    MiniMapModel* model_;
+
+    QLabel* imageLabel_;
+    QScrollArea* scrollArea_;
+    double scaleFactor_;
 };
 
 #endif

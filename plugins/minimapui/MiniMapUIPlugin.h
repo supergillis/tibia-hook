@@ -13,24 +13,35 @@
  * limitations under the License.
  */
 
-#include "DataQueue.h"
+#ifndef MINIMAPUIPLUGIN_H
+#define MINIMAPUIPLUGIN_H
 
-int DataQueue::size() {
-	QMutexLocker locker(&mutex_);
-	return queue_.size();
-}
+#include <QObject>
 
-bool DataQueue::empty() {
-	QMutexLocker locker(&mutex_);
-	return queue_.empty();
-}
+#include <HookInterface.h>
+#include <PluginInterface.h>
 
-void DataQueue::enqueue(const QByteArray& data) {
-    QMutexLocker locker(&mutex_);
-	queue_.enqueue(data);
-}
+#include "MiniMapView.h"
 
-QByteArray DataQueue::dequeue() {
-	QMutexLocker locker(&mutex_);
-	return queue_.dequeue();
-}
+class MiniMapUIPlugin: public QObject, public PluginInterface {
+	Q_OBJECT
+    Q_INTERFACES(PluginInterface)
+
+public:
+    static const QString PLUGIN_NAME;
+    static const int PLUGIN_VERSION;
+
+    MiniMapUIPlugin();
+
+	QString name() const;
+	int version() const;
+
+    void install(HookInterface*) throw(std::exception);
+    void uninstall();
+
+private:
+    UIManagerInterface* ui_;
+    MiniMapView* view_;
+};
+
+#endif

@@ -13,24 +13,16 @@
  * limitations under the License.
  */
 
-#include "DataQueue.h"
+#ifndef MINIMAPPLUGININTERFACE_H
+#define MINIMAPPLUGININTERFACE_H
 
-int DataQueue::size() {
-	QMutexLocker locker(&mutex_);
-	return queue_.size();
-}
+#include <PluginInterface.h>
 
-bool DataQueue::empty() {
-	QMutexLocker locker(&mutex_);
-	return queue_.empty();
-}
+#include "MiniMapInterface.h"
 
-void DataQueue::enqueue(const QByteArray& data) {
-    QMutexLocker locker(&mutex_);
-	queue_.enqueue(data);
-}
+class MiniMapPluginInterface: public PluginInterface {
+public:
+    virtual MiniMapInterface* miniMap() = 0;
+};
 
-QByteArray DataQueue::dequeue() {
-	QMutexLocker locker(&mutex_);
-	return queue_.dequeue();
-}
+#endif

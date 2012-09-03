@@ -13,24 +13,19 @@
  * limitations under the License.
  */
 
-#include "DataQueue.h"
+#ifndef BATTLELISTTABLE_H
+#define BATTLELISTTABLE_H
 
-int DataQueue::size() {
-	QMutexLocker locker(&mutex_);
-	return queue_.size();
-}
+#include <QTableView>
 
-bool DataQueue::empty() {
-	QMutexLocker locker(&mutex_);
-	return queue_.empty();
-}
+#include "BattleListModel.h"
 
-void DataQueue::enqueue(const QByteArray& data) {
-    QMutexLocker locker(&mutex_);
-	queue_.enqueue(data);
-}
+class BattleListView: public QTableView {
+    Q_OBJECT
 
-QByteArray DataQueue::dequeue() {
-	QMutexLocker locker(&mutex_);
-	return queue_.dequeue();
-}
+public:
+    BattleListView(QWidget* = 0);
+    
+};
+
+#endif

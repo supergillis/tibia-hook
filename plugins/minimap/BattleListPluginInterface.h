@@ -13,24 +13,18 @@
  * limitations under the License.
  */
 
-#include "DataQueue.h"
+#ifndef BATTLELISTPLUGININTERFACE_H
+#define BATTLELISTPLUGININTERFACE_H
 
-int DataQueue::size() {
-	QMutexLocker locker(&mutex_);
-	return queue_.size();
-}
+#include <PluginInterface.h>
 
-bool DataQueue::empty() {
-	QMutexLocker locker(&mutex_);
-	return queue_.empty();
-}
+#include "BattleList.h"
 
-void DataQueue::enqueue(const QByteArray& data) {
-    QMutexLocker locker(&mutex_);
-	queue_.enqueue(data);
-}
+class BattleListPluginInterface: public PluginInterface {
+public:
+    virtual const BattleList* entries() const = 0;
+    virtual const BattleListEntry* findById(const quint32 id) const = 0;
+    virtual const BattleListEntry* findByName(const QString& name) const = 0;
+};
 
-QByteArray DataQueue::dequeue() {
-	QMutexLocker locker(&mutex_);
-	return queue_.dequeue();
-}
+#endif

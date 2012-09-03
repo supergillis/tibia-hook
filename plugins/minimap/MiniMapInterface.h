@@ -13,24 +13,14 @@
  * limitations under the License.
  */
 
-#include "DataQueue.h"
+#ifndef MINIMAPINTERFACE_H
+#define MINIMAPINTERFACE_H
 
-int DataQueue::size() {
-	QMutexLocker locker(&mutex_);
-	return queue_.size();
-}
+#include <QImage>
 
-bool DataQueue::empty() {
-	QMutexLocker locker(&mutex_);
-	return queue_.empty();
-}
+class MiniMapInterface {
+public:
+    virtual QImage imageForFloor(quint8 z) const = 0;
+};
 
-void DataQueue::enqueue(const QByteArray& data) {
-    QMutexLocker locker(&mutex_);
-	queue_.enqueue(data);
-}
-
-QByteArray DataQueue::dequeue() {
-	QMutexLocker locker(&mutex_);
-	return queue_.dequeue();
-}
+#endif

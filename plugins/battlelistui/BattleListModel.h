@@ -13,28 +13,29 @@
  * limitations under the License.
  */
 
-#ifndef BATTLELISTVIEW_H
-#define BATTLELISTVIEW_H
+#ifndef BATTLELISTTABLEMODEL_H
+#define BATTLELISTTABLEMODEL_H
 
-#include <QWidget>
+#include <QAbstractTableModel>
 
-#include "BattleListView.h"
+#include <BattleList.h>
 
-namespace Ui {
-class BattleListWidget;
-}
-
-class BattleListWidget: public QWidget {
+class BattleListModel: public QAbstractTableModel {
     Q_OBJECT
-    
+
 public:
-    BattleListWidget(QWidget* parent = 0);
-    ~BattleListWidget();
-    
-    BattleListView* battleListView();
+    BattleListModel(const BattleList*, QObject* = 0);
+
+    int columnCount(const QModelIndex& parent = QModelIndex()) const;
+    int rowCount(const QModelIndex& parent = QModelIndex()) const;
+
+    QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const;
+
+    QModelIndex index(int row, int column, const QModelIndex& parent = QModelIndex()) const;
+    QModelIndex parent(const QModelIndex& index) const;
 
 private:
-    Ui::BattleListWidget* ui_;
+    const BattleList* list_;
 };
 
 #endif
