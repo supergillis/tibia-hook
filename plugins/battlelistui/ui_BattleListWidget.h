@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading UI file 'BattleListWidget.ui'
 **
-** Created: Mon Sep 3 21:09:50 2012
+** Created: Mon Sep 3 22:50:27 2012
 **      by: Qt User Interface Compiler version 4.8.1
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
