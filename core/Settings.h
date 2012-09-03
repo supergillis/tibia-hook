@@ -16,7 +16,6 @@
 #ifndef SETTINGS_H
 #define SETTINGS_H
 
-#include <QDebug>
 #include <QFile>
 #include <QString>
 

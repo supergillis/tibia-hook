@@ -15,8 +15,6 @@
 
 #include "BattleListModel.h"
 
-#include <QDebug>
-
 BattleListModel::BattleListModel(const BattleList* list, QObject* parent):
     QAbstractTableModel(parent), list_(list) {
 }
@@ -35,9 +33,7 @@ QVariant BattleListModel::data(const QModelIndex& index, int role) const {
         if(index.column() == 0) {
             return QVariant(entry.id);
         }
-        else {
-            return QVariant((char*) entry.name);
-        }
+        return QVariant((char*) entry.name);
     }
     return QVariant();
 }

@@ -15,8 +15,6 @@
 
 #include "MiniMapView.h"
 
-#include <QDebug>
-
 MiniMapView::MiniMapView(QWidget* parent):
     QScrollArea(parent),
     model_(NULL),

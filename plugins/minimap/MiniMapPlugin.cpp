@@ -19,7 +19,6 @@
 
 #include <QVariantMap>
 #include <QPainter>
-#include <QDebug>
 
 #include <QtPlugin>
 Q_EXPORT_PLUGIN2(minimap, MiniMapPlugin)
@@ -83,8 +82,6 @@ QImage MiniMap::imageForFloor(quint8 z) const {
 
     foreach(const QString& file, files) {
         Position position = positionForMapFile(file);
-        qDebug() << "file" << file;
-        qDebug() << "position" << position.x() << position.y() << position.z();
         if(position.z() == z) {
             QString absoluteFile = directory_.absoluteFilePath(file);
             QImage mapFileImage = imageForMapFile(absoluteFile);
