@@ -21,6 +21,7 @@
 #include <QScrollArea>
 #include <QScrollBar>
 #include <QWheelEvent>
+#include <QKeyEvent>
 
 #include "MiniMapModel.h"
 
@@ -33,7 +34,11 @@ public:
 
     void setModel(MiniMapModel*);
 
+    void mousePressEvent(QMouseEvent*);
+    void mouseReleaseEvent(QMouseEvent*);
+    void mouseMoveEvent(QMouseEvent*);
     void wheelEvent(QWheelEvent*);
+    void keyPressEvent(QKeyEvent*);
 
 public slots:
     void refresh();
@@ -46,7 +51,11 @@ private:
 
     QLabel* imageLabel_;
     QScrollArea* scrollArea_;
-    double scaleFactor_;
+
+    QPoint mousePosition_;
+    QList<double> scales_;
+    qint8 scaleIndex_;
+    quint8 floor_;
 };
 
 #endif

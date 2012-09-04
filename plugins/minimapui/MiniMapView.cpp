@@ -18,11 +18,11 @@
 MiniMapView::MiniMapView(QWidget* parent):
     QScrollArea(parent),
     model_(NULL),
-    scaleFactor_(1.0) {
+    floor_(7) {
+    scales_ << 0.25 << 0.50 << 0.75 << 1.00 << 1.25 << 1.50 << 2.00 << 2.50 << 3.00;
+    scaleIndex_ = scales_.indexOf(1.00);
     imageLabel_ = new QLabel;
     imageLabel_->setBackgroundRole(QPalette::Base);
-    imageLabel_->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Ignored);
-    imageLabel_->setScaledContents(true);
 
     setBackgroundRole(QPalette::Dark);
     setWidget(imageLabel_);
@@ -31,43 +31,86 @@ MiniMapView::MiniMapView(QWidget* parent):
 MiniMapView::~MiniMapView() {
 }
 
-void MiniMapView::refresh() {
-    if (model_== NULL) {
-        return;
-    }
-    QImage image = model_->image(7);
-    QPixmap pixmap = QPixmap::fromImage(image);
-    imageLabel_->setPixmap(pixmap);
-    imageLabel_->adjustSize();
-}
-
 void MiniMapView::setModel(MiniMapModel* model) {
     model_ = model;
     refresh();
 }
 
-void MiniMapView::scaleFactor(double factor) {
-    Q_ASSERT(imageLabel_->pixmap());
+void MiniMapView::refresh() {
+    if (model_== NULL) {
+        return;
+    }
+    QImage image = model_->imageForFloor(floor_);
+    QPixmap pixmap = QPixmap::fromImage(image);
+    double scaleFactor = scales_.at(scaleIndex_);
 
-    scaleFactor_ = factor == 0 ? 1.0 : factor * scaleFactor_;
-    imageLabel_->resize(scaleFactor_ * imageLabel_->pixmap()->size());
-
-    adjustScrollBar(horizontalScrollBar(), factor);
-    adjustScrollBar(verticalScrollBar(), factor);
+    imageLabel_->setPixmap(pixmap.scaled(pixmap.width() * scaleFactor, pixmap.height() * scaleFactor));
+    imageLabel_->adjustSize();
 }
 
-void MiniMapView::adjustScrollBar(QScrollBar* scrollBar, double factor) {
-    scrollBar->setValue(int(factor * scrollBar->value() + ((factor - 1) * scrollBar->pageStep()/2)));
+void MiniMapView::mousePressEvent(QMouseEvent* event) {
+    mousePosition_ = event->pos();
+
+    // Don't delegate this event
+    event->accept();
+}
+
+void MiniMapView::mouseReleaseEvent(QMouseEvent* event) {
+    if(!mousePosition_.isNull()) {
+        mousePosition_ = QPoint();
+
+        // Don't delegate this event
+        event->accept();
+    }
+    else {
+        QScrollArea::mouseReleaseEvent(event);
+    }
+}
+
+void MiniMapView::mouseMoveEvent(QMouseEvent* event) {
+    if(!mousePosition_.isNull()) {
+        int dx = mousePosition_.x() - event->pos().x();
+        int dy = mousePosition_.y() - event->pos().y();
+        mousePosition_ = event->pos();
+
+        // Programatically scroll
+        horizontalScrollBar()->setValue(horizontalScrollBar()->value() + dx);
+        verticalScrollBar()->setValue(verticalScrollBar()->value() + dy);
+
+        // Don't delegate this event
+        event->accept();
+    }
+    else {
+        QScrollArea::mouseMoveEvent(event);
+    }
+}
+
+void MiniMapView::keyPressEvent(QKeyEvent* event) {
+    if(event->key() == Qt::Key_Plus || event->key() == Qt::Key_Minus) {
+        floor_ = event->key() == Qt::Key_Plus ?
+                    std::max(1, floor_ - 1) :
+                    std::min(16, floor_ + 1);
+
+        // Don't delegate this event
+        event->accept();
+
+        // Refresh the view
+        refresh();
+    }
+    else {
+        QScrollArea::keyPressEvent(event);
+    }
 }
 
 void MiniMapView::wheelEvent(QWheelEvent* event) {
     if((event->modifiers() & Qt::ControlModifier) == Qt::ControlModifier) {
-        int delta = event->delta();
-        double factor = ((double) delta / (double) 240) + 1;
-        scaleFactor(factor);
+        scaleIndex_ = event->delta() > 0 ? std::min(scaleIndex_ + 1, scales_.length() - 1) : std::max(scaleIndex_ - 1, 0);
 
         // Don't delegate this event
         event->accept();
+
+        // Refresh the view
+        refresh();
     }
     else {
         QScrollArea::wheelEvent(event);
