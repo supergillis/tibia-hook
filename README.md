@@ -5,20 +5,16 @@ Currently there is support for injecting the hook into the Linux client. In theo
 
 ## Compiling
 
-There is something I need to confess first. I really suck in writing Makefiles. That's why I've written some stuff in Ruby to compile this
-project. It's probably a bit of overkill, but I couldn't have written it faster with a Makefile!
-
 ### Requirements
 
-* Ruby (see above)
 * libqtcore library
-* libqtscript library
+* libqtgui library
 * pthread library (for creating the Qt thread)
 
 ### Commands
 
 	cd your-projects-directory/tibia-hook
-	make all
+	qmake && make all
 
 ## Injecting in Tibia
 
