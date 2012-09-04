@@ -16,6 +16,7 @@
 #ifndef BATTELLISTUIPLUGIN_H
 #define BATTELLISTUIPLUGIN_H
 
+#include <QtPlugin>
 #include <QObject>
 
 #include <HookInterface.h>

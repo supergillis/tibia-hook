@@ -18,8 +18,6 @@
 #include <stdexcept>
 
 #include <QVariantMap>
-#include <QtPlugin>
-Q_EXPORT_PLUGIN2(battlelist, BattleListPlugin)
 
 const QString BattleListPlugin::PLUGIN_NAME("battlelist");
 const int BattleListPlugin::PLUGIN_VERSION(1);
@@ -67,3 +65,6 @@ const BattleListEntry* BattleListPlugin::findByName(const QString& name) const {
     }
     return NULL;
 }
+
+// Export plugin
+Q_EXPORT_PLUGIN2(battlelist, BattleListPlugin)

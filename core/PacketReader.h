@@ -16,6 +16,8 @@
 #ifndef PACKETREADER_H
 #define PACKETREADER_H
 
+#include <QDebug>
+
 #include <PacketInterface.h>
 
 #define PACKET_END_OF_FILE "reached the end of the buffer"

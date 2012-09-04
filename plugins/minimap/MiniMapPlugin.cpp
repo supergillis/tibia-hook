@@ -20,9 +20,6 @@
 #include <QVariantMap>
 #include <QPainter>
 
-#include <QtPlugin>
-Q_EXPORT_PLUGIN2(minimap, MiniMapPlugin)
-
 const int MiniMap::MINIMAP_FILE_DIMENSION(256);
 
 MiniMap::MiniMap(const QDir& directory): directory_(directory) {
@@ -153,3 +150,6 @@ void MiniMapPlugin::uninstall() {
 MiniMapInterface* MiniMapPlugin::miniMap() {
     return miniMap_;
 }
+
+// Export plugin
+Q_EXPORT_PLUGIN2(minimap, MiniMapPlugin)

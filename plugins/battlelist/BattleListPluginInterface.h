@@ -16,15 +16,19 @@
 #ifndef BATTLELISTPLUGININTERFACE_H
 #define BATTLELISTPLUGININTERFACE_H
 
-#include <PluginInterface.h>
+#include <QtPlugin>
 
-#include "BattleList.h"
+#include <BattleList.h>
 
-class BattleListPluginInterface: public PluginInterface {
+class BattleListPluginInterface {
 public:
+    virtual ~BattleListPluginInterface() {}
+
     virtual const BattleList* entries() const = 0;
     virtual const BattleListEntry* findById(const quint32 id) const = 0;
     virtual const BattleListEntry* findByName(const QString& name) const = 0;
 };
+
+Q_DECLARE_INTERFACE(BattleListPluginInterface, "BattleListPluginInterface")
 
 #endif

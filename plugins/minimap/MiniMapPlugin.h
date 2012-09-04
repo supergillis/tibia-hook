@@ -34,15 +34,9 @@ public:
         return valid_;
     }
 
-    quint16 x() {
-        return x_;
-    }
-    quint16 y() {
-        return y_;
-    }
-    quint8 z() {
-        return z_;
-    }
+    quint16 x() { return x_; }
+    quint16 y() { return y_; }
+    quint8 z() { return z_; }
 
 private:
     bool valid_;
@@ -69,9 +63,9 @@ private:
     QDir directory_;
 };
 
-class MiniMapPlugin: public QObject, public MiniMapPluginInterface {
+class MiniMapPlugin: public QObject, public PluginInterface, public MiniMapPluginInterface {
 	Q_OBJECT
-    Q_INTERFACES(PluginInterface)
+    Q_INTERFACES(PluginInterface MiniMapPluginInterface)
 
 public:
     static const QString PLUGIN_NAME;

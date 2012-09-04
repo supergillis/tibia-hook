@@ -38,13 +38,16 @@ int MiniMapUIPlugin::version() const {
 }
 
 void MiniMapUIPlugin::install(HookInterface* hook) throw(std::exception) {
-    PluginManagerInterface* plugins = hook->plugins();
-    PluginInterface* plugin = plugins->findPluginByName("minimap");
+    QObject* plugin = hook->plugins()->findPluginByName("minimap");
     if(plugin == NULL) {
         throw std::runtime_error("The 'minimap' plugin must be loaded before loading the 'minimapui' plugin!");
     }
 
-    MiniMapPlugin* miniMapPlugin = (MiniMapPlugin*) plugin;
+    MiniMapPluginInterface* miniMapPlugin = qobject_cast<MiniMapPluginInterface*>(plugin);
+    if(miniMapPlugin == NULL) {
+        throw std::runtime_error("The 'minimap' plugin could not be loaded!");
+    }
+
     view_ = new MiniMapView();
     view_->setModel(new MiniMapModel(miniMapPlugin->miniMap()));
     ui_ = hook->ui();

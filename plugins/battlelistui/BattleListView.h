@@ -13,8 +13,8 @@
  * limitations under the License.
  */
 
-#ifndef BATTLELISTTABLE_H
-#define BATTLELISTTABLE_H
+#ifndef BATTLELISTVIEW_H
+#define BATTLELISTVIEW_H
 
 #include <QTableView>
 

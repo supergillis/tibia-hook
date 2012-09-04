@@ -50,14 +50,14 @@ public:
 	bool receiveFromClient(const QByteArray&);
 	void receiveFromServer(const QByteArray&);
 
-    PluginInterface* findPluginByName(const QString& name);
+    QObject* findPluginByName(const QString& name);
 
 private:
     SettingsInterface* settings_;
     SenderInterface* sender_;
     UIManagerInterface* ui_;
 
-	QList<PluginInterface*> plugins_;
+    QList<QObject*> plugins_;
 };
 
 #endif

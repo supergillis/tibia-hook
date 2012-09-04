@@ -16,6 +16,7 @@
 #ifndef PLUGININTERFACE_H
 #define PLUGININTERFACE_H
 
+#include <QtPlugin>
 #include <QString>
 
 #include <HookInterface.h>

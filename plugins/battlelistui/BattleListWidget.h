@@ -13,8 +13,8 @@
  * limitations under the License.
  */
 
-#ifndef BATTLELISTVIEW_H
-#define BATTLELISTVIEW_H
+#ifndef BATTLELISTWIDGET_H
+#define BATTLELISTWIDGET_H
 
 #include <QWidget>
 

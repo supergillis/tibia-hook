@@ -16,13 +16,17 @@
 #ifndef MINIMAPPLUGININTERFACE_H
 #define MINIMAPPLUGININTERFACE_H
 
-#include <PluginInterface.h>
+#include <QtPlugin>
 
-#include "MiniMapInterface.h"
+#include <MiniMapInterface.h>
 
-class MiniMapPluginInterface: public PluginInterface {
+class MiniMapPluginInterface {
 public:
+    virtual ~MiniMapPluginInterface() {}
+
     virtual MiniMapInterface* miniMap() = 0;
 };
+
+Q_DECLARE_INTERFACE(MiniMapPluginInterface, "MiniMapPluginInterface")
 
 #endif

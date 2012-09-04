@@ -13,20 +13,22 @@
  * limitations under the License.
  */
 
-#ifndef BATTELLISTPLUGIN_H
-#define BATTELLISTPLUGIN_H
+#ifndef BATTLELISTPLUGIN_H
+#define BATTLELISTPLUGIN_H
 
+#include <QtPlugin>
 #include <QObject>
 #include <QVariantMap>
 
 #include <HookInterface.h>
+#include <PluginInterface.h>
 
 #include "BattleList.h"
 #include "BattleListPluginInterface.h"
 
-class BattleListPlugin: public QObject, public BattleListPluginInterface {
+class BattleListPlugin: public QObject, public PluginInterface, public BattleListPluginInterface {
 	Q_OBJECT
-    Q_INTERFACES(PluginInterface)
+    Q_INTERFACES(PluginInterface BattleListPluginInterface)
 
 public:
     static const QString PLUGIN_NAME;

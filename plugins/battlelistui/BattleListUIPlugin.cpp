@@ -20,9 +20,6 @@
 
 #include <stdexcept>
 
-#include <QtPlugin>
-Q_EXPORT_PLUGIN2(battlelistui, BattleListUIPlugin)
-
 const QString BattleListUIPlugin::PLUGIN_NAME("battlelistui");
 const int BattleListUIPlugin::PLUGIN_VERSION(1);
 
@@ -38,13 +35,15 @@ int BattleListUIPlugin::version() const {
 }
 
 void BattleListUIPlugin::install(HookInterface* hook) throw(std::exception) {
-    PluginManagerInterface* plugins = hook->plugins();
-    PluginInterface* plugin = plugins->findPluginByName("battlelist");
+    QObject* plugin = hook->plugins()->findPluginByName("battlelist");
     if(plugin == NULL) {
         throw std::runtime_error("The 'battlelist' plugin must be loaded before loading the 'battlelistui' plugin!");
     }
 
-    BattleListPluginInterface* battleListPlugin = (BattleListPluginInterface*) plugin;
+    BattleListPluginInterface* battleListPlugin = qobject_cast<BattleListPluginInterface*>(plugin);
+    if(battleListPlugin == NULL) {
+        throw std::runtime_error("The 'battlelist' plugin could not be loaded!");
+    }
 
     widget_ = new BattleListWidget();
     widget_->battleListView()->setModel(new BattleListModel(battleListPlugin->entries()));
@@ -60,3 +59,6 @@ void BattleListUIPlugin::uninstall() {
         ui_ = NULL;
     }
 }
+
+// Export plugin
+Q_EXPORT_PLUGIN2(battlelistui, BattleListUIPlugin)

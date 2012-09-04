@@ -6,7 +6,7 @@
 class PluginInterface;
 class PluginManagerInterface {
 public:
-    virtual PluginInterface* findPluginByName(const QString& name) = 0;
+    virtual QObject* findPluginByName(const QString& name) = 0;
 };
 
-#endif // PLUGINMANAGERINTERFACE_H
+#endif

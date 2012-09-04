@@ -26,7 +26,7 @@ class MiniMapModel: public QObject {
 public:
     MiniMapModel(MiniMapInterface*);
 
-    QImage image(int z) const;
+    QImage imageForFloor(int z) const;
 
 private:
     MiniMapInterface* miniMap_;

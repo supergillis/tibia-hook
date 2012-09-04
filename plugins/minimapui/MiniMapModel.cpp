@@ -18,6 +18,6 @@
 MiniMapModel::MiniMapModel(MiniMapInterface* miniMap): miniMap_(miniMap) {
 }
 
-QImage MiniMapModel::image(int z) const {
+QImage MiniMapModel::imageForFloor(int z) const {
     return miniMap_->imageForFloor(z);
 }

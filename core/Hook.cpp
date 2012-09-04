@@ -43,12 +43,15 @@ Hook::Hook(SettingsInterface* settings, SenderInterface* sender, QObject* parent
     QList<QFileInfo> pluginsInfo = QDir(pluginsDir).entryInfoList(QStringList(), QDir::Files);
     foreach(const QFileInfo& pluginInfo, pluginsInfo) {
         QPluginLoader loader(pluginInfo.absoluteFilePath());
-        PluginInterface* plugin = dynamic_cast<PluginInterface*>(loader.instance());
-        if (plugin) {
+        QObject* instance = loader.instance();
+
+        // Check if it is a valid plugin
+        PluginInterface* plugin = qobject_cast<PluginInterface*>(instance);
+        if (plugin != 0) {
             qDebug() << "installing" << plugin->name();
             try {
                 plugin->install(this);
-                plugins_.append(plugin);
+                plugins_.append(instance);
             }
             catch(std::exception& exception) {
                 QMessageBox message;
@@ -63,9 +66,12 @@ Hook::Hook(SettingsInterface* settings, SenderInterface* sender, QObject* parent
 }
 
 Hook::~Hook() {
-    foreach(PluginInterface* plugin, plugins_) {
-        qDebug() << "uninstalling" << plugin->name();
-        plugin->uninstall();
+    foreach(QObject* instance, plugins_) {
+        PluginInterface* plugin = qobject_cast<PluginInterface*>(instance);
+        if(plugin != 0) {
+            qDebug() << "uninstalling" << plugin->name();
+            plugin->uninstall();
+        }
     }
 }
 
@@ -84,10 +90,11 @@ void Hook::receiveFromServer(const QByteArray& data) {
     qDebug() << "server" << type << " length " << data.length();
 }
 
-PluginInterface* Hook::findPluginByName(const QString& name) {
-    foreach(PluginInterface* plugin, plugins_) {
-        if(plugin->name().compare(name) == 0) {
-            return plugin;
+QObject* Hook::findPluginByName(const QString& name) {
+    foreach(QObject* instance, plugins_) {
+        PluginInterface* plugin = qobject_cast<PluginInterface*>(instance);
+        if(plugin != 0 && plugin->name().compare(name) == 0) {
+            return instance;
         }
     }
     return NULL;
