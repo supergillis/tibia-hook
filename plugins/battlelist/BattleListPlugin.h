@@ -31,13 +31,7 @@ class BattleListPlugin: public QObject, public PluginInterface, public BattleLis
     Q_INTERFACES(PluginInterface BattleListPluginInterface)
 
 public:
-    static const QString PLUGIN_NAME;
-    static const int PLUGIN_VERSION;
-
-	QString name() const;
-	int version() const;
-
-    void install(HookInterface*) throw(std::exception);
+    void install(HookInterface*, SettingsInterface*) throw(std::exception);
 	void uninstall();
 
     const BattleList* entries() const;

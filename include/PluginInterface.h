@@ -23,12 +23,9 @@
 
 class PluginInterface {
 public:
-	virtual ~PluginInterface() {}
+    virtual ~PluginInterface() {}
 
-	virtual QString name() const = 0;
-	virtual int version() const = 0;
-
-    virtual void install(HookInterface*) throw(std::exception) = 0;
+    virtual void install(HookInterface*, SettingsInterface*) throw(std::exception) = 0;
 	virtual void uninstall() = 0;
 };
 

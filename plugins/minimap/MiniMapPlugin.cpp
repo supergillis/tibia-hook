@@ -20,6 +20,27 @@
 #include <QVariantMap>
 #include <QPainter>
 
+#define SETTING_FOLDER "folder"
+
+void MiniMapPlugin::install(HookInterface* hook, SettingsInterface* settings) throw(std::exception) {
+    if(!settings->value(SETTING_FOLDER).isValid()) {
+        throw std::runtime_error("Could not load minimap folder!");
+    }
+
+    QDir directory(settings->value(SETTING_FOLDER).toString());
+    miniMap_ = new MiniMap(directory);
+}
+
+void MiniMapPlugin::uninstall() {
+}
+
+MiniMapInterface* MiniMapPlugin::miniMap() {
+    return miniMap_;
+}
+
+// Export plugin
+Q_EXPORT_PLUGIN2(minimap, MiniMapPlugin)
+
 const int MiniMap::MINIMAP_FILE_DIMENSION(256);
 
 MiniMap::MiniMap(const QDir& directory): directory_(directory) {
@@ -121,35 +142,3 @@ QImage MiniMap::imageForMapFile(const QString& mapFile) {
 int MiniMap::mapColor(quint8 color) {
     return (0x330000 * (color / 36 % 6) + 0x003300 * (color / 6 % 6) + 0x000033 * (color % 6));
 }
-
-const QString MiniMapPlugin::PLUGIN_NAME("minimap");
-const int MiniMapPlugin::PLUGIN_VERSION(1);
-
-#define SETTING_FOLDER "folder"
-
-QString MiniMapPlugin::name() const {
-    return PLUGIN_NAME;
-}
-
-int MiniMapPlugin::version() const {
-    return PLUGIN_VERSION;
-}
-
-void MiniMapPlugin::install(HookInterface* hook) throw(std::exception) {
-    QVariantMap settings = hook->settings()->value(PLUGIN_NAME).toMap();
-    if(!settings.value(SETTING_FOLDER).isValid())
-        throw std::runtime_error("Could not load minimap folder!");
-
-    QDir directory(settings.value(SETTING_FOLDER).toString());
-    miniMap_ = new MiniMap(directory);
-}
-
-void MiniMapPlugin::uninstall() {
-}
-
-MiniMapInterface* MiniMapPlugin::miniMap() {
-    return miniMap_;
-}
-
-// Export plugin
-Q_EXPORT_PLUGIN2(minimap, MiniMapPlugin)

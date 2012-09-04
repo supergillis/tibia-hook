@@ -27,9 +27,10 @@
 #include <SettingsInterface.h>
 
 #include "DetourManager.h"
+#include "PluginManager.h"
 #include "Settings.h"
 
-class Hook: public QObject, public HookInterface, public ReceiverInterface, public PluginManagerInterface {
+class Hook: public QObject, public HookInterface, public ReceiverInterface {
 	Q_OBJECT
 
 public:
@@ -39,7 +40,7 @@ public:
 	SettingsInterface* settings() { return settings_; }
     SenderInterface* sender() { return sender_; }
     ReceiverInterface* receiver() { return this; }
-    PluginManagerInterface* plugins() { return this; }
+    PluginManagerInterface* plugins() { return plugins_; }
     UIManagerInterface* ui() { return ui_; }
 
     PacketBuilderInterface* buildPacket() const;
@@ -53,11 +54,10 @@ public:
     QObject* findPluginByName(const QString& name);
 
 private:
+    PluginManager* plugins_;
     SettingsInterface* settings_;
     SenderInterface* sender_;
     UIManagerInterface* ui_;
-
-    QList<QObject*> plugins_;
 };
 
 #endif

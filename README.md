@@ -14,7 +14,7 @@ Currently there is support for injecting the hook into the Linux client. In theo
 ### Commands
 
 	cd your-projects-directory/tibia-hook
-	qmake && make all
+	qmake && make all && make install
 
 ## Injecting in Tibia
 

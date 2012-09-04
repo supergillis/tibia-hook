@@ -33,6 +33,7 @@ MiniMapView::~MiniMapView() {
 
 void MiniMapView::setModel(MiniMapModel* model) {
     model_ = model;
+    cache_.clear();
     refresh();
 }
 
@@ -40,7 +41,17 @@ void MiniMapView::refresh() {
     if (model_== NULL) {
         return;
     }
-    QImage image = model_->imageForFloor(floor_);
+
+    // Load image from cache or from the model
+    QImage image;
+    if (cache_.contains(floor_)) {
+        image = cache_.value(floor_);
+    }
+    else {
+        image = model_->imageForFloor(floor_);
+        cache_.insert(floor_, image);
+    }
+
     QPixmap pixmap = QPixmap::fromImage(image);
     double scaleFactor = scales_.at(scaleIndex_);
 

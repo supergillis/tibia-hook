@@ -20,24 +20,10 @@
 
 #include <stdexcept>
 
-#include <QtPlugin>
-Q_EXPORT_PLUGIN2(minimapui, MiniMapUIPlugin)
-
-const QString MiniMapUIPlugin::PLUGIN_NAME("minimapui");
-const int MiniMapUIPlugin::PLUGIN_VERSION(1);
-
 MiniMapUIPlugin::MiniMapUIPlugin(): view_(NULL) {
 }
 
-QString MiniMapUIPlugin::name() const {
-    return PLUGIN_NAME;
-}
-
-int MiniMapUIPlugin::version() const {
-    return PLUGIN_VERSION;
-}
-
-void MiniMapUIPlugin::install(HookInterface* hook) throw(std::exception) {
+void MiniMapUIPlugin::install(HookInterface* hook, SettingsInterface* settings) throw(std::exception) {
     QObject* plugin = hook->plugins()->findPluginByName("minimap");
     if(plugin == NULL) {
         throw std::runtime_error("The 'minimap' plugin must be loaded before loading the 'minimapui' plugin!");
@@ -62,3 +48,5 @@ void MiniMapUIPlugin::uninstall() {
         ui_ = NULL;
     }
 }
+
+Q_EXPORT_PLUGIN2(minimapui, MiniMapUIPlugin)

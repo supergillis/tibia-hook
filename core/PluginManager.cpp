@@ -1,0 +1,237 @@
+#include "PluginManager.h"
+#include "Hook.h"
+#include "Settings.h"
+
+#include <PluginInterface.h>
+
+#include <QApplication>
+#include <QDebug>
+#include <QDir>
+#include <QFile>
+#include <QMessageBox>
+#include <QPluginLoader>
+
+#include <stdexcept>
+
+PluginInfo* findPluginInfoByName(PluginInfo::List& list, const QString& name, quint16 version) {
+    for (PluginInfo::List::iterator it = list.begin(); it != list.end(); ++it) {
+        PluginInfo* info = *it;
+        if (info->name().compare(name) == 0 && info->version() >= version) {
+            return info;
+        }
+    }
+    return NULL;
+}
+
+PluginManager::PluginManager(Hook* hook):
+    QObject(hook),
+    hook_(hook) {
+}
+
+PluginManager::~PluginManager() {
+    unload();
+}
+
+void PluginManager::load(const QString& directory) {
+    QFileInfoList plugins = QDir(directory).entryInfoList(QStringList(), QDir::Dirs);
+    foreach (const QFileInfo& plugin, plugins) {
+        PluginInfo* info = loadDirectory(plugin.absoluteFilePath());
+        if (info != NULL) {
+            pluginInfos_.append(info);
+        }
+    }
+
+    // Generate dependency graph
+    Dependencies dependencies;
+    for (PluginInfo::List::iterator it = pluginInfos_.begin(); it != pluginInfos_.end(); ++it) {
+        PluginInfo::Dependencies deps = (*it)->dependencies();
+        for (PluginInfo::Dependencies::iterator depit = deps.begin(); depit != deps.end(); ++depit) {
+            PluginInfo* dependency = findPluginInfoByName(pluginInfos_, depit->first, depit->second);
+            if (dependency == NULL) {
+                throw std::runtime_error(("Could not load '" + (*it)->name() + "': unmet dependency '" + depit->first + "'[" + QString::number(depit->second) + "]!").toStdString());
+            }
+            dependencies.append(Dependency(*it, dependency));
+        }
+    }
+
+    PluginInfo::List independent(pluginInfos_);
+    for (Dependencies::iterator it = dependencies.begin(); it != dependencies.end(); ++it) {
+        independent.removeAll(it->first);
+    }
+
+    // Topological sort of plugins
+    PluginInfo::List sorted;
+    while (!independent.empty()) {
+        PluginInfo* info = independent.takeFirst();
+        sorted.append(info);
+
+        MutableDependencyIterator it(dependencies);
+        while (it.hasNext()) {
+            // Copy constructor, else dependency.first won't work anymore
+            Dependency dependency = it.next();
+            if(dependency.second == info) {
+                it.remove();
+            }
+
+            bool hasOtherDependencies = false;
+            for (Dependencies::iterator it = dependencies.begin(); it != dependencies.end(); ++it) {
+                if (it->first == dependency.first) {
+                    hasOtherDependencies = true;
+                    break;
+                }
+            }
+
+            if (!hasOtherDependencies) {
+                independent.append(dependency.first);
+            }
+        }
+    }
+
+    // Load the plugins
+    for (PluginInfo::List::iterator it = sorted.begin(); it != sorted.end(); ++it) {
+        PluginInfo* info = *it;
+
+        QPluginLoader loader(info->libraryPath(), this);
+        QObject* instance = loader.instance();
+
+        // Check if it is a valid plugin
+        PluginInterface* plugin = qobject_cast<PluginInterface*>(instance);
+        if (plugin != 0) {
+            qDebug() << "installing" << info->name();
+            try {
+                plugin->install(hook_, info->settings());
+                plugins_.insert(info, instance);
+            }
+            catch(std::exception& exception) {
+                QMessageBox message;
+                message.setWindowTitle(QApplication::applicationName());
+                message.setText("Could not load \"" + info->name() + "\" plugin!");
+                message.setDetailedText(exception.what());
+                message.setDefaultButton(QMessageBox::Ignore);
+                message.exec();
+            }
+        }
+    }
+}
+
+void PluginManager::unload() {
+    for (PluginMap::iterator it = plugins_.begin(); it != plugins_.end(); ++it) {
+        PluginInfo* info = it.key();
+        PluginInterface* plugin = qobject_cast<PluginInterface*>(it.value());
+
+        qDebug() << "uninstalling" << info->name();
+        plugin->uninstall();
+
+        delete plugin;
+        delete info;
+    }
+    plugins_.clear();
+}
+
+QObject* PluginManager::findPluginByName(const QString& name) {
+    for (PluginMap::iterator it = plugins_.begin(); it != plugins_.end(); ++it) {
+        PluginInfo* info = it.key();
+        if(info->name().compare(name) == 0) {
+            return it.value();
+        }
+    }
+    return NULL;
+}
+
+QObject* PluginManager::findPluginByName(const QString& name, quint16 version) {
+    for (PluginMap::iterator it = plugins_.begin(); it != plugins_.end(); ++it) {
+        PluginInfo* info = it.key();
+        if(info->name().compare(name) == 0 && info->version() >= version) {
+            return it.value();
+        }
+    }
+    return NULL;
+}
+
+PluginInfo* PluginManager::loadDirectory(const QString& directory) {
+    try {
+        return new PluginInfo(directory, this);
+    }
+    catch(std::runtime_error& error) {
+        qWarning() << error.what();
+    }
+    return NULL;
+}
+
+PluginInfo::PluginInfo(const QString& directory, QObject* parent):
+    QObject(parent),
+    settings_(NULL) {
+    QDir dir(directory);
+    QStringList candidates = dir.entryList(QStringList() << "*.so" << "*.dll", QDir::Files | QDir::NoDotAndDotDot);
+    if (candidates.length() == 0) {
+        throw std::runtime_error(("Could not load '" + directory + "': could not find shared library!").toStdString());
+    }
+    libraryPath_ = dir.absoluteFilePath(candidates.first());
+
+    // Load metadata
+    QString metaPath = dir.absoluteFilePath("meta.js");
+    QFile metaFile(metaPath);
+    if (!metaFile.exists()) {
+        throw std::runtime_error(("Could not load '" + metaPath + "'!").toStdString());
+    }
+    if (!metaFile.open(QIODevice::ReadOnly)) {
+        throw std::runtime_error(("Could not open '" + metaPath + "'!").toStdString());
+    }
+
+    Settings meta(metaFile.readAll());
+    if (!meta.contains("name")) {
+        throw std::runtime_error(("Could not plugin name in '" + metaPath + "'!").toStdString());
+    }
+    if (!meta.contains("version")) {
+        throw std::runtime_error(("Could not version name in '" + metaPath + "'!").toStdString());
+    }
+
+    name_ = meta.value("name").toString();
+    version_ = meta.value("version").toUInt();
+
+    QVariantList deps = meta.value("dependencies").toList();
+    for (QVariantList::iterator it = deps.begin(); it != deps.end(); ++it) {
+        QVariantList dep = it->toList();
+
+        QString name = dep.at(0).toString();
+        quint16 version = dep.at(1).toUInt();
+        dependencies_.append(PluginInfo::Dependency(name, version));
+    }
+
+    // Load config
+    QString configPath = dir.absoluteFilePath("config.js");
+    QFile configFile(configPath);
+    if (!configFile.exists()) {
+        throw std::runtime_error(("Could not load '" + configPath + "'!").toStdString());
+    }
+    if (!configFile.open(QIODevice::ReadOnly)) {
+        throw std::runtime_error(("Could not open '" + configPath + "'!").toStdString());
+    }
+    settings_ = new Settings(configFile.readAll());
+}
+
+PluginInfo::~PluginInfo() {
+    if(settings_ != NULL) {
+        delete settings_;
+    }
+}
+
+const QString& PluginInfo::libraryPath() const {
+    return libraryPath_;
+}
+
+const QString& PluginInfo::name() const {
+    return name_;
+}
+
+const quint16 PluginInfo::version() const {
+    return version_;
+}
+
+const PluginInfo::Dependencies& PluginInfo::dependencies() const {
+    return dependencies_;
+}
+
+SettingsInterface* PluginInfo::settings() {
+    return settings_;
+}

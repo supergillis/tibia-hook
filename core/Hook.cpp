@@ -17,62 +17,31 @@
 #include "Packet.h"
 #include "PacketReader.h"
 #include "PacketBuilder.h"
+#include "PluginManager.h"
 #include "UIManager.h"
 
 #include <stdexcept>
 
-#include <QApplication>
-#include <QDir>
-#include <QFile>
-#include <QMessageBox>
-#include <QPluginLoader>
-
-#define SETTING_PLUGINS_DIRECTORY "plugins_directory"
+#define SETTING_PLUGINS_DIRECTORY "plugins"
 
 Hook::Hook(SettingsInterface* settings, SenderInterface* sender, QObject* parent) :
-    QObject(parent), settings_(settings), sender_(sender) {
-    ui_ = new UIManager();
-
+    QObject(parent),
+    settings_(settings),
+    sender_(sender) {
     if(!settings_->contains(SETTING_PLUGINS_DIRECTORY)) {
         throw std::runtime_error("Could not load plugins directory!");
     }
 
+    ui_ = new UIManager();
+
     QString pluginsDir = settings->value(SETTING_PLUGINS_DIRECTORY).toString();
-
-    // Load plugins
-    QList<QFileInfo> pluginsInfo = QDir(pluginsDir).entryInfoList(QStringList(), QDir::Files);
-    foreach(const QFileInfo& pluginInfo, pluginsInfo) {
-        QPluginLoader loader(pluginInfo.absoluteFilePath());
-        QObject* instance = loader.instance();
-
-        // Check if it is a valid plugin
-        PluginInterface* plugin = qobject_cast<PluginInterface*>(instance);
-        if (plugin != 0) {
-            qDebug() << "installing" << plugin->name();
-            try {
-                plugin->install(this);
-                plugins_.append(instance);
-            }
-            catch(std::exception& exception) {
-                QMessageBox message;
-                message.setWindowTitle(QApplication::applicationName());
-                message.setText("Could not load \"" + plugin->name() + "\" plugin!");
-                message.setDetailedText(exception.what());
-                message.setDefaultButton(QMessageBox::Ignore);
-                message.exec();
-            }
-        }
-    }
+    plugins_ = new PluginManager(this);
+    plugins_->load(pluginsDir);
 }
 
 Hook::~Hook() {
-    foreach(QObject* instance, plugins_) {
-        PluginInterface* plugin = qobject_cast<PluginInterface*>(instance);
-        if(plugin != 0) {
-            qDebug() << "uninstalling" << plugin->name();
-            plugin->uninstall();
-        }
-    }
+    delete ui_;
+    delete plugins_;
 }
 
 bool Hook::receiveFromClient(const QByteArray& data) {
@@ -88,16 +57,6 @@ void Hook::receiveFromServer(const QByteArray& data) {
     PacketReader reader(&packet);
     quint8 type = reader.readU8();
     qDebug() << "server" << type << " length " << data.length();
-}
-
-QObject* Hook::findPluginByName(const QString& name) {
-    foreach(QObject* instance, plugins_) {
-        PluginInterface* plugin = qobject_cast<PluginInterface*>(instance);
-        if(plugin != 0 && plugin->name().compare(name) == 0) {
-            return instance;
-        }
-    }
-    return NULL;
 }
 
 PacketBuilderInterface* Hook::buildPacket() const {

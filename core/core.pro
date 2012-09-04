@@ -1,4 +1,4 @@
-QT += core gui script
+QT += core gui
 TEMPLATE = lib
 INCLUDEPATH += ../include ../lib/mologie-detours ../lib/qt-json
 DESTDIR = ../bin
@@ -13,7 +13,8 @@ SOURCES = Application.cpp \
     Packet.cpp \
 	PacketBuilder.cpp \
 	Settings.cpp \
-    UIManager.cpp
+    UIManager.cpp \
+    PluginManager.cpp
 
 HEADERS = Application.h \
 	DataQueue.h \
@@ -24,4 +25,5 @@ HEADERS = Application.h \
     PacketBuilder.h \
 	PacketReader.h \
 	Settings.h \
-    UIManager.h
+    UIManager.h \
+    PluginManager.h

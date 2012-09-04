@@ -21,8 +21,7 @@
 
 #include <SettingsInterface.h>
 
-class Settings: public SettingsInterface
-{
+class Settings: public SettingsInterface {
 public:
     Settings(const QString&) throw (std::exception);
 

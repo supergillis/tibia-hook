@@ -20,21 +20,10 @@
 
 #include <stdexcept>
 
-const QString BattleListUIPlugin::PLUGIN_NAME("battlelistui");
-const int BattleListUIPlugin::PLUGIN_VERSION(1);
-
 BattleListUIPlugin::BattleListUIPlugin(): widget_(NULL) {
 }
 
-QString BattleListUIPlugin::name() const {
-    return PLUGIN_NAME;
-}
-
-int BattleListUIPlugin::version() const {
-    return PLUGIN_VERSION;
-}
-
-void BattleListUIPlugin::install(HookInterface* hook) throw(std::exception) {
+void BattleListUIPlugin::install(HookInterface* hook, SettingsInterface* settings) throw(std::exception) {
     QObject* plugin = hook->plugins()->findPluginByName("battlelist");
     if(plugin == NULL) {
         throw std::runtime_error("The 'battlelist' plugin must be loaded before loading the 'battlelistui' plugin!");

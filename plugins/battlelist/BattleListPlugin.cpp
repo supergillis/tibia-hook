@@ -19,25 +19,13 @@
 
 #include <QVariantMap>
 
-const QString BattleListPlugin::PLUGIN_NAME("battlelist");
-const int BattleListPlugin::PLUGIN_VERSION(1);
-
 #define SETTING_ADDRESS "address"
 
-QString BattleListPlugin::name() const {
-    return PLUGIN_NAME;
-}
-
-int BattleListPlugin::version() const {
-    return PLUGIN_VERSION;
-}
-
-void BattleListPlugin::install(HookInterface* hook) throw(std::exception) {
-    QVariantMap settings = hook->settings()->value(PLUGIN_NAME).toMap();
-    if(!settings.value(SETTING_ADDRESS).isValid())
+void BattleListPlugin::install(HookInterface* hook, SettingsInterface* settings) throw(std::exception) {
+    if(!settings->value(SETTING_ADDRESS).isValid())
         throw std::runtime_error("Could not load battlelist address!");
 
-    list_ = (BattleList*) settings.value(SETTING_ADDRESS).toUInt();
+    list_ = (BattleList*) settings->value(SETTING_ADDRESS).toUInt();
 }
 
 void BattleListPlugin::uninstall() {

@@ -17,6 +17,7 @@
 #define MINIMAPUIPLUGIN_H
 
 #include <QObject>
+#include <QtPlugin>
 
 #include <HookInterface.h>
 #include <PluginInterface.h>
@@ -36,7 +37,7 @@ public:
 	QString name() const;
 	int version() const;
 
-    void install(HookInterface*) throw(std::exception);
+    void install(HookInterface*, SettingsInterface*) throw(std::exception);
     void uninstall();
 
 private:

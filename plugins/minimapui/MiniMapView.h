@@ -52,6 +52,7 @@ private:
     QLabel* imageLabel_;
     QScrollArea* scrollArea_;
 
+    QMap<quint8, QImage> cache_;
     QPoint mousePosition_;
     QList<double> scales_;
     qint8 scaleIndex_;

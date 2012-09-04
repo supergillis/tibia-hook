@@ -22,9 +22,10 @@
 
 Settings::Settings(const QString& json) throw (std::exception) {
 	bool parsed = true;
-	QVariant result = QtJson::Json::parse(json, parsed);
-	if(!parsed)
+    QVariant result = QtJson::Json::parse(json, parsed);
+    if (!parsed) {
         throw std::runtime_error("Could not parse JSON string!");
+    }
 
 	values_ = result.toMap();
 }
