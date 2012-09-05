@@ -27,8 +27,7 @@ void MiniMapPlugin::install(HookInterface* hook, SettingsInterface* settings) th
         throw std::runtime_error("Could not load minimap folder!");
     }
 
-    QDir directory(settings->value(SETTING_FOLDER).toString());
-    miniMap_ = new MiniMap(directory);
+    miniMap_ = new MiniMap(settings->value(SETTING_FOLDER).toString());
 }
 
 void MiniMapPlugin::uninstall() {
@@ -43,45 +42,7 @@ Q_EXPORT_PLUGIN2(minimap, MiniMapPlugin)
 
 const int MiniMap::MINIMAP_FILE_DIMENSION(256);
 
-MiniMap::MiniMap(const QDir& directory): directory_(directory) {
-}
-
-Position MiniMap::positionForMapFile(const QString& fileName) {
-    if (fileName.length() == 12 || fileName.length() == 8) {
-        quint16 x = fileName.mid(0, 3).toUInt() * MINIMAP_FILE_DIMENSION;
-        quint16 y = fileName.mid(3, 3).toUInt() * MINIMAP_FILE_DIMENSION;
-        quint8 z = fileName.mid(6, 2).toUInt();
-        return Position(x, y, z);
-    }
-    return Position();
-}
-
-QRect MiniMap::mapFilesBoundary(const QStringList& mapFiles) {
-    quint16 left = 0;
-    quint16 right = 0;
-    quint16 top = 0;
-    quint16 bottom = 0;
-    bool first = true;
-    foreach (const QString& mapFile, mapFiles) {
-        Position position = positionForMapFile(mapFile);
-        if (first) {
-            left = right = position.x();
-            top = bottom = position.y();
-            first = false;
-        }
-        else {
-            if (position.x() < left)
-                left = position.x();
-            else if (position.x() > right)
-                right = position.x();
-
-            if (position.y() < top)
-                top = position.y();
-            else if (position.y() > bottom)
-                bottom = position.y();
-        }
-    }
-    return QRect(left, top, right - left + MINIMAP_FILE_DIMENSION, bottom - top + MINIMAP_FILE_DIMENSION);
+MiniMap::MiniMap(const QString& directory): directory_(directory) {
 }
 
 QImage MiniMap::imageForFloor(quint8 z) const {
@@ -93,9 +54,10 @@ QImage MiniMap::imageForFloor(quint8 z) const {
     QStringList files = directory_.entryList(fileFilters);
     QRect bounds = mapFilesBoundary(files);
 
-    QPainter painter;
     QImage image(bounds.width(), bounds.height(), QImage::Format_RGB32);
     image.fill(Qt::black);
+
+    QPainter painter;
     painter.begin(&image);
 
     foreach(const QString& file, files) {
@@ -111,12 +73,6 @@ QImage MiniMap::imageForFloor(quint8 z) const {
     painter.end();
 
     return image;
-}
-
-QString MiniMap::mapFileForPosition(const QDir& directory, quint16 x, quint16 y, quint8 z) {
-    QString fileName;
-    fileName.sprintf("%03d%03d%02d.map", (int)(x / MINIMAP_FILE_DIMENSION), (int)(y / MINIMAP_FILE_DIMENSION), z);
-    return directory.absoluteFilePath(fileName);
 }
 
 QImage MiniMap::imageForMapFile(const QString& mapFile) {
@@ -137,6 +93,48 @@ QImage MiniMap::imageForMapFile(const QString& mapFile) {
         }
     }
     return image;
+}
+
+QRect MiniMap::mapFilesBoundary(const QStringList& mapFiles) {
+    quint16 left = 0;
+    quint16 right = 0;
+    quint16 top = 0;
+    quint16 bottom = 0;
+    bool first = true;
+    foreach (const QString& mapFile, mapFiles) {
+        Position position = positionForMapFile(mapFile);
+        if (first) {
+            left = right = position.x();
+            top = bottom = position.y();
+            first = false;
+        }
+        else {
+            if (position.x() < left) {
+                left = position.x();
+            }
+            else if (position.x() > right) {
+                right = position.x();
+            }
+
+            if (position.y() < top) {
+                top = position.y();
+            }
+            else if (position.y() > bottom) {
+                bottom = position.y();
+            }
+        }
+    }
+    return QRect(left, top, right - left + MINIMAP_FILE_DIMENSION, bottom - top + MINIMAP_FILE_DIMENSION);
+}
+
+Position MiniMap::positionForMapFile(const QString& fileName) {
+    if (fileName.length() == 12 || fileName.length() == 8) {
+        quint16 x = fileName.mid(0, 3).toUInt() * MINIMAP_FILE_DIMENSION;
+        quint16 y = fileName.mid(3, 3).toUInt() * MINIMAP_FILE_DIMENSION;
+        quint8 z = fileName.mid(6, 2).toUInt();
+        return Position(x, y, z);
+    }
+    return Position();
 }
 
 int MiniMap::mapColor(quint8 color) {

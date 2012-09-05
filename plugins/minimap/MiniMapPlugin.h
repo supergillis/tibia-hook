@@ -49,15 +49,14 @@ class MiniMap: public MiniMapInterface {
 public:
     static const int MINIMAP_FILE_DIMENSION;
 
-    MiniMap(const QDir &directory);
+    MiniMap(const QString& directory);
 
     QImage imageForFloor(quint8 z) const;
 
 private:
-    static Position positionForMapFile(const QString& fileName);
-    static QRect mapFilesBoundary(const QStringList& mapFiles);
-    static QString mapFileForPosition(const QDir& directory, quint16 x, quint16 y, quint8 z);
     static QImage imageForMapFile(const QString& mapFile);
+    static QRect mapFilesBoundary(const QStringList& mapFiles);
+    static Position positionForMapFile(const QString &fileName);
     static int mapColor(quint8 color);
 
     QDir directory_;

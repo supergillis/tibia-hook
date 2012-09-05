@@ -30,7 +30,6 @@ class MiniMapView: public QScrollArea {
     
 public:
     MiniMapView(QWidget* = 0);
-    ~MiniMapView();
 
     void setModel(MiniMapModel*);
 
@@ -42,21 +41,24 @@ public:
 
 public slots:
     void refresh();
-    void scaleFactor(double);
     
 private:
-    static void adjustScrollBar(QScrollBar* scrollBar, double factor);
-
-    MiniMapModel* model_;
-
     QLabel* imageLabel_;
     QScrollArea* scrollArea_;
 
+    MiniMapModel* model_;
+    quint8 floor_;
+
+    // Caching
     QMap<quint8, QImage> cache_;
-    QPoint mousePosition_;
+    QImage image_;
+
+    // For zooming
     QList<double> scales_;
     qint8 scaleIndex_;
-    quint8 floor_;
+
+    // For dragging
+    QPoint mousePosition_;
 };
 
 #endif
