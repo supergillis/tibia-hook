@@ -39,11 +39,11 @@ public:
     virtual PluginManagerInterface* plugins() = 0;
     virtual UIManagerInterface* ui() = 0;
 
-    virtual void addOutgoingProxy(quint8, ProxyInterface*) = 0;
-    virtual void removeOutgoingProxy(quint8, ProxyInterface*) = 0;
+    virtual void addOutgoingReadOnlyProxy(quint8, ProxyInterface*) = 0;
+    virtual void removeOutgoingReadOnlyProxy(quint8, ProxyInterface*) = 0;
 
-    virtual void addIncomingProxy(quint8, ReadOnlyProxyInterface*) = 0;
-    virtual void removeIncomingProxy(quint8, ReadOnlyProxyInterface*) = 0;
+    virtual void addIncomingReadOnlyProxy(quint8, ReadOnlyProxyInterface*) = 0;
+    virtual void removeIncomingReadOnlyProxy(quint8, ReadOnlyProxyInterface*) = 0;
 
     virtual PacketBuilderInterface* buildPacket() const = 0;
     virtual PacketBuilderInterface* buildPacket(const PacketInterface*) const = 0;

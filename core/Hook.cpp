@@ -53,25 +53,36 @@ Hook::Hook(QObject* parent):
     plugins_.load(pluginsDir);
 }
 
-void Hook::addOutgoingProxy(quint8 type, ProxyInterface* proxy) {
+void Hook::addOutgoingReadOnlyProxy(quint8 type, ProxyInterface* proxy) {
     outgoingProxies_.append(type, proxy);
 }
 
-void Hook::removeOutgoingProxy(quint8 type, ProxyInterface* proxy) {
+void Hook::removeOutgoingReadOnlyProxy(quint8 type, ProxyInterface* proxy) {
     outgoingProxies_.remove(type, proxy);
 }
 
-void Hook::addIncomingProxy(quint8 type, ReadOnlyProxyInterface* proxy) {
+void Hook::addOutgoingReadOnlyProxy(quint8 type, ProxyInterface* proxy) {
+    outgoingReadOnlyProxies_.append(type, proxy);
+}
+
+void Hook::removeOutgoingReadOnlyProxy(quint8 type, ProxyInterface* proxy) {
+    outgoingReadOnlyProxies_.remove(type, proxy);
+}
+
+void Hook::addIncomingReadOnlyProxy(quint8 type, ReadOnlyProxyInterface* proxy) {
     incomingProxies_.append(type, proxy);
 }
 
-void Hook::removeIncomingProxy(quint8 type, ReadOnlyProxyInterface* proxy) {
+void Hook::removeIncomingReadOnlyProxy(quint8 type, ReadOnlyProxyInterface* proxy) {
     incomingProxies_.remove(type, proxy);
 }
 
 bool Hook::receiveOutgoingMessage(const QByteArray& data) {
     Packet packet(data);
     PacketReader reader(&packet);
+    // First call outgoing read only proxies
+    outgoingReadOnlyProxies_.handlePacket(&reader);
+    // Then call read write proxies
     return outgoingProxies_.handlePacket(&reader);
 }
 

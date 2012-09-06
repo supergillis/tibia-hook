@@ -67,6 +67,7 @@ private:
     PluginManager plugins_;
 
     ProxyManager outgoingProxies_;
+    ReadOnlyProxyManager outgoingReadOnlyProxies_;
     ReadOnlyProxyManager incomingProxies_;
 
     SettingsInterface* settings_;
