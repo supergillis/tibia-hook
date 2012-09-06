@@ -14,27 +14,42 @@
  */
 
 #include "Hook.h"
+#include "DetourManager.h"
+#include "DetourSender.h"
 #include "Packet.h"
 #include "PacketReader.h"
 #include "PacketBuilder.h"
 #include "PluginManager.h"
+#include "Settings.h"
 #include "UIManager.h"
 
 #include <stdexcept>
 
+#define SETTINGS_FILE "config.js"
 #define SETTING_PLUGINS_DIRECTORY "plugins"
 
-Hook::Hook(SettingsInterface* settings, SenderInterface* sender, QObject* parent):
+Hook::Hook(QObject* parent):
     QObject(parent),
-    plugins_(this),
-    settings_(settings),
-    sender_(sender) {
+    plugins_(this) {
+    // Try to load the configuration file. Throw an exception on failure
+    QFile configFile(SETTINGS_FILE);
+    if(!configFile.open(QFile::ReadOnly)) {
+        throw std::runtime_error("Could not load config.js!");
+    }
+
+    settings_ = new Settings(configFile.readAll());
+    sender_ = new DetourSender(DetourManager::instance());
+
+    // Connect the DetourManager with the sender and receiver
+    DetourManager::instance()->setClientBufferHandler(new ClientBufferHandler(sender_, this));
+    DetourManager::instance()->setServerBufferHandler(new ServerBufferHandler(this));
+
     if(!settings_->contains(SETTING_PLUGINS_DIRECTORY)) {
         throw std::runtime_error("Could not load plugins directory!");
     }
 
     // Load plugins from the given plugins directory
-    QString pluginsDir = settings->value(SETTING_PLUGINS_DIRECTORY).toString();
+    QString pluginsDir = settings_->value(SETTING_PLUGINS_DIRECTORY).toString();
     plugins_.load(pluginsDir);
 }
 

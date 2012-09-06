@@ -35,7 +35,7 @@ class Hook: public QObject, public HookInterface, public ReceiverInterface {
 	Q_OBJECT
 
 public:
-    Hook(SettingsInterface*, SenderInterface*, QObject* = 0);
+    Hook(QObject* = 0);
 
     UIManagerInterface* ui() { return &ui_; }
     PluginManagerInterface* plugins() { return &plugins_; }
@@ -59,6 +59,33 @@ private:
 
     SettingsInterface* settings_;
     SenderInterface* sender_;
+};
+
+class ClientBufferHandler: public BufferHandler {
+public:
+    ClientBufferHandler(SenderInterface* sender, ReceiverInterface* receiver): sender_(sender), receiver_(receiver) {}
+
+    inline void handle(const QByteArray& data) {
+        if(receiver_->receiveOutgoingMessage(data)) {
+            sender_->sendToServer(data);
+        }
+    }
+
+private:
+    SenderInterface* sender_;
+    ReceiverInterface* receiver_;
+};
+
+class ServerBufferHandler: public BufferHandler {
+public:
+    ServerBufferHandler(ReceiverInterface* receiver): receiver_(receiver) {}
+
+    inline void handle(const QByteArray& data) {
+        receiver_->receiveIncomingMessage(data);
+    }
+
+private:
+    ReceiverInterface* receiver_;
 };
 
 #endif
