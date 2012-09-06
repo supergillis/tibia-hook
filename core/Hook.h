@@ -53,11 +53,11 @@ public:
     PacketBuilderInterface* buildPacket(const QByteArray&) const;
     PacketBuilderInterface* buildPacket(const quint8*, quint16) const;
 
-    void addOutgoingProxy(quint8, ProxyInterface*);
-    void removeOutgoingProxy(quint8, ProxyInterface*);
+    void addOutgoingReadOnlyProxy(quint8, ProxyInterface*);
+    void removeOutgoingReadOnlyProxy(quint8, ProxyInterface*);
 
-    void addIncomingProxy(quint8, ReadOnlyProxyInterface*);
-    void removeIncomingProxy(quint8, ReadOnlyProxyInterface*);
+    void addIncomingReadOnlyProxy(quint8, ReadOnlyProxyInterface*);
+    void removeIncomingReadOnlyProxy(quint8, ReadOnlyProxyInterface*);
 
 	bool receiveOutgoingMessage(const QByteArray&);
     void receiveIncomingMessage(const QByteArray&);
