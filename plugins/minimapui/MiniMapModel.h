@@ -16,17 +16,21 @@
 #ifndef MINIMAPMODEL_H
 #define MINIMAPMODEL_H
 
-#include <QImage>
-
 #include "MiniMapInterface.h"
 
-class MiniMapModel: public QObject {
+#include <ReadOnlyProxyInterface.h>
+
+#include <QImage>
+
+class MiniMapModel: public QObject, public ReadOnlyProxyInterface {
     Q_OBJECT
 
 public:
     MiniMapModel(MiniMapInterface*);
 
     MiniMapFloorInterface* floor(int floor);
+
+    void handlePacket(const PacketReaderInterface* reader);
 
 private:
     MiniMapInterface* miniMap_;

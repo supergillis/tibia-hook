@@ -13,18 +13,16 @@
  * limitations under the License.
  */
 
-#ifndef PACKETINTERFACE_H
-#define PACKETINTERFACE_H
+#ifndef PROXYINTERFACE_H
+#define PROXYINTERFACE_H
 
-#include <QtGlobal>
-#include <QString>
+#include <PacketReaderInterface.h>
 
-class PacketInterface {
+class ProxyInterface {
 public:
-	virtual ~PacketInterface() {}
+    virtual ~ProxyInterface() {}
 
-	virtual quint16 length() const = 0;
-    virtual const quint8* data() const = 0;
+    virtual bool handlePacket(const PacketReaderInterface*) = 0;
 };
 
 #endif

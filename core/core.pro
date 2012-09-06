@@ -14,7 +14,8 @@ SOURCES = Application.cpp \
 	PacketBuilder.cpp \
 	Settings.cpp \
     UIManager.cpp \
-    PluginManager.cpp
+    PluginManager.cpp \
+    ProxyManager.cpp
 
 HEADERS = Application.h \
 	DataQueue.h \
@@ -23,7 +24,8 @@ HEADERS = Application.h \
 	Hook.h \
     Packet.h \
     PacketBuilder.h \
-	PacketReader.h \
 	Settings.h \
     UIManager.h \
-    PluginManager.h
+    PluginManager.h \
+    ProxyManager.h \
+    PacketReader.h

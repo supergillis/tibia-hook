@@ -13,16 +13,14 @@
  * limitations under the License.
  */
 
-#ifndef PACKETBUILDERINTERFACE_H_
-#define PACKETBUILDERINTERFACE_H_
+#ifndef PACKETBUILDERINTERFACE_H
+#define PACKETBUILDERINTERFACE_H
 
 #include <QtGlobal>
-#include <QObject>
 #include <QString>
 
 class PacketBuilderInterface: public QObject {
 public:
-	PacketBuilderInterface(QObject* parent = 0): QObject(parent) {}
 	virtual ~PacketBuilderInterface() {}
 
     virtual void writeU8(quint8) = 0;

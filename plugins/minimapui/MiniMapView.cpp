@@ -69,6 +69,7 @@ void MiniMapView::refresh() {
         item->setPos(part->x(), part->y());
     }
 
+    // Allows us to use real Tibia coordinates
     setSceneRect(bounds);
 }
 

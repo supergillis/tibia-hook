@@ -16,32 +16,28 @@
 #ifndef MINIMAPUIPLUGIN_H
 #define MINIMAPUIPLUGIN_H
 
-#include <QObject>
-#include <QtPlugin>
+#include "MiniMapView.h"
+#include "MiniMapModel.h"
 
 #include <HookInterface.h>
 #include <PluginInterface.h>
 
-#include "MiniMapView.h"
+#include <QObject>
+#include <QtPlugin>
 
 class MiniMapUIPlugin: public QObject, public PluginInterface {
 	Q_OBJECT
     Q_INTERFACES(PluginInterface)
 
 public:
-    static const QString PLUGIN_NAME;
-    static const int PLUGIN_VERSION;
-
     MiniMapUIPlugin();
-
-	QString name() const;
-	int version() const;
 
     void install(HookInterface*, SettingsInterface*) throw(std::exception);
     void uninstall();
 
 private:
-    UIManagerInterface* ui_;
+    HookInterface* hook_;
+    MiniMapModel* model_;
     MiniMapView* view_;
 };
 

@@ -24,9 +24,7 @@ const int MiniMapPart::MINIMAP_FILE_WIDTH(256);
 const int MiniMapPart::MINIMAP_FILE_HEIGHT(256);
 
 MiniMapPart::MiniMapPart(const QString& fileName) {
-    QImage image(MINIMAP_FILE_WIDTH, MINIMAP_FILE_HEIGHT, QImage::Format_RGB32);
     QFile file(fileName);
-
     if (!file.exists() || !file.open(QIODevice::ReadOnly)) {
         throw std::runtime_error(("Could not load minimap " + fileName).toStdString());
     }
@@ -35,7 +33,8 @@ MiniMapPart::MiniMapPart(const QString& fileName) {
     quint8 data[2][MINIMAP_FILE_WIDTH][MINIMAP_FILE_HEIGHT];
     file.read((char*) data, 2 * MINIMAP_FILE_WIDTH * MINIMAP_FILE_HEIGHT);
 
-    // Loop through the array
+    // Construct the image
+    QImage image(MINIMAP_FILE_WIDTH, MINIMAP_FILE_HEIGHT, QImage::Format_RGB32);
     for (int x = 0; x < MINIMAP_FILE_WIDTH; x++) {
         for (int y = 0; y < MINIMAP_FILE_HEIGHT; y++) {
             quint8 color = data[0][x][y];

@@ -16,11 +16,13 @@
 #ifndef MINIMAPVIEW_H
 #define MINIMAPVIEW_H
 
+#include "MiniMapModel.h"
+
+#include <ReadOnlyProxyInterface.h>
+
 #include <QGraphicsView>
 #include <QWheelEvent>
 #include <QKeyEvent>
-
-#include "MiniMapModel.h"
 
 class MiniMapView: public QGraphicsView {
     Q_OBJECT
@@ -30,8 +32,6 @@ public:
 
     void setModel(MiniMapModel*);
     void setCenter(const QPointF& centerPoint);
-
-    QPointF center() { return CurrentCenterPoint; }
 
     void mousePressEvent(QMouseEvent*);
     void mouseReleaseEvent(QMouseEvent*);
@@ -54,8 +54,8 @@ private:
     QList<double> scales_;
     qint8 scaleIndex_;
 
+    // For dragging
     QPoint mousePosition_;
-    QPointF CurrentCenterPoint;
 };
 
 #endif

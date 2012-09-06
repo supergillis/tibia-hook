@@ -23,8 +23,10 @@
 #include <SenderInterface.h>
 #include <PacketInterface.h>
 #include <PacketBuilderInterface.h>
-#include <ReceiverInterface.h>
 #include <PluginManagerInterface.h>
+#include <ProxyInterface.h>
+#include <ReceiverInterface.h>
+#include <ReadOnlyProxyInterface.h>
 #include <UIManagerInterface.h>
 
 class HookInterface {
@@ -36,6 +38,12 @@ public:
     virtual ReceiverInterface* receiver() = 0;
     virtual PluginManagerInterface* plugins() = 0;
     virtual UIManagerInterface* ui() = 0;
+
+    virtual void addOutgoingProxy(quint8, ProxyInterface*) = 0;
+    virtual void removeOutgoingProxy(quint8, ProxyInterface*) = 0;
+
+    virtual void addIncomingProxy(quint8, ReadOnlyProxyInterface*) = 0;
+    virtual void removeIncomingProxy(quint8, ReadOnlyProxyInterface*) = 0;
 
     virtual PacketBuilderInterface* buildPacket() const = 0;
     virtual PacketBuilderInterface* buildPacket(const PacketInterface*) const = 0;

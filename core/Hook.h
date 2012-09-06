@@ -19,17 +19,22 @@
 #include <QStringList>
 
 #include <HookInterface.h>
+#include <PacketBuilderInterface.h>
 #include <PluginInterface.h>
 #include <PluginManagerInterface.h>
-#include <PacketBuilderInterface.h>
+#include <ProxyInterface.h>
 #include <ReceiverInterface.h>
 #include <SenderInterface.h>
 #include <SettingsInterface.h>
 
 #include "DetourManager.h"
 #include "PluginManager.h"
+#include "ProxyManager.h"
 #include "UIManager.h"
 #include "Settings.h"
+
+typedef QList<ProxyInterface*> ProxyInterfaceList;
+typedef QList<ReadOnlyProxyInterface*> ReadOnlyProxyInterfaceList;
 
 class Hook: public QObject, public HookInterface, public ReceiverInterface {
 	Q_OBJECT
@@ -48,14 +53,21 @@ public:
     PacketBuilderInterface* buildPacket(const QByteArray&) const;
     PacketBuilderInterface* buildPacket(const quint8*, quint16) const;
 
-	bool receiveOutgoingMessage(const QByteArray&);
-	void receiveIncomingMessage(const QByteArray&);
+    void addOutgoingProxy(quint8, ProxyInterface*);
+    void removeOutgoingProxy(quint8, ProxyInterface*);
 
-    QObject* findPluginByName(const QString& name);
+    void addIncomingProxy(quint8, ReadOnlyProxyInterface*);
+    void removeIncomingProxy(quint8, ReadOnlyProxyInterface*);
+
+	bool receiveOutgoingMessage(const QByteArray&);
+    void receiveIncomingMessage(const QByteArray&);
 
 private:
     UIManager ui_;
     PluginManager plugins_;
+
+    ProxyManager outgoingProxies_;
+    ReadOnlyProxyManager incomingProxies_;
 
     SettingsInterface* settings_;
     SenderInterface* sender_;
@@ -66,7 +78,7 @@ public:
     ClientBufferHandler(SenderInterface* sender, ReceiverInterface* receiver): sender_(sender), receiver_(receiver) {}
 
     inline void handle(const QByteArray& data) {
-        if(receiver_->receiveOutgoingMessage(data)) {
+        if (receiver_->receiveOutgoingMessage(data)) {
             sender_->sendToServer(data);
         }
     }

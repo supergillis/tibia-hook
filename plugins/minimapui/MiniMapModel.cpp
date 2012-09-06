@@ -15,9 +15,15 @@
 
 #include "MiniMapModel.h"
 
+#include <QDebug>
+
 MiniMapModel::MiniMapModel(MiniMapInterface* miniMap): miniMap_(miniMap) {
 }
 
 MiniMapFloorInterface* MiniMapModel::floor(int floor) {
     return miniMap_->floor(floor);
+}
+
+void MiniMapModel::handlePacket(const PacketReaderInterface* reader) {
+    qDebug() << "creatureMove";
 }

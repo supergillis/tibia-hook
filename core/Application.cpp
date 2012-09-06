@@ -23,7 +23,7 @@
 int Application::argc_ = 0;
 
 Application::Application():
-	QApplication(Application::argc_, NULL) {
+    QApplication(Application::argc_, NULL) {
     QApplication::setApplicationName("Tibia Hook");
     QApplication::setApplicationVersion("beta");
 

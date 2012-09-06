@@ -1,5 +1,19 @@
+/* Copyright (c) 2012 Gillis Van Ginderachter <supergillis@gmail.com>
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 #include "PluginManager.h"
-#include "Hook.h"
 #include "Settings.h"
 
 #include <PluginInterface.h>
@@ -23,8 +37,7 @@ PluginInfo* findPluginInfoByName(PluginInfo::List& list, const QString& name, qu
     return NULL;
 }
 
-PluginManager::PluginManager(Hook* hook):
-    QObject(hook),
+PluginManager::PluginManager(HookInterface* hook):
     hook_(hook) {
 }
 
@@ -91,7 +104,7 @@ void PluginManager::load(const QString& directory) {
     for (PluginInfo::List::iterator it = sorted.begin(); it != sorted.end(); ++it) {
         PluginInfo* info = *it;
 
-        QPluginLoader loader(info->libraryPath(), this);
+        QPluginLoader loader(info->libraryPath());
         QObject* instance = loader.instance();
 
         // Check if it is a valid plugin
@@ -150,7 +163,7 @@ QObject* PluginManager::findPluginByName(const QString& name, quint16 version) {
 
 PluginInfo* PluginManager::loadDirectory(const QString& directory) {
     try {
-        return new PluginInfo(directory, this);
+        return new PluginInfo(directory);
     }
     catch(std::runtime_error& error) {
         qWarning() << error.what();
@@ -158,8 +171,7 @@ PluginInfo* PluginManager::loadDirectory(const QString& directory) {
     return NULL;
 }
 
-PluginInfo::PluginInfo(const QString& directory, QObject* parent):
-    QObject(parent),
+PluginInfo::PluginInfo(const QString& directory):
     settings_(NULL) {
     QDir dir(directory);
     QStringList candidates = dir.entryList(QStringList() << "*.so" << "*.dll", QDir::Files | QDir::NoDotAndDotDot);
@@ -216,6 +228,14 @@ PluginInfo::~PluginInfo() {
     }
 }
 
+SettingsInterface* PluginInfo::settings() {
+    return settings_;
+}
+
+const PluginInfo::Dependencies& PluginInfo::dependencies() const {
+    return dependencies_;
+}
+
 const QString& PluginInfo::libraryPath() const {
     return libraryPath_;
 }
@@ -224,14 +244,6 @@ const QString& PluginInfo::name() const {
     return name_;
 }
 
-const quint16 PluginInfo::version() const {
+quint16 PluginInfo::version() const {
     return version_;
-}
-
-const PluginInfo::Dependencies& PluginInfo::dependencies() const {
-    return dependencies_;
-}
-
-SettingsInterface* PluginInfo::settings() {
-    return settings_;
 }

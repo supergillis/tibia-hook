@@ -33,39 +33,52 @@ Hook::Hook(QObject* parent):
     plugins_(this) {
     // Try to load the configuration file. Throw an exception on failure
     QFile configFile(SETTINGS_FILE);
-    if(!configFile.open(QFile::ReadOnly)) {
-        throw std::runtime_error("Could not load config.js!");
+    if (!configFile.open(QFile::ReadOnly)) {
+        throw std::runtime_error("Could not open config.js!");
     }
 
     settings_ = new Settings(configFile.readAll());
+    if (!settings_->contains(SETTING_PLUGINS_DIRECTORY)) {
+        throw std::runtime_error("Could not load plugins directory!");
+    }
+
     sender_ = new DetourSender(DetourManager::instance());
 
     // Connect the DetourManager with the sender and receiver
     DetourManager::instance()->setClientBufferHandler(new ClientBufferHandler(sender_, this));
     DetourManager::instance()->setServerBufferHandler(new ServerBufferHandler(this));
 
-    if(!settings_->contains(SETTING_PLUGINS_DIRECTORY)) {
-        throw std::runtime_error("Could not load plugins directory!");
-    }
-
     // Load plugins from the given plugins directory
     QString pluginsDir = settings_->value(SETTING_PLUGINS_DIRECTORY).toString();
     plugins_.load(pluginsDir);
 }
 
+void Hook::addOutgoingProxy(quint8 type, ProxyInterface* proxy) {
+    outgoingProxies_.append(type, proxy);
+}
+
+void Hook::removeOutgoingProxy(quint8 type, ProxyInterface* proxy) {
+    outgoingProxies_.remove(type, proxy);
+}
+
+void Hook::addIncomingProxy(quint8 type, ReadOnlyProxyInterface* proxy) {
+    incomingProxies_.append(type, proxy);
+}
+
+void Hook::removeIncomingProxy(quint8 type, ReadOnlyProxyInterface* proxy) {
+    incomingProxies_.remove(type, proxy);
+}
+
 bool Hook::receiveOutgoingMessage(const QByteArray& data) {
     Packet packet(data);
     PacketReader reader(&packet);
-    quint8 type = reader.readU8();
-    qDebug() << "client" << type << " length " << data.length();
-    return true;
+    return outgoingProxies_.handlePacket(&reader);
 }
 
 void Hook::receiveIncomingMessage(const QByteArray& data) {
     Packet packet(data);
     PacketReader reader(&packet);
-    quint8 type = reader.readU8();
-    qDebug() << "server" << type << " length " << data.length();
+    return incomingProxies_.handlePacket(&reader);
 }
 
 PacketBuilderInterface* Hook::buildPacket() const {

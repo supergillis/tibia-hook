@@ -14,13 +14,12 @@
  */
 
 #include "MiniMapUIPlugin.h"
-#include "MiniMapModel.h"
 
 #include <MiniMapPlugin.h>
 
 #include <stdexcept>
 
-MiniMapUIPlugin::MiniMapUIPlugin(): view_(NULL) {
+MiniMapUIPlugin::MiniMapUIPlugin(): model_(NULL), view_(NULL) {
 }
 
 void MiniMapUIPlugin::install(HookInterface* hook, SettingsInterface* settings) throw(std::exception) {
@@ -34,19 +33,31 @@ void MiniMapUIPlugin::install(HookInterface* hook, SettingsInterface* settings) 
         throw std::runtime_error("The 'minimap' plugin could not be loaded!");
     }
 
+    model_ = new MiniMapModel(miniMapPlugin->miniMap());
     view_ = new MiniMapView();
-    view_->setModel(new MiniMapModel(miniMapPlugin->miniMap()));
-    ui_ = hook->ui();
-    ui_->addTab(view_, "Map");
+    view_->setModel(model_);
+
+    hook_ = hook;
+    hook_->ui()->addTab(view_, "Map");
+
+    // Creature move
+    hook_->addIncomingProxy(109, model_);
 }
 
 void MiniMapUIPlugin::uninstall() {
     if(view_ != NULL) {
-        ui_->removeTab(view_);
-        view_->deleteLater();
+        // Clean up UI and proxies
+        hook_->ui()->removeTab(view_);
+        hook_->removeIncomingProxy(109, model_);
+
+        // Clean up objects
+        delete view_;
+        delete model_;
         view_ = NULL;
-        ui_ = NULL;
+        model_ = NULL;
+        hook_ = NULL;
     }
 }
 
+// Export plugin
 Q_EXPORT_PLUGIN2(minimapui, MiniMapUIPlugin)
