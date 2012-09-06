@@ -13,11 +13,25 @@
  * limitations under the License.
  */
 
-#include "MiniMapModel.h"
+#ifndef MINIMAPFLOOR_H
+#define MINIMAPFLOOR_H
 
-MiniMapModel::MiniMapModel(MiniMapInterface* miniMap): miniMap_(miniMap) {
-}
+#include "MiniMapFloorInterface.h"
+#include "MiniMapPartInterface.h"
 
-MiniMapFloorInterface* MiniMapModel::floor(int floor) {
-    return miniMap_->floor(floor);
-}
+class MiniMapFloor: public MiniMapFloorInterface {
+public:
+    MiniMapFloor(const QString&, quint8);
+    ~MiniMapFloor();
+
+    static MiniMapFloor* load(const QString&, quint8);
+
+    const QRect& boundary() const { return bounds_; }
+    const QList<MiniMapPartInterface*>& parts() { return parts_; }
+
+private:
+    QRect bounds_;
+    QList<MiniMapPartInterface*> parts_;
+};
+
+#endif

@@ -24,42 +24,16 @@
 
 #include "MiniMapPluginInterface.h"
 #include "MiniMapInterface.h"
-
-class Position {
-public:
-    Position(): valid_(false) {}
-    Position(quint16 x, quint16 y, quint8 z): valid_(true), x_(x), y_(y), z_(z) {}
-
-    bool isValid() {
-        return valid_;
-    }
-
-    quint16 x() { return x_; }
-    quint16 y() { return y_; }
-    quint8 z() { return z_; }
-
-private:
-    bool valid_;
-    quint16 x_;
-    quint16 y_;
-    quint8 z_;
-};
+#include "MiniMapFloorInterface.h"
 
 class MiniMap: public MiniMapInterface {
 public:
-    static const int MINIMAP_FILE_DIMENSION;
-
     MiniMap(const QString& directory);
 
-    QImage imageForFloor(quint8 z) const;
+    MiniMapFloorInterface* floor(quint8 z) const;
 
 private:
-    static QImage imageForMapFile(const QString& mapFile);
-    static QRect mapFilesBoundary(const QStringList& mapFiles);
-    static Position positionForMapFile(const QString &fileName);
-    static int mapColor(quint8 color);
-
-    QDir directory_;
+    QString directory_;
 };
 
 class MiniMapPlugin: public QObject, public PluginInterface, public MiniMapPluginInterface {

@@ -4,11 +4,17 @@ TARGET = minimap
 DESTDIR = $${DESTDIR}/minimap
 
 SOURCES = \
-    MiniMapPlugin.cpp
+    MiniMapPlugin.cpp \
+    MiniMapPart.cpp \
+    MiniMapFloor.cpp
 HEADERS = \
     MiniMapPlugin.h \
     MiniMapPluginInterface.h \
-    MiniMapInterface.h
+    MiniMapInterface.h \
+    MiniMapPartInterface.h \
+    MiniMapFloorInterface.h \
+    MiniMapPart.h \
+    MiniMapFloor.h
 
 OTHER_FILES += \
 	meta.js \

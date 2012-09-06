@@ -16,11 +16,11 @@
 #ifndef MINIMAPINTERFACE_H
 #define MINIMAPINTERFACE_H
 
-#include <QImage>
+#include <MiniMapFloorInterface.h>
 
 class MiniMapInterface {
 public:
-    virtual QImage imageForFloor(quint8 z) const = 0;
+    virtual MiniMapFloorInterface* floor(quint8 floor) const = 0;
 };
 
 #endif

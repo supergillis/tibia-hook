@@ -15,118 +15,133 @@
 
 #include "MiniMapView.h"
 
-MiniMapView::MiniMapView(QWidget* parent):
-    QScrollArea(parent),
-    model_(NULL),
-    floor_(7) {
-    scales_ << 0.25 << 0.50 << 0.75 << 1.00 << 1.25 << 1.50 << 2.00 << 2.50 << 3.00;
-    scaleIndex_ = scales_.indexOf(1.00);
-    imageLabel_ = new QLabel(this);
-    imageLabel_->setBackgroundRole(QPalette::Base);
+#include <QGraphicsPixmapItem>
+#include <QScrollBar>
 
-    setBackgroundRole(QPalette::Dark);
-    setWidget(imageLabel_);
+MiniMapView::MiniMapView(QWidget* parent):
+    QGraphicsView(parent),
+    scene_(this),
+    model_(NULL),
+    floor_(NULL),
+    floorIndex_(7) {
+    scales_ << 0.25 << 0.35 << 0.50 << 0.75 << 1.00 << 1.25 << 1.50 << 2.00 << 2.50 << 3.00;
+    scaleIndex_ = scales_.indexOf(1.00);
+
+    setScene(&scene_);
+    setBackgroundBrush(Qt::black);
 }
 
 void MiniMapView::setModel(MiniMapModel* model) {
     model_ = model;
-    image_ = QImage();
+    floor_ = NULL;
+    floorIndex_ = 7;
     cache_.clear();
 
+    // Reload model
     refresh();
 }
 
 void MiniMapView::refresh() {
     if (model_== NULL) {
+        scene_.clear();
         return;
     }
 
     // Load image from cache or from the model
-    if (cache_.contains(floor_)) {
-        image_ = cache_.value(floor_);
+    if (cache_.contains(floorIndex_)) {
+        floor_ = cache_.value(floorIndex_);
     }
     else {
-        image_ = model_->imageForFloor(floor_);
-        cache_.insert(floor_, image_);
+        floor_ = model_->floor(floorIndex_);
+        cache_.insert(floorIndex_, floor_);
     }
 
-    double scaleFactor = scales_.at(scaleIndex_);
-    QPixmap pixmap = QPixmap::fromImage(image_);
-    QPixmap zoomed = pixmap.scaled(pixmap.width() * scaleFactor, pixmap.height() * scaleFactor);
+    // First cleanup before populating
+    scene_.clear();
 
-    imageLabel_->setPixmap(zoomed);
-    imageLabel_->adjustSize();
+    // Populate scene
+    const QRect& bounds = floor_->boundary();
+    foreach (MiniMapPartInterface* part, floor_->parts()) {
+        QPixmap pixmap = QPixmap::fromImage(part->image());
+        QGraphicsPixmapItem* item = scene_.addPixmap(pixmap);
+
+        // Adjust position relative to bounds
+        item->setPos(part->x(), part->y());
+    }
+
+    setSceneRect(bounds);
 }
 
 void MiniMapView::mousePressEvent(QMouseEvent* event) {
-    // Don't delegate this event
-    event->accept();
-
     mousePosition_ = event->pos();
+    event->accept();
 }
 
 void MiniMapView::mouseReleaseEvent(QMouseEvent* event) {
-    if (!mousePosition_.isNull()) {
-        // Don't delegate this event
-        event->accept();
-
-        mousePosition_ = QPoint();
-    }
-    else {
-        QScrollArea::mouseReleaseEvent(event);
-    }
+    mousePosition_ = QPoint();
+    event->accept();
 }
 
 void MiniMapView::mouseMoveEvent(QMouseEvent* event) {
     if (!mousePosition_.isNull()) {
-        // Don't delegate this event
         event->accept();
 
         int dx = mousePosition_.x() - event->pos().x();
         int dy = mousePosition_.y() - event->pos().y();
         mousePosition_ = event->pos();
 
-        // Programatically scroll
         horizontalScrollBar()->setValue(horizontalScrollBar()->value() + dx);
         verticalScrollBar()->setValue(verticalScrollBar()->value() + dy);
     }
     else {
-        QScrollArea::mouseMoveEvent(event);
+        QGraphicsView::mouseMoveEvent(event);
     }
 }
 
 void MiniMapView::keyPressEvent(QKeyEvent* event) {
-    if (event->key() == Qt::Key_Plus || event->key() == Qt::Key_Minus) {
-        // Don't delegate this event
-        event->accept();
-
-        floor_ = event->key() == Qt::Key_Plus ?
-                    std::max(1, floor_ - 1) :
-                    std::min(16, floor_ + 1);
-
-        // Refresh the view
-        refresh();
+    if (event->key() != Qt::Key_Plus && event->key() != Qt::Key_Minus) {
+        QGraphicsView::keyPressEvent(event);
+        return;
     }
-    else {
-        QScrollArea::keyPressEvent(event);
+
+    event->accept();
+    if ((event->key() == Qt::Key_Plus && floorIndex_ == 0) ||
+            (event->key() == Qt::Key_Minus && floorIndex_ == 13)) {
+        return;
     }
+
+    // Find the new floor
+    floorIndex_ = event->key() == Qt::Key_Plus ? floorIndex_ - 1 : floorIndex_ + 1;
+
+    // Load the new map tiles
+    refresh();
 }
 
 void MiniMapView::wheelEvent(QWheelEvent* event) {
-    if ((event->modifiers() & Qt::ControlModifier) == Qt::ControlModifier) {
-        // Don't delegate this event
-        event->accept();
-
-        if ((event->delta() < 0 && scaleIndex_ == 0) ||
-                (event->delta() > 0 && scaleIndex_ == scales_.length() - 1)) {
-            return;
-        }
-        scaleIndex_ = event->delta() > 0 ? scaleIndex_ + 1 : scaleIndex_ - 1;
-
-        // Refresh the view
-        refresh();
+    if ((event->modifiers() & Qt::ControlModifier) != Qt::ControlModifier) {
+        QGraphicsView::wheelEvent(event);
+        return;
     }
-    else {
-        QScrollArea::wheelEvent(event);
+
+    event->accept();
+    if ((event->delta() < 0 && scaleIndex_ == 0) ||
+            (event->delta() > 0 && scaleIndex_ == scales_.length() - 1)) {
+        return;
     }
+
+    // Find new scale factor
+    scaleIndex_ = event->delta() > 0 ? scaleIndex_ + 1 : scaleIndex_ - 1;
+    double scaleFactor = scales_.at(scaleIndex_);
+
+    QPointF pointBeforeScale(mapToScene(event->pos()));
+
+    // Do the actual scaling
+    setTransform(QTransform::fromScale(scaleFactor, scaleFactor));
+
+    QPointF pointAfterScale(mapToScene(event->pos()));
+    QPointF offset = pointBeforeScale - pointAfterScale;
+
+    // Adjust to the new center for correct zooming
+    horizontalScrollBar()->setValue(horizontalScrollBar()->value() + offset.x());
+    verticalScrollBar()->setValue(verticalScrollBar()->value() + offset.y());
 }

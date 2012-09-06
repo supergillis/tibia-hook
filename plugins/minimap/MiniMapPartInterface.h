@@ -13,11 +13,22 @@
  * limitations under the License.
  */
 
-#include "MiniMapModel.h"
+#ifndef MINIMAPPARTINTERFACE_H
+#define MINIMAPPARTINTERFACE_H
 
-MiniMapModel::MiniMapModel(MiniMapInterface* miniMap): miniMap_(miniMap) {
-}
+#include <QImage>
+#include <QRect>
 
-MiniMapFloorInterface* MiniMapModel::floor(int floor) {
-    return miniMap_->floor(floor);
-}
+class MiniMapPartInterface {
+public:
+    virtual const QImage& image() const = 0;
+
+    virtual quint16 width() const = 0;
+    virtual quint16 height() const = 0;
+
+    virtual quint16 x() const = 0;
+    virtual quint16 y() const = 0;
+    virtual quint8 z() const = 0;
+};
+
+#endif

@@ -16,22 +16,22 @@
 #ifndef MINIMAPVIEW_H
 #define MINIMAPVIEW_H
 
-#include <QWidget>
-#include <QLabel>
-#include <QScrollArea>
-#include <QScrollBar>
+#include <QGraphicsView>
 #include <QWheelEvent>
 #include <QKeyEvent>
 
 #include "MiniMapModel.h"
 
-class MiniMapView: public QScrollArea {
+class MiniMapView: public QGraphicsView {
     Q_OBJECT
     
 public:
     MiniMapView(QWidget* = 0);
 
     void setModel(MiniMapModel*);
+    void setCenter(const QPointF& centerPoint);
+
+    QPointF center() { return CurrentCenterPoint; }
 
     void mousePressEvent(QMouseEvent*);
     void mouseReleaseEvent(QMouseEvent*);
@@ -43,22 +43,19 @@ public slots:
     void refresh();
     
 private:
-    QLabel* imageLabel_;
-    QScrollArea* scrollArea_;
+    QGraphicsScene scene_;
+    QMap<quint8, MiniMapFloorInterface*> cache_;
 
     MiniMapModel* model_;
-    quint8 floor_;
-
-    // Caching
-    QMap<quint8, QImage> cache_;
-    QImage image_;
+    MiniMapFloorInterface* floor_;
+    quint8 floorIndex_;
 
     // For zooming
     QList<double> scales_;
     qint8 scaleIndex_;
 
-    // For dragging
     QPoint mousePosition_;
+    QPointF CurrentCenterPoint;
 };
 
 #endif

@@ -13,27 +13,40 @@
  * limitations under the License.
  */
 
-#ifndef MINIMAPMODEL_H
-#define MINIMAPMODEL_H
+#ifndef MINIMAPPART_H
+#define MINIMAPPART_H
+
+#include "MiniMapPartInterface.h"
 
 #include <QImage>
+#include <QRect>
 
-#include "MiniMapInterface.h"
-
-class MiniMapModel: public QObject {
-    Q_OBJECT
-
+class MiniMapPart: public MiniMapPartInterface {
 public:
-    MiniMapModel(MiniMapInterface*);
+    MiniMapPart(const QString& fileName);
 
-    MiniMapFloorInterface* floor(int floor);
+    static MiniMapPart* load(const QString& fileName);
+
+    const QImage& image() const { return image_; }
+
+    quint16 width() const { return MINIMAP_FILE_WIDTH; }
+    quint16 height() const { return MINIMAP_FILE_HEIGHT; }
+
+    quint16 x() const { return x_; }
+    quint16 y() const { return y_; }
+    quint8 z() const { return z_; }
 
 private:
-    MiniMapInterface* miniMap_;
+    static const int MINIMAP_FILE_WIDTH;
+    static const int MINIMAP_FILE_HEIGHT;
+
+    static int mapColor(quint8 color);
+
+    QImage image_;
 
     quint16 x_;
     quint16 y_;
     quint8 z_;
 };
 
-#endif
+#endif // MINIMAPPART_H
