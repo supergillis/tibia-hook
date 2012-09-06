@@ -24,27 +24,21 @@
 
 #define SETTING_PLUGINS_DIRECTORY "plugins"
 
-Hook::Hook(SettingsInterface* settings, SenderInterface* sender, QObject* parent) :
+Hook::Hook(SettingsInterface* settings, SenderInterface* sender, QObject* parent):
     QObject(parent),
+    plugins_(this),
     settings_(settings),
     sender_(sender) {
     if(!settings_->contains(SETTING_PLUGINS_DIRECTORY)) {
         throw std::runtime_error("Could not load plugins directory!");
     }
 
-    ui_ = new UIManager();
-
+    // Load plugins from the given plugins directory
     QString pluginsDir = settings->value(SETTING_PLUGINS_DIRECTORY).toString();
-    plugins_ = new PluginManager(this);
-    plugins_->load(pluginsDir);
+    plugins_.load(pluginsDir);
 }
 
-Hook::~Hook() {
-    delete ui_;
-    delete plugins_;
-}
-
-bool Hook::receiveFromClient(const QByteArray& data) {
+bool Hook::receiveOutgoingMessage(const QByteArray& data) {
     Packet packet(data);
     PacketReader reader(&packet);
     quint8 type = reader.readU8();
@@ -52,7 +46,7 @@ bool Hook::receiveFromClient(const QByteArray& data) {
     return true;
 }
 
-void Hook::receiveFromServer(const QByteArray& data) {
+void Hook::receiveIncomingMessage(const QByteArray& data) {
     Packet packet(data);
     PacketReader reader(&packet);
     quint8 type = reader.readU8();

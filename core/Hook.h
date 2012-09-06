@@ -28,36 +28,37 @@
 
 #include "DetourManager.h"
 #include "PluginManager.h"
+#include "UIManager.h"
 #include "Settings.h"
 
 class Hook: public QObject, public HookInterface, public ReceiverInterface {
 	Q_OBJECT
 
 public:
-	Hook(SettingsInterface*, SenderInterface*, QObject* = 0);
-	~Hook();
+    Hook(SettingsInterface*, SenderInterface*, QObject* = 0);
 
-	SettingsInterface* settings() { return settings_; }
+    UIManagerInterface* ui() { return &ui_; }
+    PluginManagerInterface* plugins() { return &plugins_; }
+    SettingsInterface* settings() { return settings_; }
     SenderInterface* sender() { return sender_; }
     ReceiverInterface* receiver() { return this; }
-    PluginManagerInterface* plugins() { return plugins_; }
-    UIManagerInterface* ui() { return ui_; }
 
     PacketBuilderInterface* buildPacket() const;
     PacketBuilderInterface* buildPacket(const PacketInterface*) const;
     PacketBuilderInterface* buildPacket(const QByteArray&) const;
     PacketBuilderInterface* buildPacket(const quint8*, quint16) const;
 
-	bool receiveFromClient(const QByteArray&);
-	void receiveFromServer(const QByteArray&);
+	bool receiveOutgoingMessage(const QByteArray&);
+	void receiveIncomingMessage(const QByteArray&);
 
     QObject* findPluginByName(const QString& name);
 
 private:
-    PluginManager* plugins_;
+    UIManager ui_;
+    PluginManager plugins_;
+
     SettingsInterface* settings_;
     SenderInterface* sender_;
-    UIManagerInterface* ui_;
 };
 
 #endif

@@ -22,8 +22,8 @@ class ReceiverInterface {
 public:
 	virtual ~ReceiverInterface() {}
 
-    virtual bool receiveFromClient(const QByteArray&) = 0;
-    virtual void receiveFromServer(const QByteArray&) = 0;
+    virtual bool receiveOutgoingMessage(const QByteArray&) = 0;
+    virtual void receiveIncomingMessage(const QByteArray&) = 0;
 };
 
 #endif

@@ -16,41 +16,6 @@
 #include <pthread.h>
 
 #include "Application.h"
-#include "DetourManager.h"
-#include "DetourSender.h"
-#include "Hook.h"
-#include "Settings.h"
-
-#include <stdexcept>
-
-#include <QMessageBox>
-
-class ClientBufferHandler: public BufferHandler {
-public:
-    ClientBufferHandler(SenderInterface* sender, ReceiverInterface* receiver): sender_(sender), receiver_(receiver) {}
-
-    inline void handle(const QByteArray& data) {
-        if(receiver_->receiveFromClient(data)) {
-            sender_->sendToServer(data);
-        }
-    }
-
-private:
-    SenderInterface* sender_;
-    ReceiverInterface* receiver_;
-};
-
-class ServerBufferHandler: public BufferHandler {
-public:
-    ServerBufferHandler(ReceiverInterface* receiver): receiver_(receiver) {}
-
-    inline void handle(const QByteArray& data) {
-        receiver_->receiveFromServer(data);
-    }
-
-private:
-    ReceiverInterface* receiver_;
-};
 
 void hook_constructor() __attribute__((constructor));
 void* hook_thread(void*);
@@ -70,32 +35,9 @@ void hook_constructor() {
   * This function runs when the thread is created. Qt runs in this thread.
   */
 void* hook_thread(void*) {
-	QApplication::setApplicationName("Tibia Hook");
-	QApplication::setApplicationVersion("beta");
-
+    // Construct new application and execute it
     Application* application = new Application();
-	QFile configFile("config.js");
-	try {
-		if(!configFile.open(QFile::ReadOnly))
-            throw std::runtime_error("Could not load config.js!");
+    application->exec();
 
-		SettingsInterface* settings = new Settings(configFile.readAll());
-		SenderInterface* sender = new DetourSender(DetourManager::instance());
-		ReceiverInterface* receiver = new Hook(settings, sender, application);
-
-        // Connect the DetourManager with the sender and receiver
-        DetourManager::instance()->setClientBufferHandler(new ClientBufferHandler(sender, receiver));
-        DetourManager::instance()->setServerBufferHandler(new ServerBufferHandler(receiver));
-
-		application->exec();
-	}
-    catch(std::exception& exception) {
-		QMessageBox message;
-		message.setWindowTitle(QApplication::applicationName());
-        message.setText("Something terrible has happened!");
-        message.setDetailedText(exception.what());
-		message.setDefaultButton(QMessageBox::Ignore);
-		message.exec();
-	}
-	return NULL;
+    return NULL;
 }
