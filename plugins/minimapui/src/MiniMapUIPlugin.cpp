@@ -19,6 +19,10 @@
 
 #include <stdexcept>
 
+#if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
+Q_EXPORT_PLUGIN2(be.gillis.minimapui, MiniMapUIPlugin)
+#endif
+
 MiniMapUIPlugin::MiniMapUIPlugin():
     model_(NULL),
     view_(NULL) {
@@ -71,6 +75,3 @@ void MiniMapUIPlugin::uninstall() {
     model_ = NULL;
     hook_ = NULL;
 }
-
-// Export plugin
-Q_EXPORT_PLUGIN2(minimapui, MiniMapUIPlugin)

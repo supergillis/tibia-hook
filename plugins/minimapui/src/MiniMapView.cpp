@@ -15,6 +15,7 @@
 
 #include "MiniMapView.h"
 
+#include <QDebug>
 #include <QGraphicsPixmapItem>
 #include <QScrollBar>
 
@@ -45,7 +46,11 @@ MiniMapView::~MiniMapView() {
 
 void MiniMapView::setModel(MiniMapModel* model) {
     if (model_ != NULL) {
+#if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
         QObject::disconnect(model_, SIGNAL(playerPositionChanged(quint16, quint16, quint8)), this, SLOT(setPosition(quint16, quint16, quint8)));
+#else
+        QObject::disconnect(model_, &MiniMapModel::playerPositionChanged, this, &MiniMapView::setPosition);
+#endif
     }
 
     // Reset values
@@ -53,7 +58,11 @@ void MiniMapView::setModel(MiniMapModel* model) {
     floorIndex_ = 7;
 
     if (model_ != NULL) {
+#if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
         QObject::connect(model_, SIGNAL(playerPositionChanged(quint16, quint16, quint8)), this, SLOT(setPosition(quint16, quint16, quint8)));
+#else
+        QObject::connect(model_, &MiniMapModel::playerPositionChanged, this, &MiniMapView::setPosition);
+#endif
     }
 
     clear();

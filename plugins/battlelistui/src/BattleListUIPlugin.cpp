@@ -20,6 +20,10 @@
 
 #include <stdexcept>
 
+#if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
+Q_EXPORT_PLUGIN2(be.gillis.battlelistui, BattleListUIPlugin)
+#endif
+
 BattleListUIPlugin::BattleListUIPlugin(): widget_(NULL) {
 }
 
@@ -48,6 +52,3 @@ void BattleListUIPlugin::uninstall() {
         ui_ = NULL;
     }
 }
-
-// Export plugin
-Q_EXPORT_PLUGIN2(battlelistui, BattleListUIPlugin)

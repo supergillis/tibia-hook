@@ -30,6 +30,10 @@ class BattleListPlugin: public QObject, public PluginInterface, public BattleLis
 	Q_OBJECT
     Q_INTERFACES(PluginInterface BattleListPluginInterface)
 
+#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
+    Q_PLUGIN_METADATA(IID "be.gillis.battlelist" FILE "meta.js")
+#endif
+
 public:
     void install(HookInterface*, SettingsInterface*) throw(std::exception);
 	void uninstall();

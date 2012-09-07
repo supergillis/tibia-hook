@@ -40,6 +40,10 @@ class MiniMapPlugin: public QObject, public PluginInterface, public MiniMapPlugi
 	Q_OBJECT
     Q_INTERFACES(PluginInterface MiniMapPluginInterface)
 
+#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
+    Q_PLUGIN_METADATA(IID "be.gillis.minimap" FILE "meta.js")
+#endif
+
 public:
     void install(HookInterface*, SettingsInterface*) throw(std::exception);
     void uninstall();

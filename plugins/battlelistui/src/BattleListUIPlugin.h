@@ -28,6 +28,10 @@ class BattleListUIPlugin: public QObject, public PluginInterface {
 	Q_OBJECT
     Q_INTERFACES(PluginInterface)
 
+#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
+    Q_PLUGIN_METADATA(IID "be.gillis.battlelistui" FILE "meta.js")
+#endif
+
 public:
     BattleListUIPlugin();
 

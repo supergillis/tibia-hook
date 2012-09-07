@@ -19,6 +19,10 @@
 
 #include <QVariantMap>
 
+#if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
+Q_EXPORT_PLUGIN2(be.gillis.battlelist, BattleListPlugin)
+#endif
+
 #define SETTING_ADDRESS "address"
 
 void BattleListPlugin::install(HookInterface* hook, SettingsInterface* settings) throw(std::exception) {
@@ -53,6 +57,3 @@ const BattleListEntry* BattleListPlugin::findByName(const QString& name) const {
     }
     return NULL;
 }
-
-// Export plugin
-Q_EXPORT_PLUGIN2(battlelist, BattleListPlugin)

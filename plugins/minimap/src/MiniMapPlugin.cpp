@@ -21,6 +21,10 @@
 #include <QVariantMap>
 #include <QPainter>
 
+#if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
+Q_EXPORT_PLUGIN2(be.gillis.minimap, MiniMapPlugin)
+#endif
+
 #define SETTING_FOLDER "folder"
 
 void MiniMapPlugin::install(HookInterface* hook, SettingsInterface* settings) throw(std::exception) {
@@ -37,9 +41,6 @@ void MiniMapPlugin::uninstall() {
 MiniMapInterface* MiniMapPlugin::miniMap() {
     return miniMap_;
 }
-
-// Export plugin
-Q_EXPORT_PLUGIN2(minimap, MiniMapPlugin)
 
 MiniMap::MiniMap(const QString& directory): directory_(directory) {
 }
