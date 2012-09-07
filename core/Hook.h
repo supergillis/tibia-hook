@@ -16,7 +16,7 @@
 #ifndef SCRIPTHOOK_H
 #define SCRIPTHOOK_H
 
-#include <QStringList>
+#include <QList>
 
 #include <HookInterface.h>
 #include <PacketBuilderInterface.h>
@@ -39,9 +39,9 @@ typedef QList<ReadOnlyProxyInterface*> ReadOnlyProxyInterfaceList;
 class ClientBufferHandler;
 class ServerBufferHandler;
 
-class Hook: public QObject, public HookInterface, public ReceiverInterface {
+class Hook: public HookInterface, public ReceiverInterface {
 public:
-    Hook(QObject* = NULL);
+    Hook();
     ~Hook();
 
     UIManagerInterface* ui() { return &ui_; }
@@ -50,10 +50,8 @@ public:
     SenderInterface* sender() { return sender_; }
     ReceiverInterface* receiver() { return this; }
 
-    PacketBuilderInterface* buildPacket() const;
-    PacketBuilderInterface* buildPacket(const PacketInterface*) const;
-    PacketBuilderInterface* buildPacket(const QByteArray&) const;
-    PacketBuilderInterface* buildPacket(const quint8*, quint16) const;
+    PacketBuilderInterface* createPacket() const;
+    PacketBuilderInterface* createPacket(quint16) const;
 
     void addOutgoingProxy(quint8, ProxyInterface*);
     void removeOutgoingProxy(quint8, ProxyInterface*);

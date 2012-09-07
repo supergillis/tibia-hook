@@ -19,7 +19,7 @@
 #include <QtGlobal>
 #include <QString>
 
-class PacketBuilderInterface: public QObject {
+class PacketBuilderInterface {
 public:
 	virtual ~PacketBuilderInterface() {}
 

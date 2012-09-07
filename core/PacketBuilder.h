@@ -16,35 +16,64 @@
 #ifndef PACKETBUILDER_H
 #define PACKETBUILDER_H
 
+#include "Packet.h"
+
+#include <PacketInterface.h>
+#include <PacketBuilderInterface.h>
+
 #include <QByteArray>
 #include <QObject>
 #include <QString>
 
-#include <PacketBuilderInterface.h>
-
-#include "Packet.h"
+#define max(a, b) a > b ? a : b
 
 class PacketBuilder: public PacketBuilderInterface {
 public:
-    PacketBuilder();
-    PacketBuilder(const PacketInterface*);
-    PacketBuilder(const QByteArray&);
-    PacketBuilder(const quint8*, quint16 length);
+    PacketBuilder(quint16 length = 256): data_(length, 0), length_(0), position_(0) {}
 
-    PacketInterface* build() const;
+    inline PacketInterface* build() const {
+        return new Packet((const quint8*) data_.constData(), length_);
+    }
 
-    void writeU8(quint8);
-    void writeU16(quint16);
-    void writeU32(quint32);
-    void writeU64(quint64);
-    void writeString(const QString&);
+    inline void writeU8(quint8 value) { write<quint8, 1>(value); }
+    inline void writeU16(quint16 value) { write<quint16, 2>(value); }
+    inline void writeU32(quint32 value) { write<quint32, 4>(value); }
+    inline void writeU64(quint64 value) { write<quint64, 8>(value); }
+
+    void writeString(const QString& value) {
+        QByteArray array = value.toAscii();
+        quint16 length = array.length();
+
+        // Reserve header plus length bytes
+        reserve(2 + length);
+        writeU16(length);
+
+        // Write raw data to the buffer
+        memcpy(data_.data() + position_, array.constData(), length);
+        position_ += length;
+        length_ = max(length_, position_);
+    }
 
 private:
-    void reserve(quint16);
+    void reserve(quint16 size) {
+        quint16 newSize = position_ + size;
+        if (data_.length() < newSize) {
+            data_.resize(newSize);
+        }
+    }
 
     QByteArray data_;
     quint16 position_;
     quint16 length_;
+
+    template<typename T, int size>
+    inline void write(T value) {
+        reserve(size);
+
+        *(T*) (data_.data() + position_) = value;
+        position_ += size;
+        length_ = max(length_, position_);
+    }
 };
 
 #endif

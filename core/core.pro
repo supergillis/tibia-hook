@@ -11,7 +11,6 @@ SOURCES = Application.cpp \
 	Hook.cpp \
 	Main.cpp \
     Packet.cpp \
-	PacketBuilder.cpp \
 	Settings.cpp \
     UIManager.cpp \
     PluginManager.cpp \

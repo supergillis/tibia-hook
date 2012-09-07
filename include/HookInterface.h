@@ -48,10 +48,8 @@ public:
     virtual void addIncomingReadOnlyProxy(quint8, ReadOnlyProxyInterface*) = 0;
     virtual void removeIncomingReadOnlyProxy(quint8, ReadOnlyProxyInterface*) = 0;
 
-    virtual PacketBuilderInterface* buildPacket() const = 0;
-    virtual PacketBuilderInterface* buildPacket(const PacketInterface*) const = 0;
-    virtual PacketBuilderInterface* buildPacket(const QByteArray& data) const = 0;
-    virtual PacketBuilderInterface* buildPacket(const quint8* data, quint16 length) const = 0;
+    virtual PacketBuilderInterface* createPacket() const = 0;
+    virtual PacketBuilderInterface* createPacket(quint16 length) const = 0;
 };
 
 #endif

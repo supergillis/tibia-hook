@@ -28,8 +28,7 @@
 #define SETTINGS_FILE "config.js"
 #define SETTING_PLUGINS_DIRECTORY "plugins"
 
-Hook::Hook(QObject* parent):
-    QObject(parent),
+Hook::Hook():
     plugins_(this),
     ui_() {
     // Try to load the configuration file. Throw an exception on failure
@@ -109,18 +108,10 @@ void Hook::receiveIncomingMessage(const QByteArray& data) {
     return incomingProxies_.handlePacket(reader);
 }
 
-PacketBuilderInterface* Hook::buildPacket() const {
+PacketBuilderInterface* Hook::createPacket() const {
     return new PacketBuilder();
 }
 
-PacketBuilderInterface* Hook::buildPacket(const PacketInterface* packet) const {
-    return new PacketBuilder(packet);
-}
-
-PacketBuilderInterface* Hook::buildPacket(const QByteArray& data) const {
-    return new PacketBuilder(data);
-}
-
-PacketBuilderInterface* Hook::buildPacket(const quint8* data, quint16 length) const {
-    return new PacketBuilder(data, length);
+PacketBuilderInterface* Hook::createPacket(quint16 length) const {
+    return new PacketBuilder(length);
 }
