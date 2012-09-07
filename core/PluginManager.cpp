@@ -100,8 +100,11 @@ void PluginManager::load(const QString& directory) {
         }
     }
 
+    // Sorted state
+    pluginInfos_ = sorted;
+
     // Load the plugins
-    for (PluginInfo::List::iterator it = sorted.begin(); it != sorted.end(); ++it) {
+    for (PluginInfo::List::iterator it = pluginInfos_.begin(); it != pluginInfos_.end(); ++it) {
         PluginInfo* info = *it;
 
         QPluginLoader loader(info->libraryPath());
@@ -128,9 +131,13 @@ void PluginManager::load(const QString& directory) {
 }
 
 void PluginManager::unload() {
-    for (PluginMap::iterator it = plugins_.begin(); it != plugins_.end(); ++it) {
-        PluginInfo* info = it.key();
-        PluginInterface* plugin = qobject_cast<PluginInterface*>(it.value());
+    QListIterator<PluginInfo*> it(pluginInfos_);
+
+    // Unload plugins in reverse order
+    it.toBack();
+    while (it.hasPrevious()) {
+        PluginInfo* info = it.previous();
+        PluginInterface* plugin = qobject_cast<PluginInterface*>(plugins_.value(info));
 
         qDebug() << "uninstalling" << info->name();
         plugin->uninstall();
@@ -139,6 +146,7 @@ void PluginManager::unload() {
         delete info;
     }
     plugins_.clear();
+    pluginInfos_.clear();
 }
 
 QObject* PluginManager::findPluginByName(const QString& name) {

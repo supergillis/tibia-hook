@@ -13,31 +13,53 @@
  * limitations under the License.
  */
 
+#include "Application.h"
+#include "Hook.h"
+
 #include <pthread.h>
 
-#include "Application.h"
+pthread_t hook_id;
+Application* application = NULL;
 
+void hook_destructor() __attribute__((destructor));
 void hook_constructor() __attribute__((constructor));
 void* hook_thread(void*);
+
+/**
+  * This function runs when the program exits.
+  */
+void hook_destructor() {
+    // This doesn't work as expected yet
+    return;
+
+    // Exit the application
+    application->exit();
+
+    // Wait for the application to exit
+    pthread_join(hook_id, NULL);
+}
 
 /**
   * This function runs when the library is injected.
   */
 void hook_constructor() {
-	pthread_t hook_id;
-	pthread_attr_t attr;
-	pthread_attr_init(&attr);
-	pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
-	pthread_create(&hook_id, &attr, hook_thread, NULL);
+    pthread_attr_t attr;
+    pthread_attr_init(&attr);
+    pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_JOINABLE);
+    pthread_create(&hook_id, &attr, hook_thread, NULL);
 }
 
 /**
   * This function runs when the thread is created. Qt runs in this thread.
   */
 void* hook_thread(void*) {
-    // Construct new application and execute it
-    Application* application = new Application();
+    // Create the application and enter the main event loop
+    application = new Application();
     application->exec();
+
+    // When the application is done executing, clean up
+    delete application;
+    application = NULL;
 
     return NULL;
 }

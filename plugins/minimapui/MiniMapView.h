@@ -17,6 +17,7 @@
 #define MINIMAPVIEW_H
 
 #include "MiniMapModel.h"
+#include "MiniMapFloor.h"
 
 #include <ReadOnlyProxyInterface.h>
 
@@ -25,10 +26,9 @@
 #include <QKeyEvent>
 
 class MiniMapView: public QGraphicsView {
-    Q_OBJECT
-    
 public:
     MiniMapView(QWidget* = 0);
+    virtual ~MiniMapView();
 
     void setModel(MiniMapModel*);
     void setCenter(const QPointF& centerPoint);
@@ -39,23 +39,21 @@ public:
     void wheelEvent(QWheelEvent*);
     void keyPressEvent(QKeyEvent*);
 
-public slots:
+protected:
+    void clear();
     void refresh();
+
+    MiniMapFloorInterface* floorFromCache(quint8 z);
     
 private:
-    QGraphicsScene scene_;
-    QMap<quint8, MiniMapFloorInterface*> cache_;
-
+    QGraphicsScene* scene_;
     MiniMapModel* model_;
-    MiniMapFloorInterface* floor_;
-    quint8 floorIndex_;
 
-    // For zooming
-    QList<double> scales_;
-    qint8 scaleIndex_;
-
-    // For dragging
+    QMap<quint8, MiniMapFloorInterface*> cache_;
     QPoint mousePosition_;
+    QList<double> scales_;
+    quint8 scaleIndex_;
+    quint8 floorIndex_;
 };
 
 #endif

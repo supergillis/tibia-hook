@@ -22,7 +22,7 @@ class ReadOnlyProxyInterface {
 public:
     virtual ~ReadOnlyProxyInterface() {}
 
-    virtual void handlePacket(const PacketReaderInterface*) = 0;
+    virtual void handlePacket(PacketReaderInterface&) = 0;
 };
 
 #endif

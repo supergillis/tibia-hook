@@ -27,9 +27,11 @@ MiniMapFloor::MiniMapFloor(const QString& directory, quint8 floor) {
     QDir dir(directory);
     QStringList fileNames = dir.entryList(fileFilters);
     foreach (const QString& fileName, fileNames) {
-        MiniMapPart* part = MiniMapPart::load(dir.absoluteFilePath(fileName));
-        if (part != NULL) {
+        try {
+            MiniMapPart* part = new MiniMapPart(dir.absoluteFilePath(fileName));
             parts_.append(part);
+        }
+        catch (std::exception& exception) {
         }
     }
 
@@ -40,7 +42,7 @@ MiniMapFloor::MiniMapFloor(const QString& directory, quint8 floor) {
 
     // Calculate bounds
     bool first = true;
-    foreach (MiniMapPartInterface* part, parts_) {
+    foreach (const MiniMapPartInterface* part, parts_) {
         if (first) {
             left = right = part->x();
             top = bottom = part->y();
@@ -72,11 +74,7 @@ MiniMapFloor::MiniMapFloor(const QString& directory, quint8 floor) {
 }
 
 MiniMapFloor::~MiniMapFloor() {
-    foreach (MiniMapPartInterface* part, parts_) {
+    foreach (const MiniMapPartInterface* part, parts_) {
         delete part;
     }
-}
-
-MiniMapFloor* MiniMapFloor::load(const QString& directory, quint8 z) {
-    return new MiniMapFloor(directory, z);
 }

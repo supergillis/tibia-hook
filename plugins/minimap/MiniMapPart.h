@@ -25,8 +25,6 @@ class MiniMapPart: public MiniMapPartInterface {
 public:
     MiniMapPart(const QString& fileName);
 
-    static MiniMapPart* load(const QString& fileName);
-
     const QImage& image() const { return image_; }
 
     quint16 width() const { return MINIMAP_FILE_WIDTH; }

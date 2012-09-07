@@ -25,16 +25,16 @@
 
 class PacketReader: public PacketReaderInterface {
 public:
-    PacketReader(const PacketInterface* packet): packet_(packet), position_(0) {}
+    PacketReader(const PacketInterface& packet): packet_(packet), position_(0) {}
     virtual ~PacketReader() {}
 
-    inline const PacketInterface* packet() const { return packet_; }
+    inline const PacketInterface& packet() const { return packet_; }
 
     inline quint16 position() const { return position_; }
     inline void setPosition(quint16 position) { position_ = position; }
 
     inline void skip(quint16 count) { position_ += count; }
-    inline bool has(quint16 count) const { return packet_->length() - position_ >= count; }
+    inline bool has(quint16 count) const { return packet_.length() - position_ >= count; }
 
     inline quint8 peekU8() const { return peek<quint8, 1>(); }
     inline quint16 peekU16() const { return peek<quint16, 2>(); }
@@ -54,13 +54,13 @@ public:
         }
 
         // The data contains the raw ASCII string
-        QString value = QString::fromAscii((const char*) (packet_->data() + position_), length);
+        QString value = QString::fromAscii((const char*) (packet_.data() + position_), length);
         position_ += length;
         return value;
     }
 
 protected:
-    const PacketInterface* packet_;
+    const PacketInterface& packet_;
     quint16 position_;
 
 private:
@@ -70,7 +70,7 @@ private:
             qWarning() << PACKET_END_OF_FILE;
             return 0;
         }
-        return *((T*) (packet_->data() + position_));
+        return *((T*) (packet_.data() + position_));
     }
 
     template<typename T, int size>

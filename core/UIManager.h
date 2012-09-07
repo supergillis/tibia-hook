@@ -6,10 +6,9 @@
 
 #include <UIManagerInterface.h>
 
-class UIManager: public UIManagerInterface, private QMainWindow
-{
+class UIManager: private QMainWindow, public UIManagerInterface {
 public:
-    UIManager();
+    UIManager(QWidget* parent = NULL);
 
     void addTab(QWidget* tab, const QString& label);
     void removeTab(QWidget* tab);

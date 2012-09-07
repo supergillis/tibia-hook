@@ -14,6 +14,7 @@
  */
 
 #include "DetourManager.h"
+#include "Application.h"
 
 #include <hde.h>
 #include <hde.cpp>

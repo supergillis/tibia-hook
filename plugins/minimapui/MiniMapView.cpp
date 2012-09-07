@@ -20,57 +20,71 @@
 
 MiniMapView::MiniMapView(QWidget* parent):
     QGraphicsView(parent),
-    scene_(this),
+    scene_(new QGraphicsScene(this)),
     model_(NULL),
-    floor_(NULL),
     floorIndex_(7) {
     scales_ << 0.25 << 0.35 << 0.50 << 0.75 << 1.00 << 1.25 << 1.50 << 2.00 << 2.50 << 3.00;
     scaleIndex_ = scales_.indexOf(1.00);
 
-    setScene(&scene_);
+    setScene(scene_);
     setBackgroundBrush(Qt::black);
 }
 
-void MiniMapView::setModel(MiniMapModel* model) {
-    model_ = model;
-    floor_ = NULL;
-    floorIndex_ = 7;
-    cache_.clear();
+MiniMapView::~MiniMapView() {
+    // Don't forget to clean up cache
+    clear();
+}
 
-    // Reload model
+void MiniMapView::setModel(MiniMapModel* model) {
+    // Reset values
+    model_ = model;
+    floorIndex_ = 7;
+
+    clear();
     refresh();
+}
+
+MiniMapFloorInterface* MiniMapView::floorFromCache(quint8 z) {
+    // Load image from cache or from the model
+    MiniMapFloorInterface* floor;
+    if (cache_.contains(z)) {
+        floor = cache_.value(z);
+    }
+    else {
+        floor = model_->floor(z);
+        cache_.insert(z, floor);
+    }
+    return floor;
+}
+
+void MiniMapView::clear() {
+    // Clear cache
+    foreach (MiniMapFloorInterface* floor, cache_.values()) {
+        delete floor;
+    }
+    cache_.clear();
+    scene_->clear();
 }
 
 void MiniMapView::refresh() {
     if (model_== NULL) {
-        scene_.clear();
         return;
     }
 
-    // Load image from cache or from the model
-    if (cache_.contains(floorIndex_)) {
-        floor_ = cache_.value(floorIndex_);
-    }
-    else {
-        floor_ = model_->floor(floorIndex_);
-        cache_.insert(floorIndex_, floor_);
-    }
-
-    // First cleanup before populating
-    scene_.clear();
+    MiniMapFloorInterface* floor = floorFromCache(floorIndex_);
 
     // Populate scene
-    const QRect& bounds = floor_->boundary();
-    foreach (MiniMapPartInterface* part, floor_->parts()) {
+    scene_->clear();
+    foreach (MiniMapPartInterface* part, floor->parts()) {
         QPixmap pixmap = QPixmap::fromImage(part->image());
-        QGraphicsPixmapItem* item = scene_.addPixmap(pixmap);
+        QGraphicsPixmapItem* item = scene_->addPixmap(pixmap);
 
         // Adjust position relative to bounds
         item->setPos(part->x(), part->y());
     }
 
     // Allows us to use real Tibia coordinates
-    setSceneRect(bounds);
+    setSceneRect(floor->boundary());
 }
 
 void MiniMapView::mousePressEvent(QMouseEvent* event) {

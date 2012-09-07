@@ -44,6 +44,6 @@ Q_EXPORT_PLUGIN2(minimap, MiniMapPlugin)
 MiniMap::MiniMap(const QString& directory): directory_(directory) {
 }
 
-MiniMapFloorInterface* MiniMap::floor(quint8 z) const {
-    return MiniMapFloor::load(directory_, z);
+MiniMapFloorInterface* MiniMap::createNewFloor(quint8 z) const {
+    return new MiniMapFloor(directory_, z);
 }

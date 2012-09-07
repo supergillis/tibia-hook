@@ -19,7 +19,9 @@
 
 #include <stdexcept>
 
-MiniMapUIPlugin::MiniMapUIPlugin(): model_(NULL), view_(NULL) {
+MiniMapUIPlugin::MiniMapUIPlugin():
+    model_(NULL),
+    view_(NULL) {
 }
 
 void MiniMapUIPlugin::install(HookInterface* hook, SettingsInterface* settings) throw(std::exception) {
@@ -45,18 +47,16 @@ void MiniMapUIPlugin::install(HookInterface* hook, SettingsInterface* settings) 
 }
 
 void MiniMapUIPlugin::uninstall() {
-    if(view_ != NULL) {
-        // Clean up UI and proxies
-        hook_->ui()->removeTab(view_);
-        hook_->removeIncomingReadOnlyProxy(109, model_);
+    // Clean up UI and proxies
+    hook_->ui()->removeTab(view_);
+    hook_->removeIncomingReadOnlyProxy(109, model_);
 
-        // Clean up objects
-        delete view_;
-        delete model_;
-        view_ = NULL;
-        model_ = NULL;
-        hook_ = NULL;
-    }
+    // Clean up objects
+    delete view_;
+    delete model_;
+    view_ = NULL;
+    model_ = NULL;
+    hook_ = NULL;
 }
 
 // Export plugin

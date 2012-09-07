@@ -22,15 +22,13 @@
 
 #include <QImage>
 
-class MiniMapModel: public QObject, public ReadOnlyProxyInterface {
-    Q_OBJECT
-
+class MiniMapModel: public ReadOnlyProxyInterface {
 public:
     MiniMapModel(MiniMapInterface*);
 
-    MiniMapFloorInterface* floor(int floor);
+    MiniMapFloorInterface* floor(int z);
 
-    void handlePacket(const PacketReaderInterface* reader);
+    void handlePacket(PacketReaderInterface& reader);
 
 private:
     MiniMapInterface* miniMap_;

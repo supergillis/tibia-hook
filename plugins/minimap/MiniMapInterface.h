@@ -20,7 +20,7 @@
 
 class MiniMapInterface {
 public:
-    virtual MiniMapFloorInterface* floor(quint8 floor) const = 0;
+    virtual MiniMapFloorInterface* createNewFloor(quint8 createNewFloor) const = 0;
 };
 
 #endif

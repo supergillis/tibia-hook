@@ -39,18 +39,16 @@ public:
 
     SettingsInterface* settings();
 
-    const QString& name() const;
-    quint16 version() const;
-
     const PluginInfo::Dependencies& dependencies() const;
     const QString& libraryPath() const;
+    const QString& name() const;
+    quint16 version() const;
 
 private:
     Settings* settings_;
 
     PluginInfo::Dependencies dependencies_;
     QString libraryPath_;
-
     QString name_;
     quint16 version_;
 };

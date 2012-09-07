@@ -25,7 +25,7 @@ class PacketReaderInterface {
 public:
 	virtual ~PacketReaderInterface() {}
 
-    virtual const PacketInterface* packet() const = 0;
+    virtual const PacketInterface& packet() const = 0;
 	
 	virtual quint16 position() const = 0;
 	virtual void setPosition(quint16 position) = 0;

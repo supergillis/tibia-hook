@@ -36,11 +36,13 @@
 typedef QList<ProxyInterface*> ProxyInterfaceList;
 typedef QList<ReadOnlyProxyInterface*> ReadOnlyProxyInterfaceList;
 
-class Hook: public QObject, public HookInterface, public ReceiverInterface {
-	Q_OBJECT
+class ClientBufferHandler;
+class ServerBufferHandler;
 
+class Hook: public QObject, public HookInterface, public ReceiverInterface {
 public:
-    Hook(QObject* = 0);
+    Hook(QObject* = NULL);
+    ~Hook();
 
     UIManagerInterface* ui() { return &ui_; }
     PluginManagerInterface* plugins() { return &plugins_; }
@@ -53,8 +55,11 @@ public:
     PacketBuilderInterface* buildPacket(const QByteArray&) const;
     PacketBuilderInterface* buildPacket(const quint8*, quint16) const;
 
-    void addOutgoingReadOnlyProxy(quint8, ProxyInterface*);
-    void removeOutgoingReadOnlyProxy(quint8, ProxyInterface*);
+    void addOutgoingProxy(quint8, ProxyInterface*);
+    void removeOutgoingProxy(quint8, ProxyInterface*);
+
+    void addOutgoingReadOnlyProxy(quint8, ReadOnlyProxyInterface*);
+    void removeOutgoingReadOnlyProxy(quint8, ReadOnlyProxyInterface*);
 
     void addIncomingReadOnlyProxy(quint8, ReadOnlyProxyInterface*);
     void removeIncomingReadOnlyProxy(quint8, ReadOnlyProxyInterface*);
@@ -63,8 +68,11 @@ public:
     void receiveIncomingMessage(const QByteArray&);
 
 private:
-    UIManager ui_;
     PluginManager plugins_;
+    UIManager ui_;
+
+    ClientBufferHandler* clientBufferHandler_;
+    ServerBufferHandler* serverBufferHandler_;
 
     ProxyManager outgoingProxies_;
     ReadOnlyProxyManager outgoingReadOnlyProxies_;

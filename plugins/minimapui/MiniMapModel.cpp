@@ -21,9 +21,12 @@ MiniMapModel::MiniMapModel(MiniMapInterface* miniMap): miniMap_(miniMap) {
 }
 
 MiniMapFloorInterface* MiniMapModel::floor(int floor) {
-    return miniMap_->floor(floor);
+    return miniMap_->createNewFloor(floor);
 }
 
-void MiniMapModel::handlePacket(const PacketReaderInterface* reader) {
-    qDebug() << "creatureMove";
+void MiniMapModel::handlePacket(PacketReaderInterface& reader) {
+    quint8 type = reader.readU8();
+    if (type == 109) {
+        qDebug() << "creatureMove";
+    }
 }

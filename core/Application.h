@@ -16,19 +16,22 @@
 #ifndef APPLICATION_H
 #define APPLICATION_H
 
+#include <HookInterface.h>
+
 #include <QApplication>
 
 class Application: public QApplication {
-	Q_OBJECT
-
 	static int argc_;
 
 public:
-	Application();
+    Application();
+    ~Application();
 
 private:
 	Application(const Application&);
-	Application& operator=(const Application&);
+    Application& operator=(const Application&);
+
+    HookInterface* hook_;
 };
 
 #endif

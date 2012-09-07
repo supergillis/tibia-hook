@@ -1,7 +1,8 @@
 #include "UIManager.h"
 
-UIManager::UIManager() {
-    tabs_ = new QTabWidget(this);
+UIManager::UIManager(QWidget* parent):
+    QMainWindow(parent),
+    tabs_(new QTabWidget(this)) {
     setCentralWidget(tabs_);
     setVisible(true);
     setWindowTitle("Tibia Hook");
@@ -13,7 +14,7 @@ void UIManager::addTab(QWidget* tab, const QString& label) {
 
 void UIManager::removeTab(QWidget* tab) {
     int index = tabs_->indexOf(tab);
-    if(index != -1) {
+    if (index != -1) {
         tabs_->removeTab(index);
     }
 }

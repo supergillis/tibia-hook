@@ -49,15 +49,6 @@ MiniMapPart::MiniMapPart(const QString& fileName) {
     image_ = image;
 }
 
-MiniMapPart* MiniMapPart::load(const QString& fileName) {
-    try {
-        return new MiniMapPart(fileName);
-    }
-    catch (std::exception& exception) {
-        return NULL;
-    }
-}
-
 int MiniMapPart::mapColor(quint8 color) {
     return (0x330000 * (color / 36 % 6) + 0x003300 * (color / 6 % 6) + 0x000033 * (color % 6));
 }

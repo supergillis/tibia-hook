@@ -34,7 +34,7 @@ public:
         proxies_[type].removeAll(proxy);
     }
 
-    HandleType handlePacket(const PacketReaderInterface* reader);
+    HandleType handlePacket(PacketReaderInterface& reader);
 
 private:
     typedef QList<ProxyType*> ProxyList;

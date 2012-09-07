@@ -30,7 +30,8 @@
 
 Hook::Hook(QObject* parent):
     QObject(parent),
-    plugins_(this) {
+    plugins_(this),
+    ui_() {
     // Try to load the configuration file. Throw an exception on failure
     QFile configFile(SETTINGS_FILE);
     if (!configFile.open(QFile::ReadOnly)) {
@@ -43,29 +44,42 @@ Hook::Hook(QObject* parent):
     }
 
     sender_ = new DetourSender(DetourManager::instance());
+    clientBufferHandler_ = new ClientBufferHandler(sender_, this);
+    serverBufferHandler_ = new ServerBufferHandler(this);
 
     // Connect the DetourManager with the sender and receiver
-    DetourManager::instance()->setClientBufferHandler(new ClientBufferHandler(sender_, this));
-    DetourManager::instance()->setServerBufferHandler(new ServerBufferHandler(this));
+    DetourManager::instance()->setClientBufferHandler(clientBufferHandler_);
+    DetourManager::instance()->setServerBufferHandler(serverBufferHandler_);
 
     // Load plugins from the given plugins directory
     QString pluginsDir = settings_->value(SETTING_PLUGINS_DIRECTORY).toString();
     plugins_.load(pluginsDir);
 }
 
-void Hook::addOutgoingReadOnlyProxy(quint8 type, ProxyInterface* proxy) {
+Hook::~Hook() {
+    // Unload plugins
+    plugins_.unload();
+
+    // Delete objects
+    delete settings_;
+    delete sender_;
+    delete clientBufferHandler_;
+    delete serverBufferHandler_;
+}
+
+void Hook::addOutgoingProxy(quint8 type, ProxyInterface* proxy) {
     outgoingProxies_.append(type, proxy);
 }
 
-void Hook::removeOutgoingReadOnlyProxy(quint8 type, ProxyInterface* proxy) {
+void Hook::removeOutgoingProxy(quint8 type, ProxyInterface* proxy) {
     outgoingProxies_.remove(type, proxy);
 }
 
-void Hook::addOutgoingReadOnlyProxy(quint8 type, ProxyInterface* proxy) {
+void Hook::addOutgoingReadOnlyProxy(quint8 type, ReadOnlyProxyInterface* proxy) {
     outgoingReadOnlyProxies_.append(type, proxy);
 }
 
-void Hook::removeOutgoingReadOnlyProxy(quint8 type, ProxyInterface* proxy) {
+void Hook::removeOutgoingReadOnlyProxy(quint8 type, ReadOnlyProxyInterface* proxy) {
     outgoingReadOnlyProxies_.remove(type, proxy);
 }
 
@@ -79,17 +93,20 @@ void Hook::removeIncomingReadOnlyProxy(quint8 type, ReadOnlyProxyInterface* prox
 
 bool Hook::receiveOutgoingMessage(const QByteArray& data) {
     Packet packet(data);
-    PacketReader reader(&packet);
+    PacketReader reader(packet);
+
     // First call outgoing read only proxies
-    outgoingReadOnlyProxies_.handlePacket(&reader);
+    outgoingReadOnlyProxies_.handlePacket(reader);
+
     // Then call read write proxies
-    return outgoingProxies_.handlePacket(&reader);
+    return outgoingProxies_.handlePacket(reader);
 }
 
 void Hook::receiveIncomingMessage(const QByteArray& data) {
     Packet packet(data);
-    PacketReader reader(&packet);
-    return incomingProxies_.handlePacket(&reader);
+    PacketReader reader(packet);
+
+    return incomingProxies_.handlePacket(reader);
 }
 
 PacketBuilderInterface* Hook::buildPacket() const {

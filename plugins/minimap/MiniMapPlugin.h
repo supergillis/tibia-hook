@@ -16,21 +16,21 @@
 #ifndef MINIMAPPLUGIN_H
 #define MINIMAPPLUGIN_H
 
-#include <QObject>
-#include <QDir>
+#include "MiniMapPluginInterface.h"
+#include "MiniMapInterface.h"
+#include "MiniMapFloor.h"
 
 #include <HookInterface.h>
 #include <PluginInterface.h>
 
-#include "MiniMapPluginInterface.h"
-#include "MiniMapInterface.h"
-#include "MiniMapFloorInterface.h"
+#include <QObject>
+#include <QDir>
 
 class MiniMap: public MiniMapInterface {
 public:
     MiniMap(const QString& directory);
 
-    MiniMapFloorInterface* floor(quint8 z) const;
+    MiniMapFloorInterface* createNewFloor(quint8 z) const;
 
 private:
     QString directory_;

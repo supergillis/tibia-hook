@@ -16,8 +16,6 @@
 #include "Application.h"
 #include "Hook.h"
 
-#include <stdexcept>
-
 #include <QMessageBox>
 
 int Application::argc_ = 0;
@@ -28,7 +26,8 @@ Application::Application():
     QApplication::setApplicationVersion("beta");
 
     try {
-        new Hook(this);
+        // Construct new application first, and then construct the hook
+        hook_ = new Hook();
     }
     catch(std::exception& exception) {
         QMessageBox message;
@@ -38,4 +37,9 @@ Application::Application():
         message.setDefaultButton(QMessageBox::Ignore);
         message.exec();
     }
+}
+
+Application::~Application() {
+    delete hook_;
+    hook_ = NULL;
 }

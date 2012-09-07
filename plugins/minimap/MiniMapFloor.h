@@ -24,8 +24,6 @@ public:
     MiniMapFloor(const QString&, quint8);
     ~MiniMapFloor();
 
-    static MiniMapFloor* load(const QString&, quint8);
-
     const QRect& boundary() const { return bounds_; }
     const QList<MiniMapPartInterface*>& parts() { return parts_; }
 
