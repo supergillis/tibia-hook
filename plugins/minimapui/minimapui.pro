@@ -3,16 +3,16 @@ include(../plugins.pri)
 TARGET = minimapui
 DESTDIR = $${DESTDIR}/minimapui
 
-INCLUDEPATH += ../minimap
+INCLUDEPATH += ../minimap/include
 
 SOURCES = \
-    MiniMapUIPlugin.cpp \
-    MiniMapView.cpp \
-    MiniMapModel.cpp
+    src/MiniMapUIPlugin.cpp \
+    src/MiniMapView.cpp \
+    src/MiniMapModel.cpp
 HEADERS = \
-    MiniMapUIPlugin.h \
-    MiniMapView.h \
-    MiniMapModel.h
+    src/MiniMapUIPlugin.h \
+    src/MiniMapView.h \
+    src/MiniMapModel.h
 
 OTHER_FILES += \
 	meta.js \

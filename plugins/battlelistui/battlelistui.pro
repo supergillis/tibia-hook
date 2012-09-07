@@ -3,21 +3,21 @@ include(../plugins.pri)
 TARGET = battlelistui
 DESTDIR = $${DESTDIR}/battlelistui
 
-INCLUDEPATH += ../battlelist
+INCLUDEPATH += ../battlelist/include
 
 SOURCES = \
-    BattleListUIPlugin.cpp \
-    BattleListWidget.cpp \
-    BattleListView.cpp \
-    BattleListModel.cpp
+    src/BattleListUIPlugin.cpp \
+    src/BattleListWidget.cpp \
+    src/BattleListView.cpp \
+    src/BattleListModel.cpp
 HEADERS = \
-    BattleListUIPlugin.h \
-    BattleListWidget.h \
-    BattleListView.h \
-    BattleListModel.h
+    src/BattleListUIPlugin.h \
+    src/BattleListWidget.h \
+    src/BattleListView.h \
+    src/BattleListModel.h
 
 FORMS += \
-    BattleListWidget.ui
+    src/BattleListWidget.ui
 
 OTHER_FILES += \
 	meta.js \

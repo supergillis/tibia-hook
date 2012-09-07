@@ -1,5 +1,5 @@
 QT += core
 TEMPLATE = lib
 CONFIG += plugin
-INCLUDEPATH += ../../include
+INCLUDEPATH += ../../core/include
 DESTDIR = ../../bin/plugins

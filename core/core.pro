@@ -1,28 +1,30 @@
 QT += core gui
 TEMPLATE = lib
-INCLUDEPATH += ../include ../lib/mologie-detours ../lib/qt-json
-DESTDIR = ../bin
 TARGET = hook
+
 QMAKE_CXXFLAGS += -std=gnu++0x
 
-SOURCES = Application.cpp \
-	DetourManager.cpp \
-	Hook.cpp \
-	Main.cpp \
-	Settings.cpp \
-    UIManager.cpp \
-    PluginManager.cpp \
-    ProxyManager.cpp
+INCLUDEPATH += include ../lib/mologie-detours ../lib/qt-json
+DESTDIR = ../bin
 
-HEADERS = Application.h \
-	DataQueue.h \
-	DetourManager.h \
-	DetourSender.h \
-	Hook.h \
-    PacketBuilder.h \
-	Settings.h \
-    UIManager.h \
-    PluginManager.h \
-    ProxyManager.h \
-    PacketReader.h \
-    Packet.h
+SOURCES = src/Application.cpp \
+	src/DetourManager.cpp \
+	src/Hook.cpp \
+	src/Main.cpp \
+	src/Settings.cpp \
+    src/UIManager.cpp \
+    src/PluginManager.cpp \
+    src/ProxyManager.cpp
+
+HEADERS = src/Application.h \
+	src/DataQueue.h \
+	src/DetourManager.h \
+	src/DetourSender.h \
+	src/Hook.h \
+    src/PacketBuilder.h \
+	src/Settings.h \
+    src/UIManager.h \
+    src/PluginManager.h \
+    src/ProxyManager.h \
+    src/PacketReader.h \
+    src/Packet.h

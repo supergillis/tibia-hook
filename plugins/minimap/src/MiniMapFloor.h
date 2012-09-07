@@ -13,18 +13,23 @@
  * limitations under the License.
  */
 
-#ifndef BATTLELISTPLUGININTERFACE_H
-#define BATTLELISTPLUGININTERFACE_H
+#ifndef MINIMAPFLOOR_H
+#define MINIMAPFLOOR_H
 
-#include <PluginInterface.h>
+#include <MiniMapFloorInterface.h>
+#include <MiniMapPartInterface.h>
 
-#include "BattleList.h"
-
-class BattleListPluginInterface: public PluginInterface {
+class MiniMapFloor: public MiniMapFloorInterface {
 public:
-    virtual const BattleList* entries() const = 0;
-    virtual const BattleListEntry* findById(const quint32 id) const = 0;
-    virtual const BattleListEntry* findByName(const QString& name) const = 0;
+    MiniMapFloor(const QString&, quint8);
+    ~MiniMapFloor();
+
+    const QRect& boundary() const { return bounds_; }
+    const QList<MiniMapPartInterface*>& parts() { return parts_; }
+
+private:
+    QRect bounds_;
+    QList<MiniMapPartInterface*> parts_;
 };
 
 #endif

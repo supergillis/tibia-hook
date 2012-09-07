@@ -23,7 +23,7 @@
   <customwidget>
    <class>BattleListView</class>
    <extends>QTableView</extends>
-   <header>BattleListView.h</header>
+   <header>src/BattleListView.h</header>
   </customwidget>
  </customwidgets>
  <resources/>

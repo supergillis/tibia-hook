@@ -3,10 +3,10 @@ include(../plugins.pri)
 TARGET = battlelist
 DESTDIR = $${DESTDIR}/battlelist
 
-SOURCES = BattleListPlugin.cpp
-HEADERS = BattleListPlugin.h \
-    BattleList.h \
-    BattleListPluginInterface.h
+INCLUDEPATH += include
+
+SOURCES = src/BattleListPlugin.cpp
+HEADERS = src/BattleListPlugin.h
 
 OTHER_FILES += \
 	meta.js \

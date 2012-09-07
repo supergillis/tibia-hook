@@ -17,8 +17,8 @@
 #define MINIMAPVIEW_H
 
 #include "MiniMapModel.h"
-#include "MiniMapFloor.h"
 
+#include <MiniMapFloorInterface.h>
 #include <ReadOnlyProxyInterface.h>
 
 #include <QGraphicsView>

@@ -16,7 +16,7 @@
 #ifndef MINIMAPPART_H
 #define MINIMAPPART_H
 
-#include "MiniMapPartInterface.h"
+#include <MiniMapPartInterface.h>
 
 #include <QImage>
 #include <QRect>

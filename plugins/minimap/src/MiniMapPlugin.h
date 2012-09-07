@@ -13,33 +13,41 @@
  * limitations under the License.
  */
 
-#ifndef BATTLELISTPLUGIN_H
-#define BATTLELISTPLUGIN_H
+#ifndef MINIMAPPLUGIN_H
+#define MINIMAPPLUGIN_H
 
-#include <QtPlugin>
-#include <QObject>
-#include <QVariantMap>
+#include "MiniMapFloor.h"
 
 #include <HookInterface.h>
+#include <MiniMapPluginInterface.h>
+#include <MiniMapInterface.h>
 #include <PluginInterface.h>
 
-#include "BattleList.h"
-#include "BattleListPluginInterface.h"
+#include <QObject>
+#include <QDir>
 
-class BattleListPlugin: public QObject, public PluginInterface, public BattleListPluginInterface {
+class MiniMap: public MiniMapInterface {
+public:
+    MiniMap(const QString& directory);
+
+    MiniMapFloorInterface* createNewFloor(quint8 z) const;
+
+private:
+    QString directory_;
+};
+
+class MiniMapPlugin: public QObject, public PluginInterface, public MiniMapPluginInterface {
 	Q_OBJECT
-    Q_INTERFACES(PluginInterface BattleListPluginInterface)
+    Q_INTERFACES(PluginInterface MiniMapPluginInterface)
 
 public:
     void install(HookInterface*, SettingsInterface*) throw(std::exception);
-	void uninstall();
+    void uninstall();
 
-    const BattleList* entries() const;
-    const BattleListEntry* findById(const quint32 id) const;
-    const BattleListEntry* findByName(const QString& name) const;
+    MiniMapInterface* miniMap();
 
 private:
-    BattleList* list_;
+    MiniMapInterface* miniMap_;
 };
 
 #endif

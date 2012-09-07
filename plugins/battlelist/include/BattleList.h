@@ -19,6 +19,8 @@
 #define BATTLELIST_LENGTH 250
 #define BATTLELIST_NAME_LENGTH 32
 
+#include <QtGlobal>
+
 /**
   * Credits to DarkstaR
   *

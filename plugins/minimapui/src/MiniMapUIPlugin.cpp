@@ -15,7 +15,7 @@
 
 #include "MiniMapUIPlugin.h"
 
-#include <MiniMapPlugin.h>
+#include <MiniMapPluginInterface.h>
 
 #include <stdexcept>
 

@@ -3,18 +3,16 @@ include(../plugins.pri)
 TARGET = minimap
 DESTDIR = $${DESTDIR}/minimap
 
+INCLUDEPATH += include
+
 SOURCES = \
-    MiniMapPlugin.cpp \
-    MiniMapPart.cpp \
-    MiniMapFloor.cpp
+    src/MiniMapPlugin.cpp \
+    src/MiniMapPart.cpp \
+    src/MiniMapFloor.cpp
 HEADERS = \
-    MiniMapPlugin.h \
-    MiniMapPluginInterface.h \
-    MiniMapInterface.h \
-    MiniMapPartInterface.h \
-    MiniMapFloorInterface.h \
-    MiniMapPart.h \
-    MiniMapFloor.h
+    src/MiniMapPlugin.h \
+    src/MiniMapPart.h \
+    src/MiniMapFloor.h
 
 OTHER_FILES += \
 	meta.js \
