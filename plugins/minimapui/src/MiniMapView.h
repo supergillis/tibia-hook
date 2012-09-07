@@ -25,7 +25,12 @@
 #include <QWheelEvent>
 #include <QKeyEvent>
 
+#define MAP_MINIMUM_Z 0
+#define MAP_MAXIMUM_Z 13
+
 class MiniMapView: public QGraphicsView {
+    Q_OBJECT
+
 public:
     MiniMapView(QWidget* = 0);
     virtual ~MiniMapView();
@@ -39,6 +44,9 @@ public:
     void wheelEvent(QWheelEvent*);
     void keyPressEvent(QKeyEvent*);
 
+protected slots:
+    void setPosition(quint16 x, quint16 y, quint8 z);
+
 protected:
     void clear();
     void refresh();
@@ -47,6 +55,8 @@ protected:
     
 private:
     QGraphicsScene* scene_;
+    QGraphicsLineItem* horizontalLine_;
+    QGraphicsLineItem* verticalLine_;
     MiniMapModel* model_;
 
     QMap<quint8, MiniMapFloorInterface*> cache_;

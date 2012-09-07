@@ -42,14 +42,27 @@ void MiniMapUIPlugin::install(HookInterface* hook, SettingsInterface* settings) 
     hook_ = hook;
     hook_->ui()->addTab(view_, "Map");
 
-    // Creature move
-    hook_->addIncomingReadOnlyProxy(109, model_);
+    hook_->addIncomingReadOnlyProxy(100, model_);
+    hook_->addIncomingReadOnlyProxy(101, model_);
+    hook_->addIncomingReadOnlyProxy(102, model_);
+    hook_->addIncomingReadOnlyProxy(103, model_);
+    hook_->addIncomingReadOnlyProxy(104, model_);
+    hook_->addIncomingReadOnlyProxy(190, model_);
+    hook_->addIncomingReadOnlyProxy(191, model_);
 }
 
 void MiniMapUIPlugin::uninstall() {
-    // Clean up UI and proxies
+    // Clean up proxies
+    hook_->removeIncomingReadOnlyProxy(191, model_);
+    hook_->removeIncomingReadOnlyProxy(190, model_);
+    hook_->removeIncomingReadOnlyProxy(104, model_);
+    hook_->removeIncomingReadOnlyProxy(103, model_);
+    hook_->removeIncomingReadOnlyProxy(102, model_);
+    hook_->removeIncomingReadOnlyProxy(101, model_);
+    hook_->removeIncomingReadOnlyProxy(100, model_);
+
+    // Clean up UI
     hook_->ui()->removeTab(view_);
-    hook_->removeIncomingReadOnlyProxy(109, model_);
 
     // Clean up objects
     delete view_;

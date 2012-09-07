@@ -26,7 +26,40 @@ MiniMapFloorInterface* MiniMapModel::floor(int floor) {
 
 void MiniMapModel::handlePacket(PacketReaderInterface& reader) {
     quint8 type = reader.readU8();
-    if (type == 109) {
-        qDebug() << "creatureMove";
+    if (type == 100) {
+        // Totally new position
+        playerX_ = reader.readU16();
+        playerY_ = reader.readU16();
+        playerZ_ = reader.readU8();
     }
+    else if (type == 101) {
+        // Up
+        playerY_--;
+    }
+    else if (type == 102) {
+        // Right
+        playerX_++;
+    }
+    else if (type == 103) {
+        // Down
+        playerY_++;
+    }
+    else if (type == 104) {
+        // Left
+        playerX_--;
+    }
+    else if (type == 190) {
+        // Up
+        playerX_++;
+        playerY_++;
+        playerZ_--;
+    }
+    else if (type == 191) {
+        // Up
+        playerX_--;
+        playerY_--;
+        playerZ_++;
+    }
+
+    emit playerPositionChanged(playerX_, playerY_, playerZ_);
 }

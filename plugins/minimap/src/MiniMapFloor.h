@@ -24,10 +24,12 @@ public:
     MiniMapFloor(const QString&, quint8);
     ~MiniMapFloor();
 
+    quint8 z() const { return z_; }
     const QRect& boundary() const { return bounds_; }
     const QList<MiniMapPartInterface*>& parts() { return parts_; }
 
 private:
+    quint8 z_;
     QRect bounds_;
     QList<MiniMapPartInterface*> parts_;
 };

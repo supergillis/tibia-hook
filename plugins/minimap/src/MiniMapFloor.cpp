@@ -69,8 +69,8 @@ MiniMapFloor::MiniMapFloor(const QString& directory, quint8 floor) {
         }
     }
 
-    // Set bounds
     bounds_ =  QRect(left, top, right - left, bottom - top);
+    z_ = floor;
 }
 
 MiniMapFloor::~MiniMapFloor() {

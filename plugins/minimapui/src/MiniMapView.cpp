@@ -28,6 +28,14 @@ MiniMapView::MiniMapView(QWidget* parent):
 
     setScene(scene_);
     setBackgroundBrush(Qt::black);
+
+    QPen pen(Qt::white, 1, Qt::DashLine);
+    horizontalLine_ = scene_->addLine(0, 0, 0, 0);
+    horizontalLine_->setZValue(1);
+    horizontalLine_->setPen(pen);
+    verticalLine_ = scene_->addLine(0, 0, 0, 0);
+    verticalLine_->setZValue(1);
+    verticalLine_->setPen(pen);
 }
 
 MiniMapView::~MiniMapView() {
@@ -36,12 +44,35 @@ MiniMapView::~MiniMapView() {
 }
 
 void MiniMapView::setModel(MiniMapModel* model) {
+    if (model_ != NULL) {
+        QObject::disconnect(model_, SIGNAL(playerPositionChanged(quint16, quint16, quint8)), this, SLOT(setPosition(quint16, quint16, quint8)));
+    }
+
     // Reset values
     model_ = model;
     floorIndex_ = 7;
 
+    if (model_ != NULL) {
+        QObject::connect(model_, SIGNAL(playerPositionChanged(quint16, quint16, quint8)), this, SLOT(setPosition(quint16, quint16, quint8)));
+    }
+
     clear();
     refresh();
+}
+
+void MiniMapView::setPosition(quint16 x, quint16 y, quint8 z) {
+    if (z < MAP_MINIMUM_Z || z > MAP_MAXIMUM_Z) {
+        return;
+    }
+
+    if (floorIndex_ != z) {
+        floorIndex_ = z;
+        refresh();
+    }
+
+    QRectF rect = sceneRect();
+    horizontalLine_->setLine(rect.x(), y, rect.x() + sceneRect().width(), y);
+    verticalLine_->setLine(x, rect.y(), x, rect.y() + sceneRect().height());
 }
 
 MiniMapFloorInterface* MiniMapView::floorFromCache(quint8 z) {
@@ -63,7 +94,13 @@ void MiniMapView::clear() {
         delete floor;
     }
     cache_.clear();
-    scene_->clear();
+
+    // Clear the scene but prevent from removing the lines
+    foreach (QGraphicsItem* item, scene_->items()) {
+        if (item->zValue() == 0) {
+            scene_->removeItem(item);
+        }
+    }
 }
 
 void MiniMapView::refresh() {
@@ -71,10 +108,20 @@ void MiniMapView::refresh() {
         return;
     }
 
-    MiniMapFloorInterface* floor = floorFromCache(floorIndex_);
+    // Clear the scene but prevent from removing the lines
+    foreach (QGraphicsItem* item, scene_->items()) {
+        if (item->zValue() == 0) {
+            scene_->removeItem(item);
+        }
+    }
+
+    // Check floor boundary
+    if (floorIndex_ < MAP_MINIMUM_Z || floorIndex_ > MAP_MAXIMUM_Z) {
+        return;
+    }
 
     // Populate scene
-    scene_->clear();
+    MiniMapFloorInterface* floor = floorFromCache(floorIndex_);
     foreach (MiniMapPartInterface* part, floor->parts()) {
         QPixmap pixmap = QPixmap::fromImage(part->image());
         QGraphicsPixmapItem* item = scene_->addPixmap(pixmap);
@@ -120,8 +167,8 @@ void MiniMapView::keyPressEvent(QKeyEvent* event) {
     }
 
     event->accept();
-    if ((event->key() == Qt::Key_Plus && floorIndex_ == 0) ||
-            (event->key() == Qt::Key_Minus && floorIndex_ == 13)) {
+    if ((event->key() == Qt::Key_Plus && floorIndex_ == MAP_MINIMUM_Z) ||
+            (event->key() == Qt::Key_Minus && floorIndex_ == MAP_MAXIMUM_Z)) {
         return;
     }
 

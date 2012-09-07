@@ -21,8 +21,11 @@
 #include <ReadOnlyProxyInterface.h>
 
 #include <QImage>
+#include <QObject>
 
-class MiniMapModel: public ReadOnlyProxyInterface {
+class MiniMapModel: public QObject, public ReadOnlyProxyInterface {
+    Q_OBJECT
+
 public:
     MiniMapModel(MiniMapInterface*);
 
@@ -30,12 +33,15 @@ public:
 
     void handlePacket(PacketReaderInterface& reader);
 
+signals:
+    void playerPositionChanged(quint16 x, quint16 y, quint8 z);
+
 private:
     MiniMapInterface* miniMap_;
 
-    quint16 x_;
-    quint16 y_;
-    quint8 z_;
+    quint16 playerX_;
+    quint16 playerY_;
+    quint8 playerZ_;
 };
 
 #endif
