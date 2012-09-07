@@ -23,14 +23,19 @@
 
 class Packet: public PacketInterface {
 public:
-    Packet(const QByteArray& data);
-    Packet(const quint8* buffer, quint16 length);
+    Packet(const QByteArray& data): raw_(data) {}
+    Packet(const quint8* buffer, quint16 length): raw_((const char*) buffer, length) {}
 
-    quint16 length() const;
-    const quint8* data() const;
+    quint16 length() const {
+        return raw_.length();
+    }
+
+    const quint8* data() const {
+        return (const quint8*) raw_.data();
+    }
 
 private:
     QByteArray raw_;
 };
 
-#endif // PACKET_H
+#endif

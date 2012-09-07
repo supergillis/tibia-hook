@@ -25,6 +25,8 @@ Application::Application():
     QApplication::setApplicationName("Tibia Hook");
     QApplication::setApplicationVersion("beta");
 
+    setQuitOnLastWindowClosed(false);
+
     try {
         // Construct new application first, and then construct the hook
         hook_ = new Hook();

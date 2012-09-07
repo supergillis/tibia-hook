@@ -6,11 +6,9 @@ TARGET = hook
 QMAKE_CXXFLAGS += -std=gnu++0x
 
 SOURCES = Application.cpp \
-	DataQueue.cpp \
 	DetourManager.cpp \
 	Hook.cpp \
 	Main.cpp \
-    Packet.cpp \
 	Settings.cpp \
     UIManager.cpp \
     PluginManager.cpp \
@@ -21,10 +19,10 @@ HEADERS = Application.h \
 	DetourManager.h \
 	DetourSender.h \
 	Hook.h \
-    Packet.h \
     PacketBuilder.h \
 	Settings.h \
     UIManager.h \
     PluginManager.h \
     ProxyManager.h \
-    PacketReader.h
+    PacketReader.h \
+    Packet.h

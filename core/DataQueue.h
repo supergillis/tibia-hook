@@ -23,11 +23,25 @@
 
 class DataQueue {
 public:
-	int size();
-	bool empty();
+    int size() {
+        QMutexLocker locker(&mutex_);
+        return queue_.size();
+    }
 
-	void enqueue(const QByteArray&);
-	QByteArray dequeue();
+    bool empty() {
+        QMutexLocker locker(&mutex_);
+        return queue_.empty();
+    }
+
+    void enqueue(const QByteArray& data) {
+        QMutexLocker locker(&mutex_);
+        queue_.enqueue(data);
+    }
+
+    QByteArray dequeue() {
+        QMutexLocker locker(&mutex_);
+        return queue_.dequeue();
+    }
 
 private:
 	QQueue<QByteArray> queue_;
