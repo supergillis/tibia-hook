@@ -19,6 +19,7 @@
 #include <SenderInterface.h>
 
 #include "DetourManager.h"
+#include "PacketBuilder.h"
 
 class DetourSender: public SenderInterface {
 public:
@@ -31,6 +32,14 @@ public:
     inline void sendToServer(const QByteArray& data) {
         manager_->serverQueue()->enqueue(data);
 	}
+
+    inline PacketBuilderInterface* createPacket() const {
+        return new PacketBuilder();
+    }
+
+    inline PacketBuilderInterface* createPacket(quint16 length) const {
+        return new PacketBuilder(length);
+    }
 
 private:
 	DetourSender(const DetourSender&);

@@ -18,7 +18,6 @@
 #include "DetourSender.h"
 #include "Packet.h"
 #include "PacketReader.h"
-#include "PacketBuilder.h"
 #include "PluginManager.h"
 #include "Settings.h"
 #include "UIManager.h"
@@ -106,12 +105,4 @@ void Hook::receiveIncomingMessage(const QByteArray& data) {
     PacketReader reader(packet);
 
     return incomingProxies_.handlePacket(reader);
-}
-
-PacketBuilderInterface* Hook::createPacket() const {
-    return new PacketBuilder();
-}
-
-PacketBuilderInterface* Hook::createPacket(quint16 length) const {
-    return new PacketBuilder(length);
 }

@@ -23,9 +23,11 @@
 
 class MiniMapFloorInterface {
 public:
-    virtual quint8 z() const = 0;
-    virtual const QRect& boundary() const = 0;
     virtual const QList<MiniMapPartInterface*>& parts() = 0;
+    virtual const QRect& boundary() const = 0;
+    virtual quint8 z() const = 0;
+
+    virtual quint8 dataAt(quint16 x, quint16 y) const = 0;
 };
 
 #endif

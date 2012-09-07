@@ -16,9 +16,12 @@
 #ifndef MINIMAPMODEL_H
 #define MINIMAPMODEL_H
 
-#include "MiniMapInterface.h"
-
+#include <MiniMapFloorInterface.h>
+#include <MiniMapPluginInterface.h>
+#include <PathFinderPluginInterface.h>
+#include <Position.h>
 #include <ReadOnlyProxyInterface.h>
+#include <SenderInterface.h>
 
 #include <QImage>
 #include <QObject>
@@ -27,21 +30,31 @@ class MiniMapModel: public QObject, public ReadOnlyProxyInterface {
     Q_OBJECT
 
 public:
-    MiniMapModel(MiniMapInterface*);
+    MiniMapModel(SenderInterface* sender, MiniMapPluginInterface* miniMap, PathFinderPluginInterface* pathFinder);
 
-    MiniMapFloorInterface* floor(int z);
+    MiniMapFloorInterface* floor(int floorIndex);
 
     void handlePacket(PacketReaderInterface& reader);
 
+    QList<Position> path(const Position& end);
+    QList<Position> path(const Position& start, const Position& end);
+
+    void walk(const QList<Position> &path);
+
+private slots:
+    void playerMoved(const Position& position);
+
 signals:
-    void playerPositionChanged(quint16 x, quint16 y, quint8 z);
+    void playerPositionChanged(const Position& position);
 
 private:
-    MiniMapInterface* miniMap_;
+    SenderInterface* sender_;
+    MiniMapPluginInterface* miniMap_;
+    PathFinderPluginInterface* pathFinder_;
 
-    quint16 playerX_;
-    quint16 playerY_;
-    quint8 playerZ_;
+    Position playerPos_;
+
+    QList<Position> path_;
 };
 
 #endif

@@ -13,35 +13,28 @@
  * limitations under the License.
  */
 
-#ifndef MINIMAPPLUGIN_H
-#define MINIMAPPLUGIN_H
+#ifndef PATHFINDERPLUGIN_H
+#define PATHFINDERPLUGIN_H
 
-#include "MiniMapFloor.h"
-
-#include <HookInterface.h>
 #include <MiniMapPluginInterface.h>
+#include <PathFinderPluginInterface.h>
 #include <PluginInterface.h>
 
 #include <QObject>
-#include <QDir>
 
-class MiniMapPlugin: public QObject, public PluginInterface, public MiniMapPluginInterface {
+class PathFinderPlugin: public QObject, public PluginInterface, public PathFinderPluginInterface {
 	Q_OBJECT
-    Q_INTERFACES(PluginInterface MiniMapPluginInterface)
+    Q_INTERFACES(PluginInterface PathFinderPluginInterface)
 
 #if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
-    Q_PLUGIN_METADATA(IID "be.gillis.minimap" FILE "meta.js")
+    Q_PLUGIN_METADATA(IID "be.gillis.pathfinder" FILE "meta.js")
 #endif
 
 public:
     void install(HookInterface*, SettingsInterface*) throw(std::exception);
     void uninstall();
 
-    MiniMapFloorInterface* floor(quint8 floorIndex);
-
-private:
-    QString directory_;
-    QMap<quint8, MiniMapFloorInterface*> cache_;
+    PathInterface* createNewPath(MiniMapPluginInterface* minimap, const Position& start, const Position& end, int maxSearchDist) const;
 };
 
 #endif

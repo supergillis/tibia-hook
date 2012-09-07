@@ -50,9 +50,6 @@ public:
     SenderInterface* sender() { return sender_; }
     ReceiverInterface* receiver() { return this; }
 
-    PacketBuilderInterface* createPacket() const;
-    PacketBuilderInterface* createPacket(quint16) const;
-
     void addOutgoingProxy(quint8, ProxyInterface*);
     void removeOutgoingProxy(quint8, ProxyInterface*);
 

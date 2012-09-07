@@ -6,8 +6,6 @@ greaterThan(QT_MAJOR_VERSION, 4) {
 TEMPLATE = lib
 TARGET = hook
 
-QMAKE_CXXFLAGS += -std=gnu++0x
-
 INCLUDEPATH += include ../lib/mologie-detours ../lib/qt-json
 DESTDIR = ../bin
 
@@ -31,4 +29,5 @@ HEADERS = src/Application.h \
     src/PluginManager.h \
     src/ProxyManager.h \
     src/PacketReader.h \
-    src/Packet.h
+    src/Packet.h \
+    include/Position.h

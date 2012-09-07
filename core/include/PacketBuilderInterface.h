@@ -16,12 +16,16 @@
 #ifndef PACKETBUILDERINTERFACE_H
 #define PACKETBUILDERINTERFACE_H
 
+#include <PacketInterface.h>
+
 #include <QtGlobal>
 #include <QString>
 
 class PacketBuilderInterface {
 public:
 	virtual ~PacketBuilderInterface() {}
+
+    virtual PacketInterface* build() const = 0;
 
     virtual void writeU8(quint8) = 0;
 	virtual void writeU16(quint16) = 0;

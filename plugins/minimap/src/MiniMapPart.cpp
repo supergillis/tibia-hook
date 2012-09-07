@@ -17,6 +17,7 @@
 
 #include <stdexcept>
 
+#include <QDebug>
 #include <QFile>
 #include <QFileInfo>
 
@@ -47,6 +48,7 @@ MiniMapPart::MiniMapPart(const QString& fileName) {
     y_ = name.mid(3, 3).toUInt() * MINIMAP_FILE_HEIGHT;
     z_ = name.mid(6, 2).toUInt();
     image_ = image;
+    data_ = QByteArray((const char*) data[1], MINIMAP_FILE_WIDTH * MINIMAP_FILE_HEIGHT);
 }
 
 int MiniMapPart::mapColor(quint8 color) {

@@ -47,7 +47,7 @@ MiniMapView::~MiniMapView() {
 void MiniMapView::setModel(MiniMapModel* model) {
     if (model_ != NULL) {
 #if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
-        QObject::disconnect(model_, SIGNAL(playerPositionChanged(quint16, quint16, quint8)), this, SLOT(setPosition(quint16, quint16, quint8)));
+        QObject::disconnect(model_, SIGNAL(playerPositionChanged(const Position&)), this, SLOT(setPosition(const Position&)));
 #else
         QObject::disconnect(model_, &MiniMapModel::playerPositionChanged, this, &MiniMapView::setPosition);
 #endif
@@ -59,51 +59,31 @@ void MiniMapView::setModel(MiniMapModel* model) {
 
     if (model_ != NULL) {
 #if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
-        QObject::connect(model_, SIGNAL(playerPositionChanged(quint16, quint16, quint8)), this, SLOT(setPosition(quint16, quint16, quint8)));
+        QObject::connect(model_, SIGNAL(playerPositionChanged(const Position&)), this, SLOT(setPosition(const Position&)));
 #else
         QObject::connect(model_, &MiniMapModel::playerPositionChanged, this, &MiniMapView::setPosition);
 #endif
     }
 
-    clear();
     refresh();
 }
 
-void MiniMapView::setPosition(quint16 x, quint16 y, quint8 z) {
-    if (z < MAP_MINIMUM_Z || z > MAP_MAXIMUM_Z) {
+void MiniMapView::setPosition(const Position& position) {
+    if (position.z < MAP_MINIMUM_Z || position.z > MAP_MAXIMUM_Z) {
         return;
     }
 
-    if (floorIndex_ != z) {
-        floorIndex_ = z;
+    if (floorIndex_ != position.z) {
+        floorIndex_ = position.z;
         refresh();
     }
 
     QRectF rect = sceneRect();
-    horizontalLine_->setLine(rect.x(), y, rect.x() + sceneRect().width(), y);
-    verticalLine_->setLine(x, rect.y(), x, rect.y() + sceneRect().height());
-}
-
-MiniMapFloorInterface* MiniMapView::floorFromCache(quint8 z) {
-    // Load image from cache or from the model
-    MiniMapFloorInterface* floor;
-    if (cache_.contains(z)) {
-        floor = cache_.value(z);
-    }
-    else {
-        floor = model_->floor(z);
-        cache_.insert(z, floor);
-    }
-    return floor;
+    horizontalLine_->setLine(rect.x(), position.y, rect.x() + sceneRect().width(), position.y);
+    verticalLine_->setLine(position.x, rect.y(), position.x, rect.y() + sceneRect().height());
 }
 
 void MiniMapView::clear() {
-    // Clear cache
-    foreach (MiniMapFloorInterface* floor, cache_.values()) {
-        delete floor;
-    }
-    cache_.clear();
-
     // Clear the scene but prevent from removing the lines
     foreach (QGraphicsItem* item, scene_->items()) {
         if (item->zValue() == 0) {
@@ -118,11 +98,7 @@ void MiniMapView::refresh() {
     }
 
     // Clear the scene but prevent from removing the lines
-    foreach (QGraphicsItem* item, scene_->items()) {
-        if (item->zValue() == 0) {
-            scene_->removeItem(item);
-        }
-    }
+    clear();
 
     // Check floor boundary
     if (floorIndex_ < MAP_MINIMUM_Z || floorIndex_ > MAP_MAXIMUM_Z) {
@@ -130,7 +106,7 @@ void MiniMapView::refresh() {
     }
 
     // Populate scene
-    MiniMapFloorInterface* floor = floorFromCache(floorIndex_);
+    MiniMapFloorInterface* floor = model_->floor(floorIndex_);
     foreach (MiniMapPartInterface* part, floor->parts()) {
         QPixmap pixmap = QPixmap::fromImage(part->image());
         QGraphicsPixmapItem* item = scene_->addPixmap(pixmap);
@@ -144,29 +120,56 @@ void MiniMapView::refresh() {
 }
 
 void MiniMapView::mousePressEvent(QMouseEvent* event) {
-    mousePosition_ = event->pos();
-    event->accept();
+    if ((event->buttons() & Qt::LeftButton) == Qt::LeftButton) {
+        event->accept();
+        mousePosition_ = event->pos();
+    }
+    if ((event->buttons() & Qt::RightButton) == Qt::RightButton) {
+        event->accept();
+
+        QPointF mapped(mapToScene(event->pos()));
+        Position destination;
+        destination.x = (quint16) mapped.x();
+        destination.y = (quint16) mapped.y();
+        destination.z = floorIndex_;
+
+        QList<Position> path = model_->path(destination);
+        foreach (const Position& pos, path) {
+            qDebug() << "move" << pos.x << pos.y << pos.z;
+        }
+
+        model_->walk(path);
+    }
+    else {
+        QGraphicsView::mousePressEvent(event);
+        return;
+    }
 }
 
 void MiniMapView::mouseReleaseEvent(QMouseEvent* event) {
-    mousePosition_ = QPoint();
+    if ((event->buttons() & Qt::LeftButton) != Qt::LeftButton) {
+        QGraphicsView::mousePressEvent(event);
+        return;
+    }
+
     event->accept();
+    mousePosition_ = QPoint();
 }
 
 void MiniMapView::mouseMoveEvent(QMouseEvent* event) {
-    if (!mousePosition_.isNull()) {
-        event->accept();
-
-        int dx = mousePosition_.x() - event->pos().x();
-        int dy = mousePosition_.y() - event->pos().y();
-        mousePosition_ = event->pos();
-
-        horizontalScrollBar()->setValue(horizontalScrollBar()->value() + dx);
-        verticalScrollBar()->setValue(verticalScrollBar()->value() + dy);
+    if((event->buttons() & Qt::LeftButton) != Qt::LeftButton || mousePosition_.isNull()) {
+        QGraphicsView::mousePressEvent(event);
+        return;
     }
-    else {
-        QGraphicsView::mouseMoveEvent(event);
-    }
+
+    event->accept();
+
+    int dx = mousePosition_.x() - event->pos().x();
+    int dy = mousePosition_.y() - event->pos().y();
+    mousePosition_ = event->pos();
+
+    horizontalScrollBar()->setValue(horizontalScrollBar()->value() + dx);
+    verticalScrollBar()->setValue(verticalScrollBar()->value() + dy);
 }
 
 void MiniMapView::keyPressEvent(QKeyEvent* event) {

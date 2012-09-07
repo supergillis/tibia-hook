@@ -16,6 +16,7 @@
 #include "MiniMapUIPlugin.h"
 
 #include <MiniMapPluginInterface.h>
+#include <PathFinderPluginInterface.h>
 
 #include <stdexcept>
 
@@ -39,7 +40,14 @@ void MiniMapUIPlugin::install(HookInterface* hook, SettingsInterface* settings) 
         throw std::runtime_error("The 'minimap' plugin could not be loaded!");
     }
 
-    model_ = new MiniMapModel(miniMapPlugin->miniMap());
+    // Try to load the pathfinder plugin
+    PathFinderPluginInterface* pathFinderPlugin = NULL;
+    plugin = hook->plugins()->findPluginByName("pathfinder");
+    if(plugin != NULL) {
+        pathFinderPlugin = qobject_cast<PathFinderPluginInterface*>(plugin);
+    }
+
+    model_ = new MiniMapModel(hook->sender(), miniMapPlugin, pathFinderPlugin);
     view_ = new MiniMapView();
     view_->setModel(model_);
 

@@ -21,8 +21,6 @@
 
 #include <SettingsInterface.h>
 #include <SenderInterface.h>
-#include <PacketInterface.h>
-#include <PacketBuilderInterface.h>
 #include <PluginManagerInterface.h>
 #include <ProxyInterface.h>
 #include <ReceiverInterface.h>
@@ -47,9 +45,6 @@ public:
 
     virtual void addIncomingReadOnlyProxy(quint8, ReadOnlyProxyInterface*) = 0;
     virtual void removeIncomingReadOnlyProxy(quint8, ReadOnlyProxyInterface*) = 0;
-
-    virtual PacketBuilderInterface* createPacket() const = 0;
-    virtual PacketBuilderInterface* createPacket(quint16 length) const = 0;
 };
 
 #endif

@@ -18,13 +18,13 @@
 
 #include <QtPlugin>
 
-#include <MiniMapInterface.h>
+#include <MiniMapFloorInterface.h>
 
 class MiniMapPluginInterface {
 public:
     virtual ~MiniMapPluginInterface() {}
 
-    virtual MiniMapInterface* miniMap() = 0;
+    virtual MiniMapFloorInterface* floor(quint8 floorIndex) = 0;
 };
 
 Q_DECLARE_INTERFACE(MiniMapPluginInterface, "MiniMapPluginInterface")

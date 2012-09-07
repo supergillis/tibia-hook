@@ -32,19 +32,27 @@ void MiniMapPlugin::install(HookInterface* hook, SettingsInterface* settings) th
         throw std::runtime_error("Could not load minimap folder!");
     }
 
-    miniMap_ = new MiniMap(settings->value(SETTING_FOLDER).toString());
+    directory_ = settings->value(SETTING_FOLDER).toString();
 }
 
 void MiniMapPlugin::uninstall() {
+    // Delete cached floors
+    foreach (MiniMapFloorInterface* floor, cache_.values()) {
+        delete floor;
+    }
+    cache_.clear();
+    directory_.clear();
 }
 
-MiniMapInterface* MiniMapPlugin::miniMap() {
-    return miniMap_;
-}
-
-MiniMap::MiniMap(const QString& directory): directory_(directory) {
-}
-
-MiniMapFloorInterface* MiniMap::createNewFloor(quint8 z) const {
-    return new MiniMapFloor(directory_, z);
+MiniMapFloorInterface* MiniMapPlugin::floor(quint8 floorIndex) {
+    // Load image from cache or from the model
+    MiniMapFloorInterface* floor;
+    if (cache_.contains(floorIndex)) {
+        floor = cache_.value(floorIndex);
+    }
+    else {
+        floor = new MiniMapFloor(directory_, floorIndex);
+        cache_.insert(floorIndex, floor);
+    }
+    return floor;
 }

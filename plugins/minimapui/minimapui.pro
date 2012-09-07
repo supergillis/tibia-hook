@@ -4,6 +4,7 @@ TARGET = minimapui
 DESTDIR = $${DESTDIR}/minimapui
 
 INCLUDEPATH += ../minimap/include
+INCLUDEPATH += ../pathfinder/include
 
 SOURCES = \
     src/MiniMapUIPlugin.cpp \

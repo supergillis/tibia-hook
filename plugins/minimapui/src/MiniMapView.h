@@ -35,8 +35,7 @@ public:
     MiniMapView(QWidget* = 0);
     virtual ~MiniMapView();
 
-    void setModel(MiniMapModel*);
-    void setCenter(const QPointF& centerPoint);
+    void setModel(MiniMapModel* model);
 
     void mousePressEvent(QMouseEvent*);
     void mouseReleaseEvent(QMouseEvent*);
@@ -45,13 +44,11 @@ public:
     void keyPressEvent(QKeyEvent*);
 
 protected slots:
-    void setPosition(quint16 x, quint16 y, quint8 z);
+    void setPosition(const Position& position);
 
 protected:
     void clear();
     void refresh();
-
-    MiniMapFloorInterface* floorFromCache(quint8 z);
     
 private:
     QGraphicsScene* scene_;
@@ -59,7 +56,6 @@ private:
     QGraphicsLineItem* verticalLine_;
     MiniMapModel* model_;
 
-    QMap<quint8, MiniMapFloorInterface*> cache_;
     QPoint mousePosition_;
     QList<double> scales_;
     quint8 scaleIndex_;

@@ -18,6 +18,7 @@
 
 #include <MiniMapPartInterface.h>
 
+#include <QByteArray>
 #include <QImage>
 #include <QRect>
 
@@ -26,6 +27,9 @@ public:
     MiniMapPart(const QString& fileName);
 
     const QImage& image() const { return image_; }
+    const QByteArray& data() const { return data_; }
+
+    quint8 dataAt(quint16 x, quint16 y) const { return data_[x * MINIMAP_FILE_WIDTH + y]; }
 
     quint16 width() const { return MINIMAP_FILE_WIDTH; }
     quint16 height() const { return MINIMAP_FILE_HEIGHT; }
@@ -41,6 +45,7 @@ private:
     static int mapColor(quint8 color);
 
     QImage image_;
+    QByteArray data_;
 
     quint16 x_;
     quint16 y_;

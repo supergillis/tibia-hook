@@ -13,14 +13,22 @@
  * limitations under the License.
  */
 
-#ifndef MINIMAPINTERFACE_H
-#define MINIMAPINTERFACE_H
+#ifndef PATH_H
+#define PATH_H
 
-#include <MiniMapFloorInterface.h>
+#include <PathInterface.h>
+#include <Position.h>
 
-class MiniMapInterface {
+#include <QList>
+
+class Path: public PathInterface {
 public:
-    virtual MiniMapFloorInterface* createNewFloor(quint8 createNewFloor) const = 0;
+    Path(const QList<Position>& positions): positions_(positions) {}
+
+    QList<Position> path() const { return positions_; }
+
+private:
+    QList<Position> positions_;
 };
 
 #endif

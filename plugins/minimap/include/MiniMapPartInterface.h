@@ -22,6 +22,9 @@
 class MiniMapPartInterface {
 public:
     virtual const QImage& image() const = 0;
+    virtual const QByteArray& data() const = 0;
+
+    virtual quint8 dataAt(quint16 x, quint16 y) const = 0;
 
     virtual quint16 width() const = 0;
     virtual quint16 height() const = 0;
