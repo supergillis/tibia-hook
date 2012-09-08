@@ -38,10 +38,6 @@ QList<Position> PathFinderPlugin::findPath(MiniMapPluginInterface* map, const Po
     QList<Position> checkpoints = search.find();
     QList<Position> positions;
 
-    foreach (const Position& checkpoint, checkpoints) {
-        qDebug() << "checkpoint" << checkpoint.x << checkpoint.y;
-    }
-
     // Construct full position list
     Position current = start;
     while (!checkpoints.empty()) {
@@ -56,9 +52,20 @@ QList<Position> PathFinderPlugin::findPath(MiniMapPluginInterface* map, const Po
             }
             else if (dx != 0 && dy != 0) {
                 // Diagonal, convert to two non-diagonal moves
-                // TODO check if it is possible to go non-diagonal
-                positions.append(Position(current.x + dx, current.y, current.z));
-                positions.append(Position(current.x + dx, current.y + dy, current.z));
+                if (!floor->blocking(current.x + dx, current.y) && !floor->blocking(current.x + dx, current.y + dy)) {
+                    // It is possible to go horizontal and then vertical
+                    positions.append(Position(current.x + dx, current.y, current.z));
+                    positions.append(Position(current.x + dx, current.y + dy, current.z));
+                }
+                else if (!floor->blocking(current.x, current.y + dy) && !floor->blocking(current.x + dx, current.y + dy)) {
+                    // It is possible to go vertical and then horizontal
+                    positions.append(Position(current.x, current.y + dy, current.z));
+                    positions.append(Position(current.x + dx, current.y + dy, current.z));
+                }
+                else {
+                    // It is not possible to go horizontal or vertical, then we need to go diagonal
+                    positions.append(checkpoint);
+                }
             }
             else {
                 positions.append(checkpoint);

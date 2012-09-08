@@ -73,7 +73,7 @@ QList<Position> JumpPointSearch::find() {
  * Check if a point on the grid is present and walkable.
  */
 bool JumpPointSearch::isOpen(quint16 x, quint16 y) {
-    return floor_->boundary().contains(x, y) && floor_->dataAt(x, y) != 255;
+    return floor_->boundary().contains(x, y) && !floor_->blocking(x, y);
 }
 
 /**

@@ -28,7 +28,8 @@ public:
     const QRect& boundary() const { return bounds_; }
     quint8 z() const { return z_; }
 
-    quint8 dataAt(quint16 x, quint16 y) const;
+    bool blocking(quint16 x, quint16 y) const;
+    quint8 speed(quint16 x, quint16 y) const;
 
 private:
     QList<MiniMapPartInterface*> parts_;
