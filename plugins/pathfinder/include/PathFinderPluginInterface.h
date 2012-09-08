@@ -20,13 +20,14 @@
 #include <Position.h>
 
 #include <QtPlugin>
+#include <QList>
 
 class PathInterface;
 class PathFinderPluginInterface {
 public:
     virtual ~PathFinderPluginInterface() {}
 
-    virtual PathInterface* createNewPath(MiniMapPluginInterface* minimap, const Position& start, const Position& end, int maxSearchDist) const = 0;
+    virtual QList<Position> findPath(MiniMapPluginInterface* map, const Position& start, const Position& end) const = 0;
 };
 
 Q_DECLARE_INTERFACE(PathFinderPluginInterface, "PathFinderPluginInterface")

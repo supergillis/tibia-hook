@@ -25,7 +25,7 @@ MiniMapView::MiniMapView(PositionTrackerPluginInterface* positionTracker, QWidge
     positionTracker_(positionTracker),
     model_(NULL),
     floorIndex_(7) {
-    scales_ << 0.25 << 0.35 << 0.50 << 0.75 << 1.00 << 1.25 << 1.50 << 2.00 << 2.50 << 3.00;
+    scales_ << 0.25 << 0.35 << 0.50 << 0.75 << 1.00 << 1.25 << 1.50 << 2.00 << 2.50 << 3.00 << 4.00 << 6.00;
     scaleIndex_ = scales_.indexOf(1.00);
 
     setScene(scene_);
@@ -119,17 +119,42 @@ void MiniMapView::mousePressEvent(QMouseEvent* event) {
     if ((event->buttons() & Qt::RightButton) == Qt::RightButton) {
         event->accept();
 
-        QPointF mapped(mapToScene(event->pos()));
-        Position destination;
-        destination.x = (quint16) mapped.x();
-        destination.y = (quint16) mapped.y();
-        destination.z = floorIndex_;
+        /*static Position start;
 
-        QList<Position> path = model_->path(destination);
+        QPointF mapped(mapToScene(event->pos()));
+        if (start.x == 0) {
+            start.x = (quint16) mapped.x();
+            start.y = (quint16) mapped.y();
+            start.z = floorIndex_;
+        }
+        else {
+            Position end;
+            end.x = (quint16) mapped.x();
+            end.y = (quint16) mapped.y();
+            end.z = floorIndex_;
+
+            QList<Position> path = model_->path(start, end);
+            qDebug() << "path";
+            foreach (const Position& pos, path) {
+                qDebug() << "  " << pos.x << pos.y << pos.z;
+            }
+
+            start.x = 0;
+        }*/
+
+        QPointF mapped(mapToScene(event->pos()));
+        Position end;
+        end.x = (quint16) mapped.x();
+        end.y = (quint16) mapped.y();
+        end.z = floorIndex_;
+
+        QList<Position> path = model_->path(end);
+        qDebug() << "path";
         foreach (const Position& pos, path) {
-            qDebug() << "move" << pos.x << pos.y << pos.z;
+            qDebug() << "  " << pos.x << pos.y << pos.z;
         }
 
+        // Walk this path
         model_->walk(path);
     }
     else {

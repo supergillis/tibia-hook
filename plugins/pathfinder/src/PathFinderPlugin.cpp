@@ -14,16 +14,11 @@
  */
 
 #include "PathFinderPlugin.h"
-#include "Path.h"
-#include "AStarNodes.h"
+#include "JumpPointSearch.h"
 
 #include <MiniMapFloorInterface.h>
-#include <PathInterface.h>
 
-#include <stdexcept>
-
-#include <QVariantMap>
-#include <QPainter>
+#include <QDebug>
 
 #if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
 Q_EXPORT_PLUGIN2(be.gillis.pathfinder, PathFinderPlugin)
@@ -35,179 +30,51 @@ void PathFinderPlugin::install(HookInterface* hook, SettingsInterface* settings)
 void PathFinderPlugin::uninstall() {
 }
 
-PathInterface* PathFinderPlugin::createNewPath(MiniMapPluginInterface* map, const Position& start, const Position& end, int maxSearchDist) const {
-    QList<Position> positions;
-
-    if (start.z != end.z) {
-        return NULL;
-    }
-
-    AStarNodes nodes;
-    AStarNode* startNode = nodes.createOpenNode();
-    startNode->x = start.x;
-    startNode->y = start.y;
-    startNode->g = 0;
-    startNode->h = nodes.getEstimatedDistance(start.x, start.y, end.x, end.y);
-    startNode->f = startNode->g + startNode->h;
-    startNode->parent = NULL;
-    Position pos;
-    pos.z = start.z;
-    static int32_t neighbourOrderList[8][2] = {
-        { -1, 0},
-        {0, 1},
-        {1, 0},
-        {0, -1},
-
-        //diagonal
-        { -1, -1},
-        {1, -1},
-        {1, 1},
-        { -1, 1},
-    };
-
+QList<Position> PathFinderPlugin::findPath(MiniMapPluginInterface* map, const Position& start, const Position& end) const {
     MiniMapFloorInterface* floor = map->floor(start.z);
 
-    AStarNode* found = NULL;
+    JumpPointSearch search(floor, start.x, start.y, end.x, end.y);
 
-    while (maxSearchDist != -1 || nodes.countClosedNodes() < 100)
-    {
-        AStarNode* n = nodes.getBestNode();
+    QList<Position> checkpoints = search.find();
+    QList<Position> positions;
 
-        if (!n) {
-            //no path found
-            return NULL;
-        }
+    foreach (const Position& checkpoint, checkpoints) {
+        qDebug() << "checkpoint" << checkpoint.x << checkpoint.y;
+    }
 
-        if (n->x == end.x && n->y == end.y) {
-            found = n;
-            break;
-        }
-        else
-        {
-            for (int i = 0; i < 8; ++i)
-            {
-                pos.x = n->x + neighbourOrderList[i][0];
-                pos.y = n->y + neighbourOrderList[i][1];
-                bool outOfRange = false;
+    // Construct full position list
+    Position current = start;
+    while (!checkpoints.empty()) {
+        Position checkpoint = checkpoints.first();
+        int dx = checkpoint.x - current.x;
+        int dy = checkpoint.y - current.y;
 
-                if (maxSearchDist != -1 && (std::abs(end.x - pos.x) > maxSearchDist ||
-                                            std::abs(end.y - pos.y) > maxSearchDist))
-                {
-                    outOfRange = true;
-                }
-
-                if (floor->dataAt(pos.x, pos.y) == 255) {
-                    outOfRange = true;
-                }
-
-                if (!outOfRange)
-                {
-                    //The cost (g) for this neighbour
-                    int32_t cost = nodes.getMapWalkCost(n, pos);
-                    int32_t extraCost = nodes.getTileWalkCost();
-                    int32_t newg = n->g + cost + extraCost;
-                    //Check if the node is already in the closed/open list
-                    //If it exists and the nodes already on them has a lower cost (g) then we can ignore this neighbour node
-                    AStarNode* neighbourNode = nodes.getNodeInList(pos.x, pos.y);
-
-                    if (neighbourNode)
-                    {
-                        if (neighbourNode->g <= newg)
-                        {
-                            //The node on the closed/open list is cheaper than this one
-                            continue;
-                        }
-
-                        nodes.openNode(neighbourNode);
-                    }
-                    else
-                    {
-                        //Does not exist in the open/closed list, create a new node
-                        neighbourNode = nodes.createOpenNode();
-
-                        if (!neighbourNode)
-                        {
-                            //seems we ran out of nodes
-                            return NULL;
-                        }
-                    }
-
-                    //This node is the best node so far with this state
-                    neighbourNode->x = pos.x;
-                    neighbourNode->y = pos.y;
-                    neighbourNode->parent = n;
-                    neighbourNode->g = newg;
-                    neighbourNode->h = nodes.getEstimatedDistance(neighbourNode->x, neighbourNode->y,
-                                       end.x, end.y);
-                    neighbourNode->f = neighbourNode->g + neighbourNode->h;
-                }
+        // Directly accessible
+        if (dx <= 1 && dx >= -1 && dy <= 1 && dy >= -1) {
+            if(dx == 0 && dy == 0) {
+                // Same position
+            }
+            else if (dx != 0 && dy != 0) {
+                // Diagonal, convert to two non-diagonal moves
+                // TODO check if it is possible to go non-diagonal
+                positions.append(Position(current.x + dx, current.y, current.z));
+                positions.append(Position(current.x + dx, current.y + dy, current.z));
+            }
+            else {
+                positions.append(checkpoint);
             }
 
-            nodes.closeNode(n);
+            checkpoints.takeFirst();
+            current = checkpoint;
+        }
+        else {
+            Position next;
+            next.x = dx == 0 ? current.x : dx < 0 ? current.x - 1 : current.x + 1;
+            next.y = dy == 0 ? current.y : dy < 0 ? current.y - 1 : current.y + 1;
+            next.z = current.z;
+            checkpoints.prepend(next);
         }
     }
 
-    int32_t prevx = end.x;
-    int32_t prevy = end.y;
-    int32_t dx, dy;
-
-    if (!found) {
-        return NULL;
-    }
-
-    found = found->parent;
-
-    Position position;
-    position.z = start.z;
-
-    while (found)
-    {
-        /*pos.x = found->x;
-        pos.y = found->y;
-        dx = pos.x - prevx;
-        dy = pos.y - prevy;
-        prevx = pos.x;
-        prevy = pos.y;
-
-        if (dx == 1 && dy == 1)
-        {
-            dirList.push_front(NORTHWEST);
-        }
-        else if (dx == -1 && dy == 1)
-        {
-            dirList.push_front(NORTHEAST);
-        }
-        else if (dx == 1 && dy == -1)
-        {
-            dirList.push_front(SOUTHWEST);
-        }
-        else if (dx == -1 && dy == -1)
-        {
-            dirList.push_front(SOUTHEAST);
-        }
-        else if (dx == 1)
-        {
-            dirList.push_front(WEST);
-        }
-        else if (dx == -1)
-        {
-            dirList.push_front(EAST);
-        }
-        else if (dy == 1)
-        {
-            dirList.push_front(NORTH);
-        }
-        else if (dy == -1)
-        {
-            dirList.push_front(SOUTH);
-        }*/
-
-        position.x = found->x;
-        position.y = found->y;
-        positions.push_front(position);
-
-        found = found->parent;
-    }
-
-    return new Path(positions);
+    return positions;
 }

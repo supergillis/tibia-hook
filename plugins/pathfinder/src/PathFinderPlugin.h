@@ -22,6 +22,9 @@
 
 #include <QObject>
 
+#define MAP_NORMALWALKCOST 10
+#define MAP_DIAGONALWALKCOST 25
+
 class PathFinderPlugin: public QObject, public PluginInterface, public PathFinderPluginInterface {
 	Q_OBJECT
     Q_INTERFACES(PluginInterface PathFinderPluginInterface)
@@ -34,7 +37,7 @@ public:
     void install(HookInterface*, SettingsInterface*) throw(std::exception);
     void uninstall();
 
-    PathInterface* createNewPath(MiniMapPluginInterface* minimap, const Position& start, const Position& end, int maxSearchDist) const;
+    QList<Position> findPath(MiniMapPluginInterface* map, const Position& start, const Position& end) const;
 };
 
 #endif

@@ -9,11 +9,11 @@ INCLUDEPATH += include ../minimap/include
 
 SOURCES = \
     src/PathFinderPlugin.cpp \
-    AStarNodes.cpp
+    JumpPointSearch.cpp
 HEADERS = \
 	src/PathFinderPlugin.h \
-    AStarNodes.h \
-    Path.h
+    PriorityQueue.h \
+    JumpPointSearch.h
 
 OTHER_FILES += \
 	meta.js \

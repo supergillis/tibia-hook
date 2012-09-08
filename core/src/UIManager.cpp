@@ -6,6 +6,8 @@ UIManager::UIManager(QWidget* parent):
     setCentralWidget(tabs_);
     setVisible(true);
     setWindowTitle("Tibia Hook");
+
+    resize(1000, 800);
 }
 
 void UIManager::addTab(QWidget* tab, const QString& label) {

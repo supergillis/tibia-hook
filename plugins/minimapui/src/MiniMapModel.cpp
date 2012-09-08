@@ -15,8 +15,6 @@
 
 #include "MiniMapModel.h"
 
-#include <PathInterface.h>
-
 #include <QtCore>
 #include <QDebug>
 
@@ -43,14 +41,8 @@ QList<Position> MiniMapModel::path(const Position& start, const Position& end) {
         return QList<Position>();
     }
 
-    PathInterface* path = pathFinder_->createNewPath(miniMap_, start, end, -1);
-    if (path == NULL) {
-        return QList<Position>();
-    }
-
-    QList<Position> result = path->path();
-    delete path;
-    return result;
+    QList<Position> path = pathFinder_->findPath(miniMap_, start, end);
+    return path;
 }
 
 void MiniMapModel::walk(const QList<Position>& path) {
@@ -71,8 +63,8 @@ void MiniMapModel::playerMoved(const Position& pos) {
 
     if (!path_.empty()) {
         Position nextPos = path_.takeFirst();
-        qint16 dx = nextPos.x - pos.x;
-        qint16 dy = nextPos.y - pos.y;
+        int dx = nextPos.x - pos.x;
+        int dy = nextPos.y - pos.y;
 
         qDebug() << "current" << pos.x << pos.y << pos.z;
         qDebug() << "next" << nextPos.x << nextPos.y << nextPos.z;
