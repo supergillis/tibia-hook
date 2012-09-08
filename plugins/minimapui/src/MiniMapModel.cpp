@@ -20,10 +20,11 @@
 #include <QtCore>
 #include <QDebug>
 
-MiniMapModel::MiniMapModel(SenderInterface* sender, MiniMapPluginInterface* miniMap, PathFinderPluginInterface* pathFinder):
+MiniMapModel::MiniMapModel(SenderInterface* sender, MiniMapPluginInterface* miniMap, PathFinderPluginInterface* pathFinder, PositionTrackerPluginInterface* positionTracker):
     sender_(sender),
     miniMap_(miniMap),
-    pathFinder_(pathFinder) {
+    pathFinder_(pathFinder),
+    positionTracker_(positionTracker) {
 }
 
 MiniMapFloorInterface* MiniMapModel::floor(int floorIndex) {
@@ -31,12 +32,10 @@ MiniMapFloorInterface* MiniMapModel::floor(int floorIndex) {
 }
 
 QList<Position> MiniMapModel::path(const Position& end) {
-    Position start;
-    start.x = playerPos_.x;
-    start.y = playerPos_.y;
-    start.z = playerPos_.z;
-
-    return path(start, end);
+    if (positionTracker_ == NULL) {
+        return QList<Position>();
+    }
+    return path(positionTracker_->position(), end);
 }
 
 QList<Position> MiniMapModel::path(const Position& start, const Position& end) {
@@ -56,14 +55,13 @@ QList<Position> MiniMapModel::path(const Position& start, const Position& end) {
 
 void MiniMapModel::walk(const QList<Position>& path) {
     // TODO put walker in separate plugin
-    path_ = path;
-
-    if (path_.length() > 0) {
-        QObject::disconnect(this, SIGNAL(playerPositionChanged(const Position&)), this, SLOT(playerMoved(const Position&)));
-        QObject::connect(this, SIGNAL(playerPositionChanged(const Position&)), this, SLOT(playerMoved(const Position&)));
+    if (positionTracker_ != NULL && path.length() > 0) {
+        // Notify when we walked
+        path_ = path;
+        positionTracker_->connectPositionChanged(this, SLOT(playerMoved(const Position&)));
 
         // Intialize walking
-        playerMoved(playerPos_);
+        playerMoved(positionTracker_->position());
     }
 }
 
@@ -132,49 +130,5 @@ void MiniMapModel::playerMoved(const Position& pos) {
         }
     }
     qDebug() << "disconnect";
-    QObject::disconnect(this, SIGNAL(playerPositionChanged(const Position&)), this, SLOT(playerMoved(const Position&)));
-}
-
-void MiniMapModel::handlePacket(PacketReaderInterface& reader) {
-    // TODO put position tracker in separate plugin
-
-    quint8 type = reader.readU8();
-    if (type == 100) {
-        // Totally new position
-        playerPos_.x = reader.readU16();
-        playerPos_.y = reader.readU16();
-        playerPos_.z = reader.readU8();
-    }
-    else if (type == 101) {
-        // Up
-        playerPos_.y--;
-    }
-    else if (type == 102) {
-        // Right
-        playerPos_.x++;
-    }
-    else if (type == 103) {
-        // Down
-        playerPos_.y++;
-    }
-    else if (type == 104) {
-        // Left
-        playerPos_.x--;
-    }
-    else if (type == 190) {
-        // Up
-        playerPos_.x++;
-        playerPos_.y++;
-        playerPos_.z--;
-    }
-    else if (type == 191) {
-        // Up
-        playerPos_.x--;
-        playerPos_.y--;
-        playerPos_.z++;
-    }
-
-    qDebug() << "player position changed";
-
-    emit playerPositionChanged(playerPos_);
+    positionTracker_->disconnectPositionChanged(this, SLOT(playerMoved(const Position&)));
 }

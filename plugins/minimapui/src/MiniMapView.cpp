@@ -19,9 +19,10 @@
 #include <QGraphicsPixmapItem>
 #include <QScrollBar>
 
-MiniMapView::MiniMapView(QWidget* parent):
+MiniMapView::MiniMapView(PositionTrackerPluginInterface* positionTracker, QWidget* parent):
     QGraphicsView(parent),
     scene_(new QGraphicsScene(this)),
+    positionTracker_(positionTracker),
     model_(NULL),
     floorIndex_(7) {
     scales_ << 0.25 << 0.35 << 0.50 << 0.75 << 1.00 << 1.25 << 1.50 << 2.00 << 2.50 << 3.00;
@@ -45,24 +46,15 @@ MiniMapView::~MiniMapView() {
 }
 
 void MiniMapView::setModel(MiniMapModel* model) {
-    if (model_ != NULL) {
-#if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
-        QObject::disconnect(model_, SIGNAL(playerPositionChanged(const Position&)), this, SLOT(setPosition(const Position&)));
-#else
-        QObject::disconnect(model_, &MiniMapModel::playerPositionChanged, this, &MiniMapView::setPosition);
-#endif
+    if (model_ != NULL && positionTracker_ != NULL) {
+        positionTracker_->disconnectPositionChanged(this, SLOT(setPosition(const Position&)));
     }
 
-    // Reset values
     model_ = model;
     floorIndex_ = 7;
 
-    if (model_ != NULL) {
-#if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
-        QObject::connect(model_, SIGNAL(playerPositionChanged(const Position&)), this, SLOT(setPosition(const Position&)));
-#else
-        QObject::connect(model_, &MiniMapModel::playerPositionChanged, this, &MiniMapView::setPosition);
-#endif
+    if (model_ != NULL && positionTracker_ != NULL) {
+        positionTracker_->connectPositionChanged(this, SLOT(setPosition(const Position&)));
     }
 
     refresh();

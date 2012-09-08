@@ -17,6 +17,7 @@
 
 #include <MiniMapPluginInterface.h>
 #include <PathFinderPluginInterface.h>
+#include <PositionTrackerPluginInterface.h>
 
 #include <stdexcept>
 
@@ -47,32 +48,22 @@ void MiniMapUIPlugin::install(HookInterface* hook, SettingsInterface* settings) 
         pathFinderPlugin = qobject_cast<PathFinderPluginInterface*>(plugin);
     }
 
-    model_ = new MiniMapModel(hook->sender(), miniMapPlugin, pathFinderPlugin);
-    view_ = new MiniMapView();
+    // Try to load the position plugin
+    PositionTrackerPluginInterface* positionPlugin = NULL;
+    plugin = hook->plugins()->findPluginByName("positiontracker");
+    if(plugin != NULL) {
+        positionPlugin = qobject_cast<PositionTrackerPluginInterface*>(plugin);
+    }
+
+    model_ = new MiniMapModel(hook->sender(), miniMapPlugin, pathFinderPlugin, positionPlugin);
+    view_ = new MiniMapView(positionPlugin);
     view_->setModel(model_);
 
     hook_ = hook;
     hook_->ui()->addTab(view_, "Map");
-
-    hook_->addIncomingReadOnlyProxy(100, model_);
-    hook_->addIncomingReadOnlyProxy(101, model_);
-    hook_->addIncomingReadOnlyProxy(102, model_);
-    hook_->addIncomingReadOnlyProxy(103, model_);
-    hook_->addIncomingReadOnlyProxy(104, model_);
-    hook_->addIncomingReadOnlyProxy(190, model_);
-    hook_->addIncomingReadOnlyProxy(191, model_);
 }
 
 void MiniMapUIPlugin::uninstall() {
-    // Clean up proxies
-    hook_->removeIncomingReadOnlyProxy(191, model_);
-    hook_->removeIncomingReadOnlyProxy(190, model_);
-    hook_->removeIncomingReadOnlyProxy(104, model_);
-    hook_->removeIncomingReadOnlyProxy(103, model_);
-    hook_->removeIncomingReadOnlyProxy(102, model_);
-    hook_->removeIncomingReadOnlyProxy(101, model_);
-    hook_->removeIncomingReadOnlyProxy(100, model_);
-
     // Clean up UI
     hook_->ui()->removeTab(view_);
 

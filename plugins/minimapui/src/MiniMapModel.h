@@ -20,21 +20,20 @@
 #include <MiniMapPluginInterface.h>
 #include <PathFinderPluginInterface.h>
 #include <Position.h>
+#include <PositionTrackerPluginInterface.h>
 #include <ReadOnlyProxyInterface.h>
 #include <SenderInterface.h>
 
 #include <QImage>
 #include <QObject>
 
-class MiniMapModel: public QObject, public ReadOnlyProxyInterface {
+class MiniMapModel: public QObject {
     Q_OBJECT
 
 public:
-    MiniMapModel(SenderInterface* sender, MiniMapPluginInterface* miniMap, PathFinderPluginInterface* pathFinder);
+    MiniMapModel(SenderInterface* sender, MiniMapPluginInterface* miniMap, PathFinderPluginInterface* pathFinder, PositionTrackerPluginInterface* positionTracker);
 
     MiniMapFloorInterface* floor(int floorIndex);
-
-    void handlePacket(PacketReaderInterface& reader);
 
     QList<Position> path(const Position& end);
     QList<Position> path(const Position& start, const Position& end);
@@ -44,15 +43,11 @@ public:
 private slots:
     void playerMoved(const Position& position);
 
-signals:
-    void playerPositionChanged(const Position& position);
-
 private:
     SenderInterface* sender_;
     MiniMapPluginInterface* miniMap_;
     PathFinderPluginInterface* pathFinder_;
-
-    Position playerPos_;
+    PositionTrackerPluginInterface* positionTracker_;
 
     QList<Position> path_;
 };

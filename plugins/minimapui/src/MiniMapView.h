@@ -32,8 +32,8 @@ class MiniMapView: public QGraphicsView {
     Q_OBJECT
 
 public:
-    MiniMapView(QWidget* = 0);
-    virtual ~MiniMapView();
+    MiniMapView(PositionTrackerPluginInterface* positionTracker, QWidget* parent = 0);
+    ~MiniMapView();
 
     void setModel(MiniMapModel* model);
 
@@ -54,6 +54,8 @@ private:
     QGraphicsScene* scene_;
     QGraphicsLineItem* horizontalLine_;
     QGraphicsLineItem* verticalLine_;
+
+    PositionTrackerPluginInterface* positionTracker_;
     MiniMapModel* model_;
 
     QPoint mousePosition_;
