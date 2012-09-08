@@ -18,8 +18,6 @@
 
 #include <MiniMapFloorInterface.h>
 
-#include <QDebug>
-
 #if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
 Q_EXPORT_PLUGIN2(be.gillis.pathfinder, PathFinderPlugin)
 #endif

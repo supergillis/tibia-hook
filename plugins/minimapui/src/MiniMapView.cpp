@@ -15,7 +15,6 @@
 
 #include "MiniMapView.h"
 
-#include <QDebug>
 #include <QGraphicsPixmapItem>
 #include <QScrollBar>
 
@@ -126,6 +125,7 @@ void MiniMapView::mousePressEvent(QMouseEvent* event) {
         end.z = floorIndex_;
 
         // Walk this path
+        QList<Position> path = model_->path(end);
         model_->walk(path);
     }
     else {
