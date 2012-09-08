@@ -13,27 +13,19 @@
  * limitations under the License.
  */
 
-#ifndef MINIMAPPARTINTERFACE_H
-#define MINIMAPPARTINTERFACE_H
+#ifndef WALKERPLUGININTERFACE_H
+#define WALKERPLUGININTERFACE_H
 
-#include <QImage>
-#include <QRect>
+#include <Position.h>
 
-class MiniMapPartInterface {
+#include <QtPlugin>
+#include <QList>
+
+class WalkerPluginInterface {
 public:
-    virtual ~MiniMapPartInterface() {}
-
-    virtual const QImage& image() const = 0;
-    virtual const QByteArray& data() const = 0;
-
-    virtual quint8 dataAt(quint16 x, quint16 y) const = 0;
-
-    virtual quint16 width() const = 0;
-    virtual quint16 height() const = 0;
-
-    virtual quint16 x() const = 0;
-    virtual quint16 y() const = 0;
-    virtual quint8 z() const = 0;
+    virtual void walk(const QList<Position>& path) = 0;
 };
+
+Q_DECLARE_INTERFACE(WalkerPluginInterface, "WalkerPluginInterface")
 
 #endif

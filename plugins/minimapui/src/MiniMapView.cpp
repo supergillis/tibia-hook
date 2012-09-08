@@ -18,10 +18,11 @@
 #include <QGraphicsPixmapItem>
 #include <QScrollBar>
 
-MiniMapView::MiniMapView(PositionTrackerPluginInterface* positionTracker, QWidget* parent):
+MiniMapView::MiniMapView(PositionTrackerPluginInterface* positionTracker, WalkerPluginInterface* walker, QWidget* parent):
     QGraphicsView(parent),
     scene_(new QGraphicsScene(this)),
     positionTracker_(positionTracker),
+    walker_(walker),
     model_(NULL),
     floorIndex_(7) {
     scales_ << 0.25 << 0.35 << 0.50 << 0.75 << 1.00 << 1.25 << 1.50 << 2.00 << 2.50 << 3.00 << 4.00 << 6.00;
@@ -118,15 +119,17 @@ void MiniMapView::mousePressEvent(QMouseEvent* event) {
     if ((event->buttons() & Qt::RightButton) == Qt::RightButton) {
         event->accept();
 
-        QPointF mapped(mapToScene(event->pos()));
-        Position end;
-        end.x = (quint16) mapped.x();
-        end.y = (quint16) mapped.y();
-        end.z = floorIndex_;
+        if (walker_ != NULL) {
+            QPointF mapped(mapToScene(event->pos()));
+            Position end;
+            end.x = (quint16) mapped.x();
+            end.y = (quint16) mapped.y();
+            end.z = floorIndex_;
 
-        // Walk this path
-        QList<Position> path = model_->path(end);
-        model_->walk(path);
+            // Walk this path
+            QList<Position> path = model_->path(end);
+            walker_->walk(path);
+        }
     }
     else {
         QGraphicsView::mousePressEvent(event);

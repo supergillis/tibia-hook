@@ -18,6 +18,7 @@
 #include <MiniMapPluginInterface.h>
 #include <PathFinderPluginInterface.h>
 #include <PositionTrackerPluginInterface.h>
+#include <WalkerPluginInterface.h>
 
 #include <stdexcept>
 
@@ -29,6 +30,8 @@ MiniMapUIPlugin::MiniMapUIPlugin():
     model_(NULL),
     view_(NULL) {
 }
+
+#include <QDebug>
 
 void MiniMapUIPlugin::install(HookInterface* hook, SettingsInterface* settings) throw(std::exception) {
     QObject* plugin = hook->plugins()->findPluginByName("minimap");
@@ -55,8 +58,15 @@ void MiniMapUIPlugin::install(HookInterface* hook, SettingsInterface* settings) 
         positionPlugin = qobject_cast<PositionTrackerPluginInterface*>(plugin);
     }
 
+    // Try to load the position plugin
+    WalkerPluginInterface* walkerPlugin = NULL;
+    plugin = hook->plugins()->findPluginByName("walker");
+    if(plugin != NULL) {
+        walkerPlugin = qobject_cast<WalkerPluginInterface*>(plugin);
+    }
+
     model_ = new MiniMapModel(hook->sender(), miniMapPlugin, pathFinderPlugin, positionPlugin);
-    view_ = new MiniMapView(positionPlugin);
+    view_ = new MiniMapView(positionPlugin, walkerPlugin);
     view_->setModel(model_);
 
     hook_ = hook;

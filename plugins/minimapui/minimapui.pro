@@ -6,6 +6,7 @@ DESTDIR = $${DESTDIR}/minimapui
 INCLUDEPATH += ../minimap/include
 INCLUDEPATH += ../pathfinder/include
 INCLUDEPATH += ../positiontracker/include
+INCLUDEPATH += ../walker/include
 
 SOURCES = \
     src/MiniMapUIPlugin.cpp \

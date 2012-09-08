@@ -13,24 +13,37 @@
  * limitations under the License.
  */
 
-#ifndef MINIMAPFLOORINTERFACE_H
-#define MINIMAPFLOORINTERFACE_H
+#ifndef WALKERPLUGIN_H
+#define WALKERPLUGIN_H
 
-#include "MiniMapPartInterface.h"
+#include "Walker.h"
 
+#include <WalkerPluginInterface.h>
+#include <HookInterface.h>
+#include <PluginInterface.h>
+
+#include <QtPlugin>
 #include <QList>
-#include <QRect>
+#include <QObject>
 
-class MiniMapFloorInterface {
+class WalkerPlugin: public QObject, public PluginInterface, public WalkerPluginInterface {
+	Q_OBJECT
+    Q_INTERFACES(PluginInterface)
+
+#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
+    Q_PLUGIN_METADATA(IID "be.gillis.walker" FILE "meta.js")
+#endif
+
 public:
-    virtual ~MiniMapFloorInterface() {}
+    WalkerPlugin();
 
-    virtual const QList<MiniMapPartInterface*>& parts() = 0;
-    virtual const QRect& boundary() const = 0;
-    virtual quint8 z() const = 0;
+    void install(HookInterface*, SettingsInterface*) throw(std::exception);
+    void uninstall();
 
-    virtual bool blocking(quint16 x, quint16 y) const = 0;
-    virtual quint8 speed(quint16 x, quint16 y) const = 0;
+    void walk(const QList<Position>& path);
+
+private:
+    Walker* walker_;
 };
 
 #endif

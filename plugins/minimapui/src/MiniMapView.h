@@ -20,6 +20,8 @@
 
 #include <MiniMapFloorInterface.h>
 #include <ReadOnlyProxyInterface.h>
+#include <PositionTrackerPluginInterface.h>
+#include <WalkerPluginInterface.h>
 
 #include <QGraphicsView>
 #include <QWheelEvent>
@@ -32,7 +34,7 @@ class MiniMapView: public QGraphicsView {
     Q_OBJECT
 
 public:
-    MiniMapView(PositionTrackerPluginInterface* positionTracker, QWidget* parent = 0);
+    MiniMapView(PositionTrackerPluginInterface* positionTracker, WalkerPluginInterface* walker, QWidget* parent = 0);
     ~MiniMapView();
 
     void setModel(MiniMapModel* model);
@@ -56,6 +58,7 @@ private:
     QGraphicsLineItem* verticalLine_;
 
     PositionTrackerPluginInterface* positionTracker_;
+    WalkerPluginInterface* walker_;
     MiniMapModel* model_;
 
     QPoint mousePosition_;
