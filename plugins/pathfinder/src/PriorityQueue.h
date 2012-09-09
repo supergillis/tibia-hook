@@ -21,6 +21,10 @@ public:
         return QListIterator<T>(*this);
     }
 
+    int length() {
+        return QList<T>::length();
+    }
+
     void clear() {
         return QList<T>::clear();
     }

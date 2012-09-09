@@ -30,4 +30,5 @@ HEADERS = src/Application.h \
     src/ProxyManager.h \
     src/PacketReader.h \
     src/Packet.h \
-    include/Position.h
+    include/Position.h \
+    include/Constants.h

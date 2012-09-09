@@ -4,14 +4,13 @@ TARGET = walker
 DESTDIR = $${DESTDIR}/walker
 
 INCLUDEPATH += include
+INCLUDEPATH += ../channels/include
 INCLUDEPATH += ../positiontracker/include
 
 SOURCES = \
-    src/WalkerPlugin.cpp \
-	src/Walker.cpp
+    src/WalkerPlugin.cpp
 HEADERS = \
-    src/WalkerPlugin.h \
-	src/Walker.h
+    src/WalkerPlugin.h
 
 OTHER_FILES += \
 	meta.js \

@@ -53,13 +53,13 @@ class DetourManager {
         quint8* buffer;
         quint32 size;
         quint32 position;
-    };
+    } ((packed));
 
 public:
     inline static DetourManager* instance() {
         if(instance_ == NULL) {
             instance_ = new DetourManager();
-            initialize();
+            construct();
         }
         return instance_;
     }
@@ -90,10 +90,16 @@ private:
 
     static DetourManager* instance_;
 
-    static void initialize() {
+    static void construct() {
         loopDetour_ = new MologieDetours::Detour<LoopSignature*>((LoopSignature*) LOOP_FUNCTION_ADDRESS, &DetourManager::onLoop);
         sendDetour_ = new MologieDetours::Detour<SendSignature*>((SendSignature*) SEND_FUNCTION_ADDRESS, &DetourManager::onSend);
         parserNextDetour_ = new MologieDetours::Detour<ParserNextSignature*>((ParserNextSignature*) PARSER_NEXT_FUNCTION_ADDRESS, &DetourManager::onParserNext);
+    }
+
+    static void destruct() {
+        delete parserNextDetour_;
+        delete sendDetour_;
+        delete loopDetour_;
     }
 
     static void onLoop(LOOP_FUNCTION_PARAMETERS);

@@ -20,17 +20,21 @@
 
 namespace PacketCodes {
 
-enum In: quint8 {
+enum In {
+    MapFull = 100,
+    MapTopRow = 101,
+    MapRightRow = 102,
+    MapBottomRow = 103,
+    MapLeftRow = 104,
 
-MapFull = 100,
-MapTopRow = 101,
-MapRightRow = 102,
-MapBottomRow = 103,
-MapLeftRow = 104,
+    FloorChangeUp = 190,
+    FloorChangeDown = 191,
 
-FloorChangeUp = 190,
-FloorChangeDown = 191,
-
+    Speak = 170,
+    ChannelList = 171,
+    ChannelOpen = 172,
+    ChannelOpenPrivate = 173,
+    ChannelClose = 179,
 };
 
 }

@@ -95,16 +95,7 @@ void DetourManager::onSend(bool encrypt) {
   * This function runs in the Tibia thread.
   */
 int DetourManager::onParserNext() {
-    if (instance_->sendingToClient_) {
-		ParserStream* stream = instance_->parserStream_;
-		if (stream->position < stream->size) {
-			quint8 command = *((quint8*) (stream->buffer + stream->position));
-			stream->position++;
-			return command;
-		}
-		return -1;
-    }
-    if (instance_->serverHandler_ != NULL) {
+    if (!instance_->sendingToClient_ && instance_->serverHandler_ != NULL) {
 		int command = parserNextDetour_->GetOriginalFunction()();
 		if (command != -1) {
 			ParserStream* stream = instance_->parserStream_;

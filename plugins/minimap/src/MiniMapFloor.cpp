@@ -80,10 +80,14 @@ MiniMapFloor::~MiniMapFloor() {
 }
 
 bool MiniMapFloor::blocking(quint16 x, quint16 y) const {
-    return speed(x, y) == 255;
+    return dataAt(x, y) == 255;
 }
 
-quint8 MiniMapFloor::speed(quint16 x, quint16 y) const {
+quint8 MiniMapFloor::cost(quint16 x, quint16 y) const {
+    return (dataAt(x, y) * 100) / 255;
+}
+
+quint8 MiniMapFloor::dataAt(quint16 x, quint16 y) const {
     foreach (const MiniMapPartInterface* part, parts_) {
         QRect bounds(part->x(), part->y(), part->width(), part->height());
         if (bounds.contains(x, y)) {

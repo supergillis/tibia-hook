@@ -1,2 +1,2 @@
 TEMPLATE = subdirs
-SUBDIRS = battlelist battlelistui minimap minimapui pathfinder positiontracker walker
+SUBDIRS = battlelist battlelistui channels minimap minimapui pathfinder positiontracker walker

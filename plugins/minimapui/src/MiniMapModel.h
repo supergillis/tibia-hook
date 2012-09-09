@@ -35,6 +35,9 @@ public:
 
     MiniMapFloorInterface* floor(int floorIndex);
 
+    MiniMapPluginInterface* miniMap() { return miniMap_; }
+    PathFinderPluginInterface* pathFinder() { return pathFinder_; }
+
     QList<Position> path(const Position& end);
     QList<Position> path(const Position& start, const Position& end);
 

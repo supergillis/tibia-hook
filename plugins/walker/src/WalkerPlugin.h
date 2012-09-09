@@ -16,19 +16,20 @@
 #ifndef WALKERPLUGIN_H
 #define WALKERPLUGIN_H
 
-#include "Walker.h"
-
+#include <ChannelsPluginInterface.h>
 #include <WalkerPluginInterface.h>
 #include <HookInterface.h>
 #include <PluginInterface.h>
+#include <PositionTrackerPluginInterface.h>
 
 #include <QtPlugin>
 #include <QList>
 #include <QObject>
 
+class Walker;
 class WalkerPlugin: public QObject, public PluginInterface, public WalkerPluginInterface {
 	Q_OBJECT
-    Q_INTERFACES(PluginInterface)
+    Q_INTERFACES(PluginInterface WalkerPluginInterface)
 
 #if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
     Q_PLUGIN_METADATA(IID "be.gillis.walker" FILE "meta.js")
@@ -44,6 +45,28 @@ public:
 
 private:
     Walker* walker_;
+};
+
+class Walker: public QObject {
+    Q_OBJECT
+
+public:
+    Walker(SenderInterface* sender, PositionTrackerPluginInterface* positionTracker, ChannelsPluginInterface* channels, QObject* parent = 0);
+    ~Walker();
+
+    void walk(const QList<Position>& path);
+
+private slots:
+    void moved(const Position& position);
+
+private:
+    SenderInterface* sender_;
+    PositionTrackerPluginInterface* positionTracker_;
+    ChannelsPluginInterface* channels_;
+
+    QList<Position> path_;
+
+    quint16 channelId_;
 };
 
 #endif

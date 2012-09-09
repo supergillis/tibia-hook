@@ -119,16 +119,28 @@ void MiniMapView::mousePressEvent(QMouseEvent* event) {
     if ((event->buttons() & Qt::RightButton) == Qt::RightButton) {
         event->accept();
 
-        if (walker_ != NULL) {
-            QPointF mapped(mapToScene(event->pos()));
-            Position end;
-            end.x = (quint16) mapped.x();
-            end.y = (quint16) mapped.y();
-            end.z = floorIndex_;
+        QPointF mapped(mapToScene(event->pos()));
+        Position clicked;
+        clicked.x = (quint16) mapped.x();
+        clicked.y = (quint16) mapped.y();
+        clicked.z = floorIndex_;
 
-            // Walk this path
-            QList<Position> path = model_->path(end);
-            walker_->walk(path);
+        if ((event->modifiers() & Qt::ControlModifier) == Qt::ControlModifier) {
+            static Position start;
+            if (start.x == 0) {
+                start = clicked;
+            }
+            else {
+                model_->pathFinder()->findPath(model_->miniMap(), start, clicked);
+                start.x = 0;
+            }
+        }
+        else {
+            if (walker_ != NULL) {
+                // Walk this path
+                QList<Position> path = model_->path(clicked);
+                walker_->walk(path);
+            }
         }
     }
     else {

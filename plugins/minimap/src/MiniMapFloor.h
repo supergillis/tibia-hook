@@ -29,9 +29,13 @@ public:
     quint8 z() const { return z_; }
 
     bool blocking(quint16 x, quint16 y) const;
-    quint8 speed(quint16 x, quint16 y) const;
+    quint8 cost(quint16 x, quint16 y) const;
+
+protected:
+    quint8 dataAt(quint16 x, quint16 y) const;
 
 private:
+
     QList<MiniMapPartInterface*> parts_;
     QRect bounds_;
     quint8 z_;

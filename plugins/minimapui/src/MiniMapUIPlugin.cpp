@@ -31,9 +31,7 @@ MiniMapUIPlugin::MiniMapUIPlugin():
     view_(NULL) {
 }
 
-#include <QDebug>
-
-void MiniMapUIPlugin::install(HookInterface* hook, SettingsInterface* settings) throw(std::exception) {
+void MiniMapUIPlugin::install(HookInterface* hook, SettingsInterface*) throw(std::exception) {
     QObject* plugin = hook->plugins()->findPluginByName("minimap");
     if(plugin == NULL) {
         throw std::runtime_error("The 'minimap' plugin must be loaded before loading the 'minimapui' plugin!");
@@ -58,7 +56,7 @@ void MiniMapUIPlugin::install(HookInterface* hook, SettingsInterface* settings) 
         positionPlugin = qobject_cast<PositionTrackerPluginInterface*>(plugin);
     }
 
-    // Try to load the position plugin
+    // Try to load the walker plugin
     WalkerPluginInterface* walkerPlugin = NULL;
     plugin = hook->plugins()->findPluginByName("walker");
     if(plugin != NULL) {

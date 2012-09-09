@@ -40,7 +40,8 @@ public:
     JumpPointSearch(MiniMapFloorInterface* floor, quint16 x, quint16 y, quint16 ex, quint16 ey);
     ~JumpPointSearch();
 
-    QList<Position> find();
+    QList<Position> checkpoints();
+    QList<Position> positions();
 
 private:
     bool isOpen(quint16 x, quint16 y);
@@ -64,7 +65,6 @@ private:
     QList<JpsNode*> nodes_;
     QList<Position2D> closed_;
     PriorityQueue<JpsNode*, JpsNodeComparator> open_;
-
 };
 
 #endif

@@ -8,12 +8,14 @@ DESTDIR = $${DESTDIR}/pathfinder
 INCLUDEPATH += include ../minimap/include
 
 SOURCES = \
-    src/PathFinderPlugin.cpp \
-    JumpPointSearch.cpp
+	src/PathFinderPlugin.cpp \
+    src/JumpPointSearch.cpp \
+    HpaCluster.cpp
 HEADERS = \
 	src/PathFinderPlugin.h \
-    PriorityQueue.h \
-    JumpPointSearch.h
+    src/PriorityQueue.h \
+    src/JumpPointSearch.h \
+    HpaCluster.h
 
 OTHER_FILES += \
 	meta.js \

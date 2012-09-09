@@ -24,7 +24,7 @@ JumpPointSearch::~JumpPointSearch() {
 /**
  * Find and return the the path
  */
-QList<Position> JumpPointSearch::find() {
+QList<Position> JumpPointSearch::checkpoints() {
     JpsNode* found = NULL;
     JpsNode* node = new JpsNode();
     node->x = startX_;
@@ -66,6 +66,63 @@ QList<Position> JumpPointSearch::find() {
         found = found->parent;
     }
 
+    return positions;
+}
+
+/**
+ * Find and return the the path
+ */
+QList<Position> JumpPointSearch::positions() {
+    QList<Position> checks(checkpoints());
+    QList<Position> positions;
+
+    // Construct full position list
+    quint16 currentX = startX_;
+    quint16 currentY = startY_;
+    quint8 currentZ = floor_->z();
+    while (!checks.empty()) {
+        Position checkpoint = checks.first();
+        int dx = checkpoint.x - currentX;
+        int dy = checkpoint.y - currentY;
+
+        // Directly accessible
+        if (dx <= 1 && dx >= -1 && dy <= 1 && dy >= -1) {
+            if (dx == 0 && dy == 0) {
+                // Same position
+            }
+            else if (dx != 0 && dy != 0) {
+                // Diagonal, convert to two non-diagonal moves
+                if (!floor_->blocking(currentX + dx, currentY) && !floor_->blocking(currentX + dx, currentY + dy)) {
+                    // It is possible to go horizontal and then vertical
+                    positions.append(Position(currentX + dx, currentY, currentZ));
+                    positions.append(Position(currentX + dx, currentY + dy, currentZ));
+                }
+                else if (!floor_->blocking(currentX, currentY + dy) && !floor_->blocking(currentX + dx, currentY + dy)) {
+                    // It is possible to go vertical and then horizontal
+                    positions.append(Position(currentX, currentY + dy, currentZ));
+                    positions.append(Position(currentX + dx, currentY + dy, currentZ));
+                }
+                else {
+                    // It is not possible to go horizontal or vertical, then we need to go diagonal
+                    positions.append(checkpoint);
+                }
+            }
+            else {
+                positions.append(checkpoint);
+            }
+
+            checks.takeFirst();
+            currentX = checkpoint.x;
+            currentY = checkpoint.y;
+        }
+        else {
+            Position next;
+            next.x = dx == 0 ? currentX : dx < 0 ? currentX - 1 : currentX + 1;
+            next.y = dy == 0 ? currentY : dy < 0 ? currentY - 1 : currentY + 1;
+            next.z = currentZ;
+            checks.prepend(next);
+        }
+    }
     return positions;
 }
 
