@@ -2,21 +2,15 @@ include(../plugins.pri)
 
 QMAKE_CXXFLAGS += -std=c++0x
 
-TARGET = pathfinder
-DESTDIR = $${DESTDIR}/pathfinder
+TARGET = channels
+DESTDIR = $${DESTDIR}/channels
 
 INCLUDEPATH += include
-INCLUDEPATH += ../minimap/include
 
 SOURCES = \
-	src/PathFinderPlugin.cpp \
-	src/AStar.cpp \
-	src/HpaStar.cpp
+    src/ChannelsPlugin.cpp
 HEADERS = \
-	src/PathFinderPlugin.h \
-	src/PriorityQueue.h \
-	src/AStar.h \
-	src/HpaStar.h
+    src/ChannelsPlugin.h
 
 OTHER_FILES += \
 	meta.js \

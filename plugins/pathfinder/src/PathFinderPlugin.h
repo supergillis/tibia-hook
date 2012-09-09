@@ -16,14 +16,15 @@
 #ifndef PATHFINDERPLUGIN_H
 #define PATHFINDERPLUGIN_H
 
+#include <AStarGridInterface.h>
 #include <MiniMapPluginInterface.h>
 #include <PathFinderPluginInterface.h>
 #include <PluginInterface.h>
 
-#include <QObject>
+#include <Direction.h>
+#include <Position.h>
 
-#define MAP_NORMALWALKCOST 10
-#define MAP_DIAGONALWALKCOST 25
+#include <QObject>
 
 class PathFinderPlugin: public QObject, public PluginInterface, public PathFinderPluginInterface {
 	Q_OBJECT
@@ -37,7 +38,7 @@ public:
     void install(HookInterface*, SettingsInterface*) throw(std::exception);
     void uninstall();
 
-    QList<Position> findPath(MiniMapPluginInterface* map, const Position& start, const Position& end) const;
+    QList<Direction> findPath(AStarGridInterface* grid, quint16 x, quint16 y, quint16 ex, quint16 ey) const;
 };
 
 #endif

@@ -13,20 +13,12 @@
  * limitations under the License.
  */
 
-#ifndef WALKERPLUGININTERFACE_H
-#define WALKERPLUGININTERFACE_H
+#ifndef HPASTAR_H
+#define HPASTAR_H
 
-#include <Direction.h>
-
-#include <QtPlugin>
-#include <QList>
-
-class WalkerPluginInterface {
+class HpaStar {
 public:
-    virtual void walk(const QList<Direction>& directions) = 0;
-    virtual void move(const Direction& direction) = 0;
+    HpaStar();
 };
-
-Q_DECLARE_INTERFACE(WalkerPluginInterface, "WalkerPluginInterface")
 
 #endif

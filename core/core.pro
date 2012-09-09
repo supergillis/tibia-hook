@@ -31,4 +31,5 @@ HEADERS = src/Application.h \
     src/PacketReader.h \
     src/Packet.h \
     include/Position.h \
-    include/Constants.h
+    include/Constants.h \
+    include/Direction.h

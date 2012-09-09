@@ -22,6 +22,9 @@
 #include <PluginInterface.h>
 #include <PositionTrackerPluginInterface.h>
 
+#include <Direction.h>
+#include <Position.h>
+
 #include <QtPlugin>
 #include <QList>
 #include <QObject>
@@ -41,7 +44,8 @@ public:
     void install(HookInterface*, SettingsInterface*) throw(std::exception);
     void uninstall();
 
-    void walk(const QList<Position>& path);
+    void walk(const QList<Direction>& directions);
+    void move(const Direction& direction);
 
 private:
     Walker* walker_;
@@ -54,7 +58,8 @@ public:
     Walker(SenderInterface* sender, PositionTrackerPluginInterface* positionTracker, ChannelsPluginInterface* channels, QObject* parent = 0);
     ~Walker();
 
-    void walk(const QList<Position>& path);
+    void walk(const QList<Direction>& directions);
+    void move(const Direction& direction);
 
 private slots:
     void moved(const Position& position);
@@ -64,7 +69,9 @@ private:
     PositionTrackerPluginInterface* positionTracker_;
     ChannelsPluginInterface* channels_;
 
-    QList<Position> path_;
+    QList<Direction> directions_;
+    Position next_;
+    bool tracking_;
 
     quint16 channelId_;
 };

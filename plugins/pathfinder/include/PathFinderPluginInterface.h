@@ -16,7 +16,10 @@
 #ifndef PATHFINDERLUGININTERFACE_H
 #define PATHFINDERLUGININTERFACE_H
 
+#include <AStarGridInterface.h>
 #include <MiniMapPluginInterface.h>
+
+#include <Direction.h>
 #include <Position.h>
 
 #include <QtPlugin>
@@ -27,7 +30,7 @@ class PathFinderPluginInterface {
 public:
     virtual ~PathFinderPluginInterface() {}
 
-    virtual QList<Position> findPath(MiniMapPluginInterface* map, const Position& start, const Position& end) const = 0;
+    virtual QList<Direction> findPath(AStarGridInterface* grid, quint16 x, quint16 y, quint16 ex, quint16 ey) const = 0;
 };
 
 Q_DECLARE_INTERFACE(PathFinderPluginInterface, "PathFinderPluginInterface")

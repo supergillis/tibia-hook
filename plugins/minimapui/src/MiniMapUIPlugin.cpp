@@ -27,8 +27,10 @@ Q_EXPORT_PLUGIN2(be.gillis.minimapui, MiniMapUIPlugin)
 #endif
 
 MiniMapUIPlugin::MiniMapUIPlugin():
-    model_(NULL),
-    view_(NULL) {
+    view_(NULL),
+    finder_(NULL),
+    tracker_(NULL),
+    walker_(NULL) {
 }
 
 void MiniMapUIPlugin::install(HookInterface* hook, SettingsInterface*) throw(std::exception) {
@@ -37,35 +39,30 @@ void MiniMapUIPlugin::install(HookInterface* hook, SettingsInterface*) throw(std
         throw std::runtime_error("The 'minimap' plugin must be loaded before loading the 'minimapui' plugin!");
     }
 
-    MiniMapPluginInterface* miniMapPlugin = qobject_cast<MiniMapPluginInterface*>(plugin);
-    if(miniMapPlugin == NULL) {
+    minimap_ = qobject_cast<MiniMapPluginInterface*>(plugin);
+    if(minimap_ == NULL) {
         throw std::runtime_error("The 'minimap' plugin could not be loaded!");
     }
 
     // Try to load the pathfinder plugin
-    PathFinderPluginInterface* pathFinderPlugin = NULL;
     plugin = hook->plugins()->findPluginByName("pathfinder");
     if(plugin != NULL) {
-        pathFinderPlugin = qobject_cast<PathFinderPluginInterface*>(plugin);
+        finder_ = qobject_cast<PathFinderPluginInterface*>(plugin);
     }
 
     // Try to load the position plugin
-    PositionTrackerPluginInterface* positionPlugin = NULL;
     plugin = hook->plugins()->findPluginByName("positiontracker");
     if(plugin != NULL) {
-        positionPlugin = qobject_cast<PositionTrackerPluginInterface*>(plugin);
+        tracker_ = qobject_cast<PositionTrackerPluginInterface*>(plugin);
     }
 
     // Try to load the walker plugin
-    WalkerPluginInterface* walkerPlugin = NULL;
     plugin = hook->plugins()->findPluginByName("walker");
     if(plugin != NULL) {
-        walkerPlugin = qobject_cast<WalkerPluginInterface*>(plugin);
+        walker_ = qobject_cast<WalkerPluginInterface*>(plugin);
     }
 
-    model_ = new MiniMapModel(hook->sender(), miniMapPlugin, pathFinderPlugin, positionPlugin);
-    view_ = new MiniMapView(positionPlugin, walkerPlugin);
-    view_->setModel(model_);
+    view_ = new MiniMapView(this);
 
     hook_ = hook;
     hook_->ui()->addTab(view_, "Map");
@@ -77,8 +74,4 @@ void MiniMapUIPlugin::uninstall() {
 
     // Clean up objects
     delete view_;
-    delete model_;
-    view_ = NULL;
-    model_ = NULL;
-    hook_ = NULL;
 }

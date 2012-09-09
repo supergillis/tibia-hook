@@ -26,7 +26,6 @@ Application::Application():
     QApplication(Application::argc_, NULL) {
     QApplication::setApplicationName("Tibia Hook");
     QApplication::setApplicationVersion("beta");
-
     qRegisterMetaType<Position>("Position");
 
     setQuitOnLastWindowClosed(false);

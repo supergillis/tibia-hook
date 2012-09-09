@@ -23,6 +23,21 @@
 Q_EXPORT_PLUGIN2(be.gillis.walker, WalkerPlugin)
 #endif
 
+Position operator+(const Position& position, const Direction& direction) {
+    Position moved(position);
+    switch (direction) {
+    case NORTH: moved.y -= 1; break;
+    case NORTHEAST: moved.y -= 1; moved.x += 1; break;
+    case EAST: moved.x += 1; break;
+    case SOUTHEAST: moved.y -= 1; moved.x += 1;  break;
+    case SOUTH: moved.y += 1; break;
+    case SOUTHWEST: moved.y -= 1; moved.x -= 1;  break;
+    case WEST: moved.x -= 1; break;
+    case NORTHWEST: moved.y -= 1; moved.x -= 1;  break;
+    }
+    return moved;
+}
+
 WalkerPlugin::WalkerPlugin():
     walker_(NULL) {
 }
@@ -54,8 +69,12 @@ void WalkerPlugin::uninstall() {
     walker_ = NULL;
 }
 
-void WalkerPlugin::walk(const QList<Position>& path) {
-    walker_->walk(path);
+void WalkerPlugin::walk(const QList<Direction>& directions) {
+    walker_->walk(directions);
+}
+
+void WalkerPlugin::move(const Direction& direction) {
+    walker_->move(direction);
 }
 
 Walker::Walker(SenderInterface* sender, PositionTrackerPluginInterface* positionTracker, ChannelsPluginInterface* channels, QObject* parent):
@@ -72,10 +91,10 @@ Walker::~Walker() {
     }
 }
 
-void Walker::walk(const QList<Position>& path) {
-    if (path.length() > 0) {
+void Walker::walk(const QList<Direction>& directions) {
+    if (directions.length() > 0) {
         // Notify when we moved
-        path_ = path;
+        directions_ = directions;
         positionTracker_->connectPositionChanged(this, SLOT(moved(const Position&)));
 
         if (channels_ != NULL) {
@@ -87,67 +106,54 @@ void Walker::walk(const QList<Position>& path) {
         }
 
         // Intialize walking
+        tracking_ = false;
         moved(positionTracker_->position());
     }
 }
 
 void Walker::moved(const Position& position) {
-    if (!path_.empty()) {
-        Position nextPos = path_.takeFirst();
-        int dx = nextPos.x - position.x;
-        int dy = nextPos.y - position.y;
-
-        if (dx == 0 && dy == 0) {
-            moved(position);
-            return;
-        }
-        else if (dx <= 1 && dx >= -1 && dy <= 1 && dy >= -1) {
-            quint8 packetType = 0;
-            if (dx == -1 && dy == -1) {
-                // Northwest
-                packetType = 109;
-            }
-            else if (dx == -1 && dy == 0) {
-                // West
-                packetType = 104;
-            }
-            else if (dx == -1 && dy == 1) {
-                // Southwest
-                packetType = 108;
-            }
-            else if (dx == 0 && dy == -1) {
-                // North
-                packetType = 101;
-            }
-            else if (dx == 0 && dy == 1) {
-                // South
-                packetType = 103;
-            }
-            else if (dx == 1 && dy == -1) {
-                // Northeast
-                packetType = 106;
-            }
-            else if (dx == 1 && dy == 0) {
-                // East
-                packetType = 102;
-            }
-            else if (dx == 1 && dy == 1) {
-                // Southeast
-                packetType = 107;
-            }
-            if (packetType != 0) {
-                PacketBuilderInterface* builder = sender_->createPacket(1);
-                builder->writeU8(packetType);
-
-                PacketInterface* packet = builder->build();
-                sender_->sendToServer(QByteArray((const char*) packet->data(), packet->length()));
-
-                delete packet;
-                delete builder;
-                return;
-            }
-        }
+    if (tracking_ && position.x != next_.x && position.y != next_.y && position.z != next_.z) {
+        qDebug() << "going in the wrong direction!";
     }
-    qDebug() << "disconnect";
+    else if (!directions_.empty()) {
+        Direction direction = directions_.takeFirst();
+        next_ = position + direction;
+        tracking_ = true;
+
+        // Do the actual move
+        move(direction);
+
+        // Prevent from disconnecting
+        return;
+    }
+
+    // Disconnect
+    tracking_ = false;
     positionTracker_->disconnectPositionChanged(this, SLOT(moved(const Position&)));
+}
+
+void Walker::move(const Direction& direction) {
+    quint8 packet = 0;
+
+    switch (direction) {
+    case NORTH: packet = 101; break;
+    case NORTHEAST: packet = 106; break;
+    case EAST: packet = 102; break;
+    case SOUTHEAST: packet = 107;  break;
+    case SOUTH: packet = 103; break;
+    case SOUTHWEST: packet = 108;  break;
+    case WEST: packet = 104; break;
+    case NORTHWEST: packet = 109;  break;
+    }
+
+    if (packet != 0) {
+        PacketBuilderInterface* builder = sender_->createPacket(1);
+        builder->writeU8(packet);
+
+        PacketInterface* packet = builder->build();
+        sender_->sendToServer(QByteArray((const char*) packet->data(), packet->length()));
+
+        delete packet;
+        delete builder;
+    }
 }

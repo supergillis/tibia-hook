@@ -18,6 +18,8 @@
 
 #include <QtPlugin>
 
+#include <Position.h>
+
 class PositionTrackerPluginInterface {
 public:
     virtual ~PositionTrackerPluginInterface() {}

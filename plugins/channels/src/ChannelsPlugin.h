@@ -13,45 +13,42 @@
  * limitations under the License.
  */
 
-#ifndef MINIMAPUIPLUGIN_H
-#define MINIMAPUIPLUGIN_H
+#ifndef CHANNELSPLUGIN_H
+#define CHANNELSPLUGIN_H
 
-#include "MiniMapView.h"
-
+#include <ChannelsPluginInterface.h>
 #include <HookInterface.h>
-#include <PathFinderPluginInterface.h>
 #include <PluginInterface.h>
-#include <PositionTrackerPluginInterface.h>
-#include <WalkerPluginInterface.h>
+#include <ProxyInterface.h>
 
-#include <QObject>
 #include <QtPlugin>
+#include <QObject>
 
-class MiniMapUIPlugin: public QObject, public PluginInterface {
+class ChannelListInjector;
+class ChannelsPlugin: public QObject, public PluginInterface, public ChannelsPluginInterface {
 	Q_OBJECT
-    Q_INTERFACES(PluginInterface)
+    Q_INTERFACES(PluginInterface ChannelsPluginInterface)
 
 #if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
-    Q_PLUGIN_METADATA(IID "be.gillis.minimapui" FILE "meta.js")
+    Q_PLUGIN_METADATA(IID "be.gillis.channels" FILE "meta.js")
 #endif
 
 public:
-    MiniMapUIPlugin();
-
     void install(HookInterface*, SettingsInterface*) throw(std::exception);
     void uninstall();
 
-protected:
-    MiniMapPluginInterface* minimap_;
-    PathFinderPluginInterface* finder_;
-    PositionTrackerPluginInterface* tracker_;
-    WalkerPluginInterface* walker_;
+    quint16 openChannel(const QString& name);
+    void closeChannel(quint16 channelId);
 
-    friend class MiniMapView;
+    void postMessage(quint16 channelId, const QString& message);
+    void postMessage(quint16 channelId, const QString& message, const QString& name);
+
+    void openPrivateChannel(const QString& name);
+    void postPrivateMessage(const QString& name, const QString& message);
 
 private:
-    HookInterface* hook_;
-    MiniMapView* view_;
+    SenderInterface* sender_;
+    ChannelListInjector* channels_;
 };
 
 #endif

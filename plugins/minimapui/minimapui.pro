@@ -10,12 +10,10 @@ INCLUDEPATH += ../walker/include
 
 SOURCES = \
     src/MiniMapUIPlugin.cpp \
-    src/MiniMapView.cpp \
-    src/MiniMapModel.cpp
+    src/MiniMapView.cpp
 HEADERS = \
     src/MiniMapUIPlugin.h \
-    src/MiniMapView.h \
-    src/MiniMapModel.h
+    src/MiniMapView.h
 
 OTHER_FILES += \
 	meta.js \

@@ -13,20 +13,26 @@
  * limitations under the License.
  */
 
-#ifndef WALKERPLUGININTERFACE_H
-#define WALKERPLUGININTERFACE_H
+#ifndef CHANNELSPLUGININTERFACE_H
+#define CHANNELSPLUGININTERFACE_H
 
-#include <Direction.h>
-
+#include <QtGlobal>
 #include <QtPlugin>
-#include <QList>
 
-class WalkerPluginInterface {
+class ChannelsPluginInterface {
 public:
-    virtual void walk(const QList<Direction>& directions) = 0;
-    virtual void move(const Direction& direction) = 0;
+    virtual ~ChannelsPluginInterface() {}
+
+    virtual quint16 openChannel(const QString& name) = 0;
+    virtual void closeChannel(quint16 channelId) = 0;
+
+    virtual void postMessage(quint16 channelId, const QString& message) = 0;
+    virtual void postMessage(quint16 channelId, const QString& message, const QString& name) = 0;
+
+    virtual void openPrivateChannel(const QString& name) = 0;
+    virtual void postPrivateMessage(const QString& message, const QString& name) = 0;
 };
 
-Q_DECLARE_INTERFACE(WalkerPluginInterface, "WalkerPluginInterface")
+Q_DECLARE_INTERFACE(ChannelsPluginInterface, "ChannelsPluginInterface")
 
 #endif

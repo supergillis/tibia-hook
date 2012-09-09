@@ -16,12 +16,10 @@
 #ifndef MINIMAPVIEW_H
 #define MINIMAPVIEW_H
 
-#include "MiniMapModel.h"
-
+#include <AStarGridInterface.h>
 #include <MiniMapFloorInterface.h>
-#include <ReadOnlyProxyInterface.h>
-#include <PositionTrackerPluginInterface.h>
-#include <WalkerPluginInterface.h>
+
+#include <Position.h>
 
 #include <QGraphicsView>
 #include <QWheelEvent>
@@ -30,14 +28,25 @@
 #define MAP_MINIMUM_Z 0
 #define MAP_MAXIMUM_Z 13
 
+class MiniMapFloorGrid: public AStarGridInterface {
+public:
+    MiniMapFloorGrid(MiniMapFloorInterface* floor): floor_(floor) {}
+
+    bool blocking(quint16 x, quint16 y) const { return floor_->dataAt(x, y) == 255; }
+    quint8 cost(quint16 x, quint16 y) const { return floor_->dataAt(x, y); }
+    quint8 averageCost() const { return 120; }
+
+private:
+    MiniMapFloorInterface* floor_;
+};
+
+class MiniMapUIPlugin;
 class MiniMapView: public QGraphicsView {
     Q_OBJECT
 
 public:
-    MiniMapView(PositionTrackerPluginInterface* positionTracker, WalkerPluginInterface* walker, QWidget* parent = 0);
+    MiniMapView(MiniMapUIPlugin* plugin, QWidget* parent = 0);
     ~MiniMapView();
-
-    void setModel(MiniMapModel* model);
 
     void mousePressEvent(QMouseEvent*);
     void mouseReleaseEvent(QMouseEvent*);
@@ -57,9 +66,7 @@ private:
     QGraphicsLineItem* horizontalLine_;
     QGraphicsLineItem* verticalLine_;
 
-    PositionTrackerPluginInterface* positionTracker_;
-    WalkerPluginInterface* walker_;
-    MiniMapModel* model_;
+    MiniMapUIPlugin* plugin_;
 
     QPoint mousePosition_;
     QList<double> scales_;

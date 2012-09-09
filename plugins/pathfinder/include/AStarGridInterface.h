@@ -13,20 +13,16 @@
  * limitations under the License.
  */
 
-#ifndef WALKERPLUGININTERFACE_H
-#define WALKERPLUGININTERFACE_H
+#ifndef ASTARGRIDINTERFACE_H
+#define ASTARGRIDINTERFACE_H
 
-#include <Direction.h>
+#include <QtGlobal>
 
-#include <QtPlugin>
-#include <QList>
-
-class WalkerPluginInterface {
+class AStarGridInterface {
 public:
-    virtual void walk(const QList<Direction>& directions) = 0;
-    virtual void move(const Direction& direction) = 0;
+    virtual bool blocking(quint16 x, quint16 y) const = 0;
+    virtual quint8 cost(quint16 x, quint16 y) const = 0;
+    virtual quint8 averageCost() const = 0;
 };
-
-Q_DECLARE_INTERFACE(WalkerPluginInterface, "WalkerPluginInterface")
 
 #endif

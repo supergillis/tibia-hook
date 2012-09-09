@@ -14,16 +14,36 @@
  */
 
 #include "MiniMapView.h"
+#include "MiniMapUIPlugin.h"
 
 #include <QGraphicsPixmapItem>
 #include <QScrollBar>
+#include <QDebug>
 
-MiniMapView::MiniMapView(PositionTrackerPluginInterface* positionTracker, WalkerPluginInterface* walker, QWidget* parent):
+QDebug operator<< (QDebug debug, const Direction& direction) {
+    switch (direction) {
+    case NORTH: debug << "north"; break;
+    case NORTHEAST: debug << "northeast"; break;
+    case EAST: debug << "east"; break;
+    case SOUTHEAST: debug << "southeast"; break;
+    case SOUTH: debug << "south"; break;
+    case SOUTHWEST: debug << "southwest"; break;
+    case WEST: debug << "west"; break;
+    case NORTHWEST: debug << "northwest"; break;
+    default: debug << "unknown"; break;
+    }
+    return debug;
+}
+
+QDebug operator<< (QDebug debug, const Position& position) {
+    debug.nospace() << "[" << position.x << ", " << position.y << ", " << position.z << "]";
+    return debug;
+}
+
+MiniMapView::MiniMapView(MiniMapUIPlugin* plugin, QWidget* parent):
     QGraphicsView(parent),
     scene_(new QGraphicsScene(this)),
-    positionTracker_(positionTracker),
-    walker_(walker),
-    model_(NULL),
+    plugin_(plugin),
     floorIndex_(7) {
     scales_ << 0.25 << 0.35 << 0.50 << 0.75 << 1.00 << 1.25 << 1.50 << 2.00 << 2.50 << 3.00 << 4.00 << 6.00;
     scaleIndex_ = scales_.indexOf(1.00);
@@ -38,26 +58,19 @@ MiniMapView::MiniMapView(PositionTrackerPluginInterface* positionTracker, Walker
     verticalLine_ = scene_->addLine(0, 0, 0, 0);
     verticalLine_->setZValue(1);
     verticalLine_->setPen(pen);
+
+    // Connect to the tracker
+    if (plugin_->tracker_ != NULL) {
+        plugin_->tracker_->connectPositionChanged(this, SLOT(setPosition(const Position&)));
+    }
+
+    // Initialize the view
+    refresh();
 }
 
 MiniMapView::~MiniMapView() {
     // Don't forget to clean up cache
     clear();
-}
-
-void MiniMapView::setModel(MiniMapModel* model) {
-    if (model_ != NULL && positionTracker_ != NULL) {
-        positionTracker_->disconnectPositionChanged(this, SLOT(setPosition(const Position&)));
-    }
-
-    model_ = model;
-    floorIndex_ = 7;
-
-    if (model_ != NULL && positionTracker_ != NULL) {
-        positionTracker_->connectPositionChanged(this, SLOT(setPosition(const Position&)));
-    }
-
-    refresh();
 }
 
 void MiniMapView::setPosition(const Position& position) {
@@ -85,10 +98,6 @@ void MiniMapView::clear() {
 }
 
 void MiniMapView::refresh() {
-    if (model_== NULL) {
-        return;
-    }
-
     // Clear the scene but prevent from removing the lines
     clear();
 
@@ -98,7 +107,7 @@ void MiniMapView::refresh() {
     }
 
     // Populate scene
-    MiniMapFloorInterface* floor = model_->floor(floorIndex_);
+    MiniMapFloorInterface* floor = plugin_->minimap_->floor(floorIndex_);
     foreach (MiniMapPartInterface* part, floor->parts()) {
         QPixmap pixmap = QPixmap::fromImage(part->image());
         QGraphicsPixmapItem* item = scene_->addPixmap(pixmap);
@@ -116,7 +125,7 @@ void MiniMapView::mousePressEvent(QMouseEvent* event) {
         event->accept();
         mousePosition_ = event->pos();
     }
-    if ((event->buttons() & Qt::RightButton) == Qt::RightButton) {
+    if ((event->buttons() & Qt::RightButton) == Qt::RightButton && plugin_->finder_ != NULL) {
         event->accept();
 
         QPointF mapped(mapToScene(event->pos()));
@@ -125,21 +134,32 @@ void MiniMapView::mousePressEvent(QMouseEvent* event) {
         clicked.y = (quint16) mapped.y();
         clicked.z = floorIndex_;
 
+        MiniMapFloorGrid grid(plugin_->minimap_->floor(floorIndex_));
+
         if ((event->modifiers() & Qt::ControlModifier) == Qt::ControlModifier) {
+            // Find path between CTRL + right clicked positions
             static Position start;
             if (start.x == 0) {
                 start = clicked;
             }
             else {
-                model_->pathFinder()->findPath(model_->miniMap(), start, clicked);
+                QList<Direction> path = plugin_->finder_->findPath(&grid, start.x, start.y, clicked.x, clicked.y);
+
+                qDebug() << "path from" << start << "to" << clicked;
+                foreach (const Direction& direction, path) {
+                    qDebug() << "  " << direction;
+                }
+
                 start.x = 0;
             }
         }
         else {
-            if (walker_ != NULL) {
-                // Walk this path
-                QList<Position> path = model_->path(clicked);
-                walker_->walk(path);
+            // Find path from our position
+            if (plugin_->walker_ != NULL && plugin_->tracker_ != NULL) {
+                Position position = plugin_->tracker_->position();
+                QList<Direction> path = plugin_->finder_->findPath(&grid, position.x, position.y, clicked.x, clicked.y);
+
+                plugin_->walker_->walk(path);
             }
         }
     }

@@ -15,6 +15,7 @@
 
 #include "PathFinderPlugin.h"
 #include "JumpPointSearch.h"
+#include "AStar.h"
 
 #include <MiniMapFloorInterface.h>
 
@@ -28,8 +29,9 @@ void PathFinderPlugin::install(HookInterface* hook, SettingsInterface* settings)
 void PathFinderPlugin::uninstall() {
 }
 
-QList<Position> PathFinderPlugin::findPath(MiniMapPluginInterface* map, const Position& start, const Position& end) const {
-    MiniMapFloorInterface* floor = map->floor(start.z);
+QList<Direction> PathFinderPlugin::findPath(AStarGridInterface* grid, quint16 x, quint16 y, quint16 ex, quint16 ey) const {
+    AStarDefaultHeuristic heuristic;
+    AStar astar(grid, &heuristic);
 
-    return JumpPointSearch(floor, start.x, start.y, end.x, end.y).positions();
+    return astar.path(x, y, ex, ey);
 }
