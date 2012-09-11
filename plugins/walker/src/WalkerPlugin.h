@@ -55,7 +55,7 @@ private:
 
     QList<Direction> directions_;
     Position next_;
-    bool tracking_;
+    bool walking_;
 };
 
 #endif
