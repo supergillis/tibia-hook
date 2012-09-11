@@ -46,30 +46,25 @@ void WalkerPlugin::walk(const QList<Direction>& directions) {
         tracker_->connectPositionChanged(this, SLOT(moved(const Position&)));
 
         // Intialize walking
-        tracking_ = false;
-        moved(tracker_->position());
+        walking_ = true;
+        next_ = tracker_->position();
+        moved(next_);
     }
 }
 
 void WalkerPlugin::moved(const Position& position) {
-    if (tracking_ && position != next_) {
-        qDebug() << "going in the wrong direction!";
-    }
-    else if (!directions_.empty()) {
+    if (walking_ && position == next_ && !directions_.empty()) {
+        // Calculate next move
         Direction direction = directions_.takeFirst();
         next_ = position + direction;
-        tracking_ = true;
 
-        // Do the actual move
+        // Execute next move
         move(direction);
-
-        // Prevent from disconnecting
-        return;
     }
-
-    // Disconnect
-    tracking_ = false;
-    tracker_->disconnectPositionChanged(this, SLOT(moved(const Position&)));
+    else {
+        walking_ = false;
+        tracker_->disconnectPositionChanged(this, SLOT(moved(const Position&)));
+    }
 }
 
 void WalkerPlugin::move(const Direction& direction) {
