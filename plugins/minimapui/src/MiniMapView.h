@@ -39,10 +39,11 @@ public:
         floor_(floor) {
     }
 
-    void forEachNeighbour(quint16 x, quint16 y, std::function<void (quint16, quint16 , quint8)> function) {
+    void forEachNeighbour(quint16 x, quint16 y, quint8 z, std::function<void (quint16, quint16, quint8, quint8)> function) {
         static qint8 dx[8] = {1, -1, 0, 0, 1, -1, 1, -1};
         static qint8 dy[8] = {0, 0, 1, -1, 1, 1, -1, -1};
 
+        // Only iterate [0, 3], ignore diagonal for now
         for (quint8 index = 0; index < 4; index++) {
             quint16 nx = x + dx[index];
             quint16 ny = y + dy[index];
@@ -50,7 +51,7 @@ public:
             quint8 data = floor_->dataAt(nx, ny);
             if (data != 255) {
                 quint8 cost = (data * 100) / 120;
-                function(nx, ny, cost);
+                function(nx, ny, z, cost);
             }
         }
     }

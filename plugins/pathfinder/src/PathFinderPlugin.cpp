@@ -23,9 +23,9 @@
 Q_EXPORT_PLUGIN2(be.gillis.pathfinder, PathFinderPlugin)
 #endif
 
-QList<Direction> PathFinderPlugin::findPath(AStarGridInterface* grid, quint16 x, quint16 y, quint16 ex, quint16 ey) const {
+QList<Direction> PathFinderPlugin::findPath(AStarGridInterface* grid, quint16 x, quint16 y, quint8 z, quint16 ex, quint16 ey, quint8 ez) const {
     AStarDefaultHeuristic heuristic;
     AStar astar(grid, &heuristic);
 
-    return astar.path(x, y, ex, ey);
+    return astar.path(x, y, z, ex, ey, ez);
 }

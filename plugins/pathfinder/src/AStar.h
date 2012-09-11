@@ -26,14 +26,10 @@
 #include <QtGlobal>
 #include <QList>
 
-#define MAP_NORMALWALKCOST 10
-#define MAP_DIAGONALWALKCOST 25
-
 class AStarDefaultHeuristic: public AStarHeuristicInterface {
 public:
-    quint32 calculate(quint16 x, quint16 y, quint16 ex, quint16 ey) {
-        // Manhattan distance
-        return qAbs(x - ex) + qAbs(y - ey);
+    quint32 calculate(quint16 x, quint16 y, quint8 z, quint16 ex, quint16 ey, quint8 ez) {
+        return qAbs(x - ex) + qAbs(y - ey) + qAbs(z - ez) * 50;
     }
 };
 
@@ -41,7 +37,7 @@ class AStar;
 class AStarNode {
 public:
     AStarNode(AStar* astar);
-    AStarNode(AStar* astar, AStarNode* parent, quint16 x, quint16 y, quint32 g, quint32 h);
+    AStarNode(AStar* astar, AStarNode* parent, quint16 x, quint16 y, quint8 z, quint32 g, quint32 h);
     ~AStarNode();
 
     void update(AStarNode* parent, quint32 g, quint32 h);
@@ -50,6 +46,7 @@ public:
 
     quint16 x() const { return x_; }
     quint16 y() const { return y_; }
+    quint16 z() const { return z_; }
 
     quint32 g() const { return g_; }
     quint32 h() const { return h_; }
@@ -61,6 +58,7 @@ private:
 
     quint16 x_;
     quint16 y_;
+    quint8 z_;
 
     quint32 g_;
     quint32 h_;
@@ -78,7 +76,7 @@ public:
     AStar(AStarGridInterface* grid, AStarHeuristicInterface* heuristic);
     ~AStar();
 
-    QList<Direction> path(quint16 x, quint16 y, quint16 ex, quint16 ey);
+    QList<Direction> path(quint16 x, quint16 y, quint8 z, quint16 ex, quint16 ey, quint8 ez);
 
 protected:
     QList<AStarNode*> nodes_;
@@ -86,7 +84,7 @@ protected:
     friend class AStarNode;
 
 private:
-    AStarNode* nodeAt(quint16 x, quint16 y) const;
+    AStarNode* nodeAt(quint16 x, quint16 y, quint8 z) const;
 
     AStarGridInterface* grid_;
     AStarHeuristicInterface* heuristic_;

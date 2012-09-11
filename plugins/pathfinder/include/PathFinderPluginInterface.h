@@ -30,7 +30,7 @@ class PathFinderPluginInterface {
 public:
     virtual ~PathFinderPluginInterface() {}
 
-    virtual QList<Direction> findPath(AStarGridInterface* grid, quint16 x, quint16 y, quint16 ex, quint16 ey) const = 0;
+    virtual QList<Direction> findPath(AStarGridInterface* grid, quint16 x, quint16 y, quint8 z, quint16 ex, quint16 ey, quint8 ez) const = 0;
 };
 
 Q_DECLARE_INTERFACE(PathFinderPluginInterface, "PathFinderPluginInterface")

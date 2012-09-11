@@ -26,25 +26,25 @@ AStar::~AStar() {
     }
 }
 
-QList<Direction> AStar::path(quint16 x, quint16 y, quint16 ex, quint16 ey) {
+QList<Direction> AStar::path(quint16 x, quint16 y, quint8 z, quint16 ex, quint16 ey, quint8 ez) {
     AStarNode* found = NULL;
-    AStarNode* start = new AStarNode(this, NULL, x, y, 0, heuristic_->calculate(x, y, ex, ey));
+    AStarNode* start = new AStarNode(this, NULL, x, y, z, 0, heuristic_->calculate(x, y, z, ex, ey, ez));
     open_.enqueue(start);
 
     while (!open_.empty()) {
         AStarNode* node = open_.dequeue();
 
-        if (node->x() == ex && node->y() == ey) {
+        if (node->x() == ex && node->y() == ey && node->z() == ez) {
             found = node;
             break;
         }
 
         // Iterate all neighbours
-        grid_->forEachNeighbour(node->x(), node->y(), [this, ex, ey, node](quint16 nx, quint16 ny, quint8 cost) {
+        grid_->forEachNeighbour(node->x(), node->y(), node->z(), [this, ex, ey, ez, node](quint16 nx, quint16 ny, quint16 nz, quint8 cost) {
             const quint32 g = node->g() + cost;
-            const quint32 h = heuristic_->calculate(nx, ny, ex, ey) * 55;
+            const quint32 h = heuristic_->calculate(nx, ny, nz, ex, ey, ez) * 55;
 
-            AStarNode* neighbour = nodeAt(nx, ny);
+            AStarNode* neighbour = nodeAt(nx, ny, nz);
             if (neighbour != NULL) {
                 // This node already exists
                 if (neighbour->g() <= g) {
@@ -55,7 +55,7 @@ QList<Direction> AStar::path(quint16 x, quint16 y, quint16 ex, quint16 ey) {
             }
             else {
                 // Create a new node
-                neighbour = new AStarNode(this, node, nx, ny, g, h);
+                neighbour = new AStarNode(this, node, nx, ny, nz, g, h);
                 open_.enqueue(neighbour);
             }
         });
@@ -68,10 +68,12 @@ QList<Direction> AStar::path(quint16 x, quint16 y, quint16 ex, quint16 ey) {
 
     quint16 px = ex;
     quint16 py = ey;
+    quint16 pz = ez;
     while (found != NULL) {
         int dx = px - found->x();
         int dy = py - found->y();
 
+        // TODO change this back to directions
         if (dx == -1 && dy == -1) {
             directions.prepend(NORTHWEST);
         }
@@ -99,15 +101,16 @@ QList<Direction> AStar::path(quint16 x, quint16 y, quint16 ex, quint16 ey) {
 
         px = found->x();
         py = found->y();
+        pz = found->z();
         found = found->parent();
     }
 
     return directions;
 }
 
-AStarNode* AStar::nodeAt(quint16 x, quint16 y) const {
+AStarNode* AStar::nodeAt(quint16 x, quint16 y, quint8 z) const {
     foreach (AStarNode* node, nodes_) {
-        if (node->x() == x && node->y() == y) {
+        if (node->x() == x && node->y() == y && node->z() == z) {
             return node;
         }
     }
@@ -119,16 +122,18 @@ AStarNode::AStarNode(AStar* astar):
     parent_(NULL),
     x_(0),
     y_(0),
+    z_(0),
     g_(0),
     h_(0) {
     astar_->nodes_.append(this);
 }
 
-AStarNode::AStarNode(AStar *astar, AStarNode* parent, quint16 x, quint16 y, quint32 g, quint32 h):
+AStarNode::AStarNode(AStar *astar, AStarNode* parent, quint16 x, quint16 y, quint8 z, quint32 g, quint32 h):
     astar_(astar),
     parent_(parent),
     x_(x),
     y_(y),
+    z_(z),
     g_(g),
     h_(h) {
     astar_->nodes_.append(this);

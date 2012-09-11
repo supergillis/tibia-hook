@@ -38,7 +38,7 @@ public:
     void install(HookInterface*, SettingsInterface*) throw(std::exception) {}
     void uninstall() {}
 
-    QList<Direction> findPath(AStarGridInterface* grid, quint16 x, quint16 y, quint16 ex, quint16 ey) const;
+    QList<Direction> findPath(AStarGridInterface* grid, quint16 x, quint16 y, quint8 z, quint16 ex, quint16 ey, quint8 ez) const;
 };
 
 #endif

@@ -20,7 +20,7 @@
 
 class AStarHeuristicInterface {
 public:
-    virtual quint32 calculate(quint16 x, quint16 y, quint16 ex, quint16 ey) = 0;
+    virtual quint32 calculate(quint16 x, quint16 y, quint8 z, quint16 ex, quint16 ey, quint8 ez) = 0;
 };
 
 #endif

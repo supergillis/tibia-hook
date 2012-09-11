@@ -111,7 +111,7 @@ void MiniMapView::mousePressEvent(QMouseEvent* event) {
         event->accept();
         mousePosition_ = event->pos();
     }
-    if ((event->buttons() & Qt::RightButton) == Qt::RightButton && finder_ != NULL) {
+    else if ((event->buttons() & Qt::RightButton) == Qt::RightButton && finder_ != NULL) {
         event->accept();
 
         QPointF mapped(mapToScene(event->pos()));
@@ -122,31 +122,12 @@ void MiniMapView::mousePressEvent(QMouseEvent* event) {
 
         MiniMapFloorGrid grid(minimap_->floor(floorIndex_));
 
-        if ((event->modifiers() & Qt::ControlModifier) == Qt::ControlModifier) {
-            // Find path between CTRL + right clicked positions
-            static Position start;
-            if (start.x == 0) {
-                start = clicked;
-            }
-            else {
-                QList<Direction> path = finder_->findPath(&grid, start.x, start.y, clicked.x, clicked.y);
+        // Find path from our position
+        if (walker_ != NULL && tracker_ != NULL) {
+            Position position = tracker_->position();
+            QList<Direction> path = finder_->findPath(&grid, position.x, position.y, position.z, clicked.x, clicked.y, clicked.z);
 
-                qDebug() << "path from" << start << "to" << clicked;
-                foreach (const Direction& direction, path) {
-                    qDebug() << "  " << direction;
-                }
-
-                start.x = 0;
-            }
-        }
-        else {
-            // Find path from our position
-            if (walker_ != NULL && tracker_ != NULL) {
-                Position position = tracker_->position();
-                QList<Direction> path = finder_->findPath(&grid, position.x, position.y, clicked.x, clicked.y);
-
-                walker_->walk(path);
-            }
+            walker_->walk(path);
         }
     }
     else {
