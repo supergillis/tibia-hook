@@ -495,7 +495,7 @@ namespace MologieDetours
 			while(pbCurOp < baseNew + size)
 			{
 #if defined(MOLOGIE_DETOURS_HDE_32)
-				hde32s hs = { 0 };
+                hde32s hs = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, { 0 }, { 0 }, 0 };
 				quint8 i = hde32_disasm(pbCurOp, &hs);
 #elif defined(MOLOGIE_DETOURS_HDE_64)
 				hde64s hs = { 0 };
@@ -553,7 +553,7 @@ namespace MologieDetours
 		size_t GetInstructionSize(const void* code)
 		{
 #if defined(MOLOGIE_DETOURS_HDE_32)
-			hde32s hs = { 0 };
+            hde32s hs = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, { 0 }, { 0 }, 0 };
 			return hde32_disasm(code, &hs);
 #elif defined(MOLOGIE_DETOURS_HDE_64)
 			hde64s hs = { 0 };

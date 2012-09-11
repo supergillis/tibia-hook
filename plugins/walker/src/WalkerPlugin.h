@@ -29,7 +29,6 @@
 #include <QList>
 #include <QObject>
 
-class Walker;
 class WalkerPlugin: public QObject, public PluginInterface, public WalkerPluginInterface {
 	Q_OBJECT
     Q_INTERFACES(PluginInterface WalkerPluginInterface)
@@ -47,33 +46,16 @@ public:
     void walk(const QList<Direction>& directions);
     void move(const Direction& direction);
 
-private:
-    Walker* walker_;
-};
-
-class Walker: public QObject {
-    Q_OBJECT
-
-public:
-    Walker(SenderInterface* sender, PositionTrackerPluginInterface* positionTracker, ChannelsPluginInterface* channels, QObject* parent = 0);
-    ~Walker();
-
-    void walk(const QList<Direction>& directions);
-    void move(const Direction& direction);
-
 private slots:
     void moved(const Position& position);
 
 private:
     SenderInterface* sender_;
-    PositionTrackerPluginInterface* positionTracker_;
-    ChannelsPluginInterface* channels_;
+    PositionTrackerPluginInterface* tracker_;
 
     QList<Direction> directions_;
     Position next_;
     bool tracking_;
-
-    quint16 channelId_;
 };
 
 #endif

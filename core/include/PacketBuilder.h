@@ -16,29 +16,39 @@
 #ifndef PACKETBUILDER_H
 #define PACKETBUILDER_H
 
-#include "Packet.h"
-
-#include <PacketInterface.h>
-#include <PacketBuilderInterface.h>
+#include <Packet.h>
 
 #include <QByteArray>
-#include <QObject>
 #include <QString>
+
+#define DEFAULT_SIZE 64
+#define MIN_EXTEND_SIZE 32
 
 #define max(a, b) a > b ? a : b
 
-class PacketBuilder: public PacketBuilderInterface {
+class PacketBuilder {
 public:
-    PacketBuilder(quint16 length = 256): data_(length, 0), length_(0), position_(0) {}
+    PacketBuilder(quint16 length = DEFAULT_SIZE): data_(length, 0), position_(0), length_(0) {}
 
-    inline PacketInterface* build() const {
-        return new Packet((const quint8*) data_.constData(), length_);
+    inline Packet build() const {
+        return Packet((const quint8*) data_.constData(), length_);
     }
 
-    inline void writeU8(quint8 value) { write<quint8, 1>(value); }
-    inline void writeU16(quint16 value) { write<quint16, 2>(value); }
-    inline void writeU32(quint32 value) { write<quint32, 4>(value); }
-    inline void writeU64(quint64 value) { write<quint64, 8>(value); }
+    inline void writeU8(quint8 value) {
+        write<quint8, 1>(value);
+    }
+
+    inline void writeU16(quint16 value) {
+        write<quint16, 2>(value);
+    }
+
+    inline void writeU32(quint32 value) {
+        write<quint32, 4>(value);
+    }
+
+    inline void writeU64(quint64 value) {
+        write<quint64, 8>(value);
+    }
 
     void writeString(const QString& value) {
         QByteArray array = value.toAscii();
@@ -46,6 +56,8 @@ public:
 
         // Reserve header plus length bytes
         reserve(2 + length);
+
+        // Write length
         writeU16(length);
 
         // Write raw data to the buffer
@@ -55,16 +67,16 @@ public:
     }
 
 private:
-    void reserve(quint16 size) {
-        quint16 newSize = position_ + size;
-        if (data_.length() < newSize) {
-            data_.resize(newSize);
-        }
-    }
-
     QByteArray data_;
     quint16 position_;
     quint16 length_;
+
+    inline void reserve(quint16 size) {
+        quint16 newSize = position_ + size;
+        if (data_.length() < newSize) {
+            data_.resize(max(newSize, MIN_EXTEND_SIZE));
+        }
+    }
 
     template<typename T, int size>
     inline void write(T value) {

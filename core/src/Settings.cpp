@@ -15,10 +15,9 @@
 
 #include "Settings.h"
 
-#include <stdexcept>
-
 #include <json.h>
-#include <json.cpp>
+
+#include <stdexcept>
 
 Settings::Settings(const QString& json) throw (std::exception) {
 	bool parsed = true;

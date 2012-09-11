@@ -15,7 +15,8 @@
 
 #include "WalkerPlugin.h"
 
-#include <stdexcept>
+#include <PacketCodes.h>
+#include <PluginLoader.h>
 
 #include <QDebug>
 
@@ -23,96 +24,35 @@
 Q_EXPORT_PLUGIN2(be.gillis.walker, WalkerPlugin)
 #endif
 
-Position operator+(const Position& position, const Direction& direction) {
-    Position moved(position);
-    switch (direction) {
-    case NORTH: moved.y -= 1; break;
-    case NORTHEAST: moved.y -= 1; moved.x += 1; break;
-    case EAST: moved.x += 1; break;
-    case SOUTHEAST: moved.y -= 1; moved.x += 1;  break;
-    case SOUTH: moved.y += 1; break;
-    case SOUTHWEST: moved.y -= 1; moved.x -= 1;  break;
-    case WEST: moved.x -= 1; break;
-    case NORTHWEST: moved.y -= 1; moved.x -= 1;  break;
-    }
-    return moved;
-}
-
 WalkerPlugin::WalkerPlugin():
-    walker_(NULL) {
+    sender_(NULL),
+    tracker_(NULL) {
 }
 
 void WalkerPlugin::install(HookInterface* hook, SettingsInterface*) throw(std::exception) {
-    QObject* plugin = hook->plugins()->findPluginByName("positiontracker");
-    if(plugin == NULL) {
-        throw std::runtime_error("The 'positiontracker' plugin must be loaded before loading the 'minimapui' plugin!");
-    }
-
-    PositionTrackerPluginInterface* positionPlugin = qobject_cast<PositionTrackerPluginInterface*>(plugin);
-    if(positionPlugin == NULL) {
-        throw std::runtime_error("The 'positiontracker' plugin could not be loaded!");
-    }
-
-    // Try to load the position plugin
-    ChannelsPluginInterface* channelsPlugin = NULL;
-    plugin = hook->plugins()->findPluginByName("channels");
-    if(plugin != NULL) {
-        channelsPlugin = qobject_cast<ChannelsPluginInterface*>(plugin);
-    }
-
-    walker_ = new Walker(hook->sender(), positionPlugin, channelsPlugin, this);
+    sender_ = hook->sender();
+    tracker_ = PluginLoader<PositionTrackerPluginInterface>(hook->plugins())("positiontracker");
 }
 
 void WalkerPlugin::uninstall() {
-    // Clean up objects
-    delete walker_;
-    walker_ = NULL;
+    tracker_ = NULL;
+    sender_ = NULL;
 }
 
 void WalkerPlugin::walk(const QList<Direction>& directions) {
-    walker_->walk(directions);
-}
-
-void WalkerPlugin::move(const Direction& direction) {
-    walker_->move(direction);
-}
-
-Walker::Walker(SenderInterface* sender, PositionTrackerPluginInterface* positionTracker, ChannelsPluginInterface* channels, QObject* parent):
-    QObject(parent),
-    sender_(sender),
-    positionTracker_(positionTracker),
-    channels_(channels),
-    channelId_(0) {
-}
-
-Walker::~Walker() {
-    if (channels_ != NULL) {
-        channels_->closeChannel(channelId_);
-    }
-}
-
-void Walker::walk(const QList<Direction>& directions) {
     if (directions.length() > 0) {
         // Notify when we moved
         directions_ = directions;
-        positionTracker_->connectPositionChanged(this, SLOT(moved(const Position&)));
-
-        if (channels_ != NULL) {
-            // Open walker channel
-            if (channelId_ == 0) {
-                channelId_ = channels_->openChannel("Walker");
-            }
-            channels_->postMessage(channelId_, "On the move!");
-        }
+        tracker_->connectPositionChanged(this, SLOT(moved(const Position&)));
 
         // Intialize walking
         tracking_ = false;
-        moved(positionTracker_->position());
+        moved(tracker_->position());
     }
 }
 
-void Walker::moved(const Position& position) {
-    if (tracking_ && position.x != next_.x && position.y != next_.y && position.z != next_.z) {
+void WalkerPlugin::moved(const Position& position) {
+    if (tracking_ && position != next_) {
         qDebug() << "going in the wrong direction!";
     }
     else if (!directions_.empty()) {
@@ -129,27 +69,28 @@ void Walker::moved(const Position& position) {
 
     // Disconnect
     tracking_ = false;
-    positionTracker_->disconnectPositionChanged(this, SLOT(moved(const Position&)));
+    tracker_->disconnectPositionChanged(this, SLOT(moved(const Position&)));
 }
 
-void Walker::move(const Direction& direction) {
+void WalkerPlugin::move(const Direction& direction) {
     quint8 packet = 0;
 
     switch (direction) {
-    case NORTH: packet = 101; break;
-    case NORTHEAST: packet = 106; break;
-    case EAST: packet = 102; break;
-    case SOUTHEAST: packet = 107;  break;
-    case SOUTH: packet = 103; break;
-    case SOUTHWEST: packet = 108;  break;
-    case WEST: packet = 104; break;
-    case NORTHWEST: packet = 109;  break;
+    case NORTH: packet = PacketCodes::In::MoveNorth; break;
+    case NORTHEAST: packet = PacketCodes::In::MoveNorthEast; break;
+    case EAST: packet = PacketCodes::In::MoveEast; break;
+    case SOUTHEAST: packet = PacketCodes::In::MoveSouthEast;  break;
+    case SOUTH: packet = PacketCodes::In::MoveSouth; break;
+    case SOUTHWEST: packet = PacketCodes::In::MoveSouthWest;  break;
+    case WEST: packet = PacketCodes::In::MoveWest; break;
+    case NORTHWEST: packet = PacketCodes::In::MoveNorthWest;  break;
     }
 
     if (packet != 0) {
         PacketBuilder builder(1);
         builder.writeU8(packet);
 
+        // Send fake walk packet
         sender_->sendToServer(builder.build());
     }
 }

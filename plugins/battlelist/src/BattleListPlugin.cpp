@@ -25,7 +25,7 @@ Q_EXPORT_PLUGIN2(be.gillis.battlelist, BattleListPlugin)
 
 #define SETTING_ADDRESS "address"
 
-void BattleListPlugin::install(HookInterface* hook, SettingsInterface* settings) throw(std::exception) {
+void BattleListPlugin::install(HookInterface*, SettingsInterface* settings) throw(std::exception) {
     if(!settings->value(SETTING_ADDRESS).isValid())
         throw std::runtime_error("Could not load battlelist address!");
 

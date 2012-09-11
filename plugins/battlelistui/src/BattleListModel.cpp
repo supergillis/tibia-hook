@@ -15,21 +15,25 @@
 
 #include "BattleListModel.h"
 
-BattleListModel::BattleListModel(const BattleList* list, QObject* parent):
-    QAbstractTableModel(parent), list_(list) {
+#include <BattleList.h>
+#include <PluginLoader.h>
+
+BattleListModel::BattleListModel(PluginManagerInterface* plugins, QObject* parent):
+    QAbstractTableModel(parent) {
+    battleList_ = PluginLoader<BattleListPluginInterface>(plugins)("battlelist");
 }
 
-int BattleListModel::columnCount(const QModelIndex& parent) const {
+int BattleListModel::columnCount(const QModelIndex&) const {
     return 2;
 }
 
-int BattleListModel::rowCount(const QModelIndex& parent) const {
+int BattleListModel::rowCount(const QModelIndex&) const {
     return BATTLELIST_LENGTH;
 }
 
 QVariant BattleListModel::data(const QModelIndex& index, int role) const {
     if(role == Qt::DisplayRole) {
-        BattleListEntry entry = list_->entries[index.row()];
+        BattleListEntry entry = battleList_->entries()->entries[index.row()];
         if(index.column() == 0) {
             return QVariant(entry.id);
         }
@@ -38,10 +42,10 @@ QVariant BattleListModel::data(const QModelIndex& index, int role) const {
     return QVariant();
 }
 
-QModelIndex BattleListModel::index(int row, int column, const QModelIndex& parent) const {
+QModelIndex BattleListModel::index(int row, int column, const QModelIndex&) const {
     return createIndex(row, column);
 }
 
-QModelIndex BattleListModel::parent(const QModelIndex& index) const {
+QModelIndex BattleListModel::parent(const QModelIndex&) const {
     return QModelIndex();
 }

@@ -18,6 +18,11 @@
 
 #include <AStarGridInterface.h>
 #include <MiniMapFloorInterface.h>
+#include <MiniMapPluginInterface.h>
+#include <PathFinderPluginInterface.h>
+#include <PluginManagerInterface.h>
+#include <PositionTrackerPluginInterface.h>
+#include <WalkerPluginInterface.h>
 
 #include <Position.h>
 
@@ -45,7 +50,7 @@ class MiniMapView: public QGraphicsView {
     Q_OBJECT
 
 public:
-    MiniMapView(MiniMapUIPlugin* plugin, QWidget* parent = 0);
+    MiniMapView(MiniMapUIPlugin* plugin, PluginManagerInterface* plugins, QWidget* parent = 0);
     ~MiniMapView();
 
     void mousePressEvent(QMouseEvent*);
@@ -62,6 +67,11 @@ protected:
     void refresh();
     
 private:
+    MiniMapPluginInterface* minimap_;
+    PathFinderPluginInterface* finder_;
+    PositionTrackerPluginInterface* tracker_;
+    WalkerPluginInterface* walker_;
+
     QGraphicsScene* scene_;
     QGraphicsLineItem* horizontalLine_;
     QGraphicsLineItem* verticalLine_;

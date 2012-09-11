@@ -23,12 +23,6 @@
 Q_EXPORT_PLUGIN2(be.gillis.pathfinder, PathFinderPlugin)
 #endif
 
-void PathFinderPlugin::install(HookInterface* hook, SettingsInterface* settings) throw(std::exception) {
-}
-
-void PathFinderPlugin::uninstall() {
-}
-
 QList<Direction> PathFinderPlugin::findPath(AStarGridInterface* grid, quint16 x, quint16 y, quint16 ex, quint16 ey) const {
     AStarDefaultHeuristic heuristic;
     AStar astar(grid, &heuristic);

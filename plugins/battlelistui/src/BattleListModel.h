@@ -18,13 +18,14 @@
 
 #include <QAbstractTableModel>
 
-#include <BattleList.h>
+#include <BattleListPluginInterface.h>
+#include <PluginManagerInterface.h>
 
 class BattleListModel: public QAbstractTableModel {
     Q_OBJECT
 
 public:
-    BattleListModel(const BattleList*, QObject* = 0);
+    BattleListModel(PluginManagerInterface* plugins, QObject* = 0);
 
     int columnCount(const QModelIndex& parent = QModelIndex()) const;
     int rowCount(const QModelIndex& parent = QModelIndex()) const;
@@ -35,7 +36,7 @@ public:
     QModelIndex parent(const QModelIndex& index) const;
 
 private:
-    const BattleList* list_;
+    BattleListPluginInterface* battleList_;
 };
 
 #endif

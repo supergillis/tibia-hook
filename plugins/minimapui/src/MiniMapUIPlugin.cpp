@@ -27,51 +27,19 @@ Q_EXPORT_PLUGIN2(be.gillis.minimapui, MiniMapUIPlugin)
 #endif
 
 MiniMapUIPlugin::MiniMapUIPlugin():
-    view_(NULL),
-    finder_(NULL),
-    tracker_(NULL),
-    walker_(NULL) {
+    hook_(NULL),
+    view_(NULL) {
 }
 
 void MiniMapUIPlugin::install(HookInterface* hook, SettingsInterface*) throw(std::exception) {
-    QObject* plugin = hook->plugins()->findPluginByName("minimap");
-    if(plugin == NULL) {
-        throw std::runtime_error("The 'minimap' plugin must be loaded before loading the 'minimapui' plugin!");
-    }
-
-    minimap_ = qobject_cast<MiniMapPluginInterface*>(plugin);
-    if(minimap_ == NULL) {
-        throw std::runtime_error("The 'minimap' plugin could not be loaded!");
-    }
-
-    // Try to load the pathfinder plugin
-    plugin = hook->plugins()->findPluginByName("pathfinder");
-    if(plugin != NULL) {
-        finder_ = qobject_cast<PathFinderPluginInterface*>(plugin);
-    }
-
-    // Try to load the position plugin
-    plugin = hook->plugins()->findPluginByName("positiontracker");
-    if(plugin != NULL) {
-        tracker_ = qobject_cast<PositionTrackerPluginInterface*>(plugin);
-    }
-
-    // Try to load the walker plugin
-    plugin = hook->plugins()->findPluginByName("walker");
-    if(plugin != NULL) {
-        walker_ = qobject_cast<WalkerPluginInterface*>(plugin);
-    }
-
-    view_ = new MiniMapView(this);
+    view_ = new MiniMapView(this, hook->plugins());
 
     hook_ = hook;
     hook_->ui()->addTab(view_, "Map");
 }
 
 void MiniMapUIPlugin::uninstall() {
-    // Clean up UI
     hook_->ui()->removeTab(view_);
 
-    // Clean up objects
     delete view_;
 }

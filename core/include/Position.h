@@ -1,7 +1,9 @@
 #ifndef POSITION_H
 #define POSITION_H
 
-#include <QtGlobal>
+#include <Direction.h>
+
+#include <QDebug>
 #include <QMetaType>
 
 struct Position {
@@ -12,7 +14,15 @@ struct Position {
     quint16 x;
     quint16 y;
     quint16 z;
+
+    Position operator+(const Direction& direction) const;
+    Position operator+(const Position& position) const;
+
+    bool operator!=(const Position& position) const;
+    bool operator==(const Position& position) const;
 };
+
+QDebug operator<<(QDebug debug, const Position& position);
 
 Q_DECLARE_METATYPE(Position)
 

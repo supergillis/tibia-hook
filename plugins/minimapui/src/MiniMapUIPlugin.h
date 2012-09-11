@@ -19,10 +19,7 @@
 #include "MiniMapView.h"
 
 #include <HookInterface.h>
-#include <PathFinderPluginInterface.h>
 #include <PluginInterface.h>
-#include <PositionTrackerPluginInterface.h>
-#include <WalkerPluginInterface.h>
 
 #include <QObject>
 #include <QtPlugin>
@@ -40,14 +37,6 @@ public:
 
     void install(HookInterface*, SettingsInterface*) throw(std::exception);
     void uninstall();
-
-protected:
-    MiniMapPluginInterface* minimap_;
-    PathFinderPluginInterface* finder_;
-    PositionTrackerPluginInterface* tracker_;
-    WalkerPluginInterface* walker_;
-
-    friend class MiniMapView;
 
 private:
     HookInterface* hook_;

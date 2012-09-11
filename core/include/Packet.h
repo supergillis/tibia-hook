@@ -13,18 +13,31 @@
  * limitations under the License.
  */
 
-#ifndef PACKETINTERFACE_H
-#define PACKETINTERFACE_H
+#ifndef PACKET_H
+#define PACKET_H
 
 #include <QtGlobal>
-#include <QString>
+#include <QByteArray>
 
-class PacketInterface {
+class Packet {
 public:
-	virtual ~PacketInterface() {}
+    Packet(const QByteArray& data): raw_(data) {}
+    Packet(const quint8* buffer, quint16 length): raw_((const char*) buffer, length) {}
 
-	virtual quint16 length() const = 0;
-    virtual const quint8* data() const = 0;
+    quint16 length() const {
+        return raw_.length();
+    }
+
+    const quint8* rawData() const {
+        return (const quint8*) raw_.data();
+    }
+
+    const QByteArray& data() const {
+        return raw_;
+    }
+
+private:
+    QByteArray raw_;
 };
 
 #endif

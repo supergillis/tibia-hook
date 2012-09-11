@@ -19,13 +19,12 @@
 #include <PacketCodes.h>
 
 #include <QApplication>
-#include <QDebug>
 
 #if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
 Q_EXPORT_PLUGIN2(be.gillis.channelsplugin, ChannelsPlugin)
 #endif
 
-void ChannelsPlugin::install(HookInterface* hook, SettingsInterface* settings) throw(std::exception) {
+void ChannelsPlugin::install(HookInterface* hook, SettingsInterface*) throw(std::exception) {
     sender_ = hook->sender();
 }
 

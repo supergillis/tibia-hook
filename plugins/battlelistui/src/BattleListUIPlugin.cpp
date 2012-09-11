@@ -27,7 +27,7 @@ Q_EXPORT_PLUGIN2(be.gillis.battlelistui, BattleListUIPlugin)
 BattleListUIPlugin::BattleListUIPlugin(): widget_(NULL) {
 }
 
-void BattleListUIPlugin::install(HookInterface* hook, SettingsInterface* settings) throw(std::exception) {
+void BattleListUIPlugin::install(HookInterface* hook, SettingsInterface*) throw(std::exception) {
     QObject* plugin = hook->plugins()->findPluginByName("battlelist");
     if(plugin == NULL) {
         throw std::runtime_error("The 'battlelist' plugin must be loaded before loading the 'battlelistui' plugin!");
@@ -39,7 +39,7 @@ void BattleListUIPlugin::install(HookInterface* hook, SettingsInterface* setting
     }
 
     widget_ = new BattleListWidget();
-    widget_->battleListView()->setModel(new BattleListModel(battleListPlugin->entries()));
+    widget_->battleListView()->setModel(new BattleListModel(hook->plugins()));
     ui_ = hook->ui();
     ui_->addTab(widget_, "Battle List");
 }

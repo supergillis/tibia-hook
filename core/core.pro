@@ -8,8 +8,11 @@ QMAKE_CXXFLAGS += -std=c++0x
 TEMPLATE = lib
 TARGET = hook
 
-INCLUDEPATH += include ../lib/mologie-detours ../lib/qt-json
+INCLUDEPATH += include ../lib/libdetours ../lib/libqtjson
 DESTDIR = ../bin
+
+LIBS += -L../lib
+LIBS += -ldetours -lqtjson
 
 SOURCES = src/Application.cpp \
 	src/DetourManager.cpp \
@@ -18,7 +21,8 @@ SOURCES = src/Application.cpp \
 	src/Settings.cpp \
     src/UIManager.cpp \
     src/PluginManager.cpp \
-    src/ProxyManager.cpp
+    src/ProxyManager.cpp \
+	src/Position.cpp
 
 HEADERS = src/Application.h \
 	src/DataQueue.h \
@@ -28,4 +32,4 @@ HEADERS = src/Application.h \
 	src/Settings.h \
     src/UIManager.h \
     src/PluginManager.h \
-	src/ProxyManager.h
+	src/ProxyManager.h \

@@ -35,8 +35,8 @@ class PathFinderPlugin: public QObject, public PluginInterface, public PathFinde
 #endif
 
 public:
-    void install(HookInterface*, SettingsInterface*) throw(std::exception);
-    void uninstall();
+    void install(HookInterface*, SettingsInterface*) throw(std::exception) {}
+    void uninstall() {}
 
     QList<Direction> findPath(AStarGridInterface* grid, quint16 x, quint16 y, quint16 ex, quint16 ey) const;
 };

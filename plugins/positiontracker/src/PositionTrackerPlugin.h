@@ -25,8 +25,7 @@
 #include <QtPlugin>
 #include <QObject>
 
-class PositionTracker;
-class PositionTrackerPlugin: public QObject, public PluginInterface, public PositionTrackerPluginInterface {
+class PositionTrackerPlugin: public QObject, public PluginInterface, public PositionTrackerPluginInterface, public ReadOnlyProxyInterface {
 	Q_OBJECT
     Q_INTERFACES(PluginInterface PositionTrackerPluginInterface)
 
@@ -43,22 +42,15 @@ public:
     void connectPositionChanged(QObject* object, const char* slot, Qt::ConnectionType type = Qt::AutoConnection);
     void disconnectPositionChanged(QObject* object, const char* slot);
 
-private:
-    HookInterface* hook_;
-    PositionTracker* tracker_;
-};
-
-class PositionTracker: public QObject, public ReadOnlyProxyInterface {
-    Q_OBJECT
-
-public:
-    PositionTracker(QObject* parent): QObject(parent) {}
-    Position position_;
-
     void handlePacket(PacketReader& reader);
 
 signals:
     void positionChanged(const Position& position);
+
+private:
+    HookInterface* hook_;
+
+    Position position_;
 };
 
 #endif

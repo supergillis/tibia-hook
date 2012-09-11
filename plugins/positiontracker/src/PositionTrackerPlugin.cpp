@@ -21,46 +21,41 @@
 Q_EXPORT_PLUGIN2(be.gillis.positiontracker, PositionTrackerPlugin)
 #endif
 
-void PositionTrackerPlugin::install(HookInterface* hook, SettingsInterface* settings) throw(std::exception) {
-    tracker_ = new PositionTracker(this);
-
+void PositionTrackerPlugin::install(HookInterface* hook, SettingsInterface*) throw(std::exception) {
     hook_ = hook;
-    hook_->addIncomingReadOnlyProxy(PacketCodes::In::MapFull, tracker_);
-    hook_->addIncomingReadOnlyProxy(PacketCodes::In::MapTopRow, tracker_);
-    hook_->addIncomingReadOnlyProxy(PacketCodes::In::MapRightRow, tracker_);
-    hook_->addIncomingReadOnlyProxy(PacketCodes::In::MapBottomRow, tracker_);
-    hook_->addIncomingReadOnlyProxy(PacketCodes::In::MapLeftRow, tracker_);
-    hook_->addIncomingReadOnlyProxy(PacketCodes::In::FloorChangeUp, tracker_);
-    hook_->addIncomingReadOnlyProxy(PacketCodes::In::FloorChangeDown, tracker_);
+    hook_->addIncomingReadOnlyProxy(PacketCodes::In::MapFull, this);
+    hook_->addIncomingReadOnlyProxy(PacketCodes::In::MapTopRow, this);
+    hook_->addIncomingReadOnlyProxy(PacketCodes::In::MapRightRow, this);
+    hook_->addIncomingReadOnlyProxy(PacketCodes::In::MapBottomRow, this);
+    hook_->addIncomingReadOnlyProxy(PacketCodes::In::MapLeftRow, this);
+    hook_->addIncomingReadOnlyProxy(PacketCodes::In::FloorChangeUp, this);
+    hook_->addIncomingReadOnlyProxy(PacketCodes::In::FloorChangeDown, this);
 }
 
 void PositionTrackerPlugin::uninstall() {
-    hook_->removeIncomingReadOnlyProxy(PacketCodes::In::FloorChangeDown, tracker_);
-    hook_->removeIncomingReadOnlyProxy(PacketCodes::In::FloorChangeUp, tracker_);
-    hook_->removeIncomingReadOnlyProxy(PacketCodes::In::MapLeftRow, tracker_);
-    hook_->removeIncomingReadOnlyProxy(PacketCodes::In::MapBottomRow, tracker_);
-    hook_->removeIncomingReadOnlyProxy(PacketCodes::In::MapRightRow, tracker_);
-    hook_->removeIncomingReadOnlyProxy(PacketCodes::In::MapTopRow, tracker_);
-    hook_->removeIncomingReadOnlyProxy(PacketCodes::In::MapFull, tracker_);
+    hook_->removeIncomingReadOnlyProxy(PacketCodes::In::FloorChangeDown, this);
+    hook_->removeIncomingReadOnlyProxy(PacketCodes::In::FloorChangeUp, this);
+    hook_->removeIncomingReadOnlyProxy(PacketCodes::In::MapLeftRow, this);
+    hook_->removeIncomingReadOnlyProxy(PacketCodes::In::MapBottomRow, this);
+    hook_->removeIncomingReadOnlyProxy(PacketCodes::In::MapRightRow, this);
+    hook_->removeIncomingReadOnlyProxy(PacketCodes::In::MapTopRow, this);
+    hook_->removeIncomingReadOnlyProxy(PacketCodes::In::MapFull, this);
     hook_ = NULL;
-
-    delete tracker_;
-    tracker_ = NULL;
 }
 
 Position PositionTrackerPlugin::position() const {
-    return tracker_->position_;
+    return position_;
 }
 
 void PositionTrackerPlugin::connectPositionChanged(QObject* object, const char* slot, Qt::ConnectionType type) {
-    QObject::connect(tracker_, SIGNAL(positionChanged(Position)), object, slot, type);
+    QObject::connect(this, SIGNAL(positionChanged(Position)), object, slot, type);
 }
 
 void PositionTrackerPlugin::disconnectPositionChanged(QObject* object, const char* slot) {
-    QObject::disconnect(tracker_, SIGNAL(positionChanged(Position)), object, slot);
+    QObject::disconnect(this, SIGNAL(positionChanged(Position)), object, slot);
 }
 
-void PositionTracker::handlePacket(PacketReader& reader) {
+void PositionTrackerPlugin::handlePacket(PacketReader& reader) {
     quint8 type = reader.readU8();
 
     switch (type) {
