@@ -35,11 +35,25 @@
 
 class MiniMapFloorGrid: public AStarGridInterface {
 public:
-    MiniMapFloorGrid(MiniMapFloorInterface* floor): floor_(floor) {}
+    MiniMapFloorGrid(MiniMapFloorInterface* floor):
+        floor_(floor) {
+    }
 
-    bool blocking(quint16 x, quint16 y) const { return floor_->dataAt(x, y) == 255; }
-    quint8 cost(quint16 x, quint16 y) const { return floor_->dataAt(x, y); }
-    quint8 averageCost() const { return 120; }
+    void forEachNeighbour(quint16 x, quint16 y, std::function<void (quint16, quint16 , quint8)> function) {
+        static qint8 dx[8] = {1, -1, 0, 0, 1, -1, 1, -1};
+        static qint8 dy[8] = {0, 0, 1, -1, 1, 1, -1, -1};
+
+        for (quint8 index = 0; index < 4; index++) {
+            quint16 nx = x + dx[index];
+            quint16 ny = y + dy[index];
+
+            quint8 data = floor_->dataAt(nx, ny);
+            if (data != 255) {
+                quint8 cost = (data * 100) / 120;
+                function(nx, ny, cost);
+            }
+        }
+    }
 
 private:
     MiniMapFloorInterface* floor_;

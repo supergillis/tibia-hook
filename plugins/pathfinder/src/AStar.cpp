@@ -27,9 +27,6 @@ AStar::~AStar() {
 }
 
 QList<Direction> AStar::path(quint16 x, quint16 y, quint16 ex, quint16 ey) {
-    static qint8 dx[8] = {1, -1, 0, 0, 1, -1, 1, -1};
-    static qint8 dy[8] = {0, 0, 1, -1, 1, 1, -1, -1};
-
     AStarNode* found = NULL;
     AStarNode* start = new AStarNode(this, NULL, x, y, 0, heuristic_->calculate(x, y, ex, ey));
     open_.enqueue(start);
@@ -43,15 +40,7 @@ QList<Direction> AStar::path(quint16 x, quint16 y, quint16 ex, quint16 ey) {
         }
 
         // Iterate all neighbours
-        for (quint8 index = 0; index < 4; ++index) {
-            const quint16 nx = node->x() + dx[index];
-            const quint16 ny = node->y() + dy[index];
-
-            if (grid_->blocking(nx, ny)) {
-                continue;
-            }
-
-            const quint32 cost = (grid_->cost(nx, ny) * 100) / grid_->averageCost();
+        grid_->forEachNeighbour(node->x(), node->y(), [this, ex, ey, node](quint16 nx, quint16 ny, quint8 cost) {
             const quint32 g = node->g() + cost;
             const quint32 h = heuristic_->calculate(nx, ny, ex, ey) * 55;
 
@@ -60,7 +49,7 @@ QList<Direction> AStar::path(quint16 x, quint16 y, quint16 ex, quint16 ey) {
                 // This node already exists
                 if (neighbour->g() <= g) {
                     // But it is cheaper than us
-                    continue;
+                    return;
                 }
                 neighbour->update(node, g, h);
             }
@@ -69,7 +58,7 @@ QList<Direction> AStar::path(quint16 x, quint16 y, quint16 ex, quint16 ey) {
                 neighbour = new AStarNode(this, node, nx, ny, g, h);
                 open_.enqueue(neighbour);
             }
-        }
+        });
     }
 
     QList<Direction> directions;

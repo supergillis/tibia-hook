@@ -20,9 +20,7 @@
 
 class AStarGridInterface {
 public:
-    virtual bool blocking(quint16 x, quint16 y) const = 0;
-    virtual quint8 cost(quint16 x, quint16 y) const = 0;
-    virtual quint8 averageCost() const = 0;
+    virtual void forEachNeighbour(quint16 x, quint16 y, std::function<void (quint16, quint16 , quint8)> function) = 0;
 };
 
 #endif
