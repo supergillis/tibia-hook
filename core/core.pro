@@ -3,6 +3,8 @@ greaterThan(QT_MAJOR_VERSION, 4) {
 	QT += widgets
 }
 
+QMAKE_CXXFLAGS += -std=c++0x
+
 TEMPLATE = lib
 TARGET = hook
 
@@ -23,13 +25,7 @@ HEADERS = src/Application.h \
 	src/DetourManager.h \
 	src/DetourSender.h \
 	src/Hook.h \
-    src/PacketBuilder.h \
 	src/Settings.h \
     src/UIManager.h \
     src/PluginManager.h \
-    src/ProxyManager.h \
-    src/PacketReader.h \
-    src/Packet.h \
-    include/Position.h \
-    include/Constants.h \
-    include/Direction.h
+	src/ProxyManager.h

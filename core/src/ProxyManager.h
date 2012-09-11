@@ -16,31 +16,65 @@
 #ifndef TEMPLATEABLEPROXYMANAGER_H
 #define TEMPLATEABLEPROXYMANAGER_H
 
-#include <PacketReaderInterface.h>
+#include <PacketReader.h>
 #include <ProxyInterface.h>
 #include <ReadOnlyProxyInterface.h>
 
 #include <QHash>
 #include <QList>
 
-template<typename ProxyType, typename HandleType>
-class TemplateableProxyManager {
+#include <stdexcept>
+
+template<class ProxyType>
+class TemplateableProxyManagerBase {
 public:
     inline void append(quint8 type, ProxyType* proxy) {
-        proxies_[type].append(proxy);
+        this->proxies_[type].append(proxy);
     }
 
     inline void remove(quint8 type, ProxyType* proxy) {
-        proxies_[type].removeAll(proxy);
+        this->proxies_[type].removeAll(proxy);
     }
 
-    HandleType handlePacket(PacketReaderInterface& reader);
+protected:
+    QList<ProxyType*> proxies_[256];
+};
 
-private:
-    typedef QList<ProxyType*> ProxyList;
-    typedef QHash<quint8, ProxyList> ProxyListMap;
+template<class ProxyType, class HandleType>
+class TemplateableProxyManager: public TemplateableProxyManagerBase<ProxyType> {
+public:
+    HandleType handlePacket(PacketReader& reader);
+};
 
-    ProxyListMap proxies_;
+template<class ProxyType>
+class TemplateableProxyManager<ProxyType, void>: public TemplateableProxyManagerBase<ProxyType> {
+public:
+    void handlePacket(PacketReader& reader) {
+        quint8 type = reader.peekU8();
+
+        // Iterate all proxies
+        auto proxies = this->proxies_[type];
+        foreach (ProxyType* proxy, proxies) {
+            proxy->handlePacket(reader);
+        }
+    }
+};
+
+template<class ProxyType>
+class TemplateableProxyManager<ProxyType, bool>: public TemplateableProxyManagerBase<ProxyType> {
+public:
+    bool handlePacket(PacketReader& reader) {
+        quint8 type = reader.peekU8();
+
+        // Iterate all proxies and stop when one returns false
+        auto proxies = this->proxies_[type];
+        foreach (ProxyType* proxy, proxies) {
+            if (!proxy->handlePacket(reader)) {
+                return false;
+            }
+        }
+        return true;
+    }
 };
 
 typedef TemplateableProxyManager<ProxyInterface, bool> ProxyManager;

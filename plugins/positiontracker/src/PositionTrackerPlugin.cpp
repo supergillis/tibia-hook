@@ -60,7 +60,7 @@ void PositionTrackerPlugin::disconnectPositionChanged(QObject* object, const cha
     QObject::disconnect(tracker_, SIGNAL(positionChanged(Position)), object, slot);
 }
 
-void PositionTracker::handlePacket(PacketReaderInterface& reader) {
+void PositionTracker::handlePacket(PacketReader& reader) {
     quint8 type = reader.readU8();
 
     switch (type) {

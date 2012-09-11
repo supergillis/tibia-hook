@@ -23,22 +23,25 @@
 
 class DetourSender: public SenderInterface {
 public:
-	DetourSender(DetourManager* manager): SenderInterface(), manager_(manager) {}
+    DetourSender(DetourManager* manager):
+        SenderInterface(),
+        manager_(manager) {
+    }
 
     inline void sendToClient(const QByteArray& data) {
         manager_->clientQueue()->enqueue(data);
-	}
+    }
+
+    inline void sendToClient(const Packet& packet) {
+        manager_->clientQueue()->enqueue(packet.data());
+    }
 
     inline void sendToServer(const QByteArray& data) {
         manager_->serverQueue()->enqueue(data);
-	}
-
-    inline PacketBuilderInterface* createPacket() const {
-        return new PacketBuilder();
     }
 
-    inline PacketBuilderInterface* createPacket(quint16 length) const {
-        return new PacketBuilder(length);
+    inline void sendToServer(const Packet& packet) {
+        manager_->serverQueue()->enqueue(packet.data());
     }
 
 private:

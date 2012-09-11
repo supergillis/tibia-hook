@@ -16,13 +16,13 @@
 #ifndef READONLYPROXYINTERFACE_H
 #define READONLYPROXYINTERFACE_H
 
-#include <PacketReaderInterface.h>
+#include <PacketReader.h>
 
 class ReadOnlyProxyInterface {
 public:
     virtual ~ReadOnlyProxyInterface() {}
 
-    virtual void handlePacket(PacketReaderInterface&) = 0;
+    virtual void handlePacket(PacketReader&) = 0;
 };
 
 #endif

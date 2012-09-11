@@ -16,7 +16,7 @@
 #ifndef SENDERINTERFACE_H
 #define SENDERINTERFACE_H
 
-#include <PacketBuilderInterface.h>
+#include <PacketBuilder.h>
 
 #include <QByteArray>
 
@@ -25,10 +25,10 @@ public:
 	virtual ~SenderInterface() {}
 
     virtual void sendToClient(const QByteArray&) = 0;
-    virtual void sendToServer(const QByteArray&) = 0;
+    virtual void sendToClient(const Packet&) = 0;
 
-    virtual PacketBuilderInterface* createPacket() const = 0;
-    virtual PacketBuilderInterface* createPacket(quint16 length) const = 0;
+    virtual void sendToServer(const QByteArray&) = 0;
+    virtual void sendToServer(const Packet&) = 0;
 };
 
 #endif

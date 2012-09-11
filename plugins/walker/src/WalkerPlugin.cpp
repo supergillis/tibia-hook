@@ -147,13 +147,9 @@ void Walker::move(const Direction& direction) {
     }
 
     if (packet != 0) {
-        PacketBuilderInterface* builder = sender_->createPacket(1);
-        builder->writeU8(packet);
+        PacketBuilder builder(1);
+        builder.writeU8(packet);
 
-        PacketInterface* packet = builder->build();
-        sender_->sendToServer(QByteArray((const char*) packet->data(), packet->length()));
-
-        delete packet;
-        delete builder;
+        sender_->sendToServer(builder.build());
     }
 }

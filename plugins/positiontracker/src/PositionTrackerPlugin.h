@@ -55,7 +55,7 @@ public:
     PositionTracker(QObject* parent): QObject(parent) {}
     Position position_;
 
-    void handlePacket(PacketReaderInterface& reader);
+    void handlePacket(PacketReader& reader);
 
 signals:
     void positionChanged(const Position& position);

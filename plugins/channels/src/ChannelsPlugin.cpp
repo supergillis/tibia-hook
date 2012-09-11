@@ -35,34 +35,28 @@ void ChannelsPlugin::uninstall() {
 
 quint16 ChannelsPlugin::openChannel(const QString& name) {
     quint16 channelId = 0xA0;
-    PacketBuilderInterface* builder = sender_->createPacket();
-    builder->writeU8(PacketCodes::In::ChannelOpen);
-    builder->writeU16(channelId);
-    builder->writeString(name);
-    builder->writeU16(0);
-    builder->writeU16(0);
+    PacketBuilder builder;
+    builder.writeU8(PacketCodes::In::ChannelOpen);
+    builder.writeU16(channelId);
+    builder.writeString(name);
+    builder.writeU16(0);
+    builder.writeU16(0);
 
     // Send fake packet
-    PacketInterface* packet = builder->build();
-    sender_->sendToClient(QByteArray((const char*) packet->data(), packet->length()));
-
-    delete packet;
-    delete builder;
+    Packet packet = builder.build();
+    sender_->sendToClient(packet);
 
     return channelId;
 }
 
 void ChannelsPlugin::closeChannel(quint16 channelId) {
-    PacketBuilderInterface* builder = sender_->createPacket();
-    builder->writeU8(PacketCodes::In::ChannelClose);
-    builder->writeU16(channelId);
+    PacketBuilder builder;
+    builder.writeU8(PacketCodes::In::ChannelClose);
+    builder.writeU16(channelId);
 
     // Send fake packet
-    PacketInterface* packet = builder->build();
-    sender_->sendToClient(QByteArray((const char*) packet->data(), packet->length()));
-
-    delete packet;
-    delete builder;
+    Packet packet = builder.build();
+    sender_->sendToClient(packet);
 }
 
 void ChannelsPlugin::postMessage(quint16 channelId, const QString& message) {
@@ -70,50 +64,37 @@ void ChannelsPlugin::postMessage(quint16 channelId, const QString& message) {
 }
 
 void ChannelsPlugin::postMessage(quint16 channelId, const QString& message, const QString& name) {
-    PacketBuilderInterface* builder = sender_->createPacket();
-    builder->writeU8(PacketCodes::In::Speak);
-    builder->writeU32(0);
-    builder->writeString(name);
-    builder->writeU16(0);
-    builder->writeU8(Tibia::Message::Channel);
-    builder->writeU16(channelId);
-    builder->writeString(message);
+    PacketBuilder builder;
+    builder.writeU8(PacketCodes::In::Speak);
+    builder.writeU32(0);
+    builder.writeString(name);
+    builder.writeU16(0);
+    builder.writeU8(Tibia::Message::Channel);
+    builder.writeU16(channelId);
+    builder.writeString(message);
 
     // Send fake packet
-    PacketInterface* packet = builder->build();
-    sender_->sendToClient(QByteArray((const char*) packet->data(), packet->length()));
-
-    delete packet;
-    delete builder;
+    sender_->sendToClient(builder.build());
 }
 
 void ChannelsPlugin::openPrivateChannel(const QString& name) {
-    quint16 channelId = 0xA1;
-    PacketBuilderInterface* builder = sender_->createPacket();
-    builder->writeU8(PacketCodes::In::ChannelOpenPrivate);
-    builder->writeString(name);
+    PacketBuilder builder ;
+    builder.writeU8(PacketCodes::In::ChannelOpenPrivate);
+    builder.writeString(name);
 
     // Send fake packet
-    PacketInterface* packet = builder->build();
-    sender_->sendToClient(QByteArray((const char*) packet->data(), packet->length()));
-
-    delete packet;
-    delete builder;
+    sender_->sendToClient(builder.build());
 }
 
 void ChannelsPlugin::postPrivateMessage(const QString& name, const QString& message) {
-    PacketBuilderInterface* builder = sender_->createPacket();
-    builder->writeU8(PacketCodes::In::Speak);
-    builder->writeU32(0);
-    builder->writeString(name);
-    builder->writeU16(0);
-    builder->writeU8(Tibia::Message::PrivateFrom);
-    builder->writeString(message);
+    PacketBuilder builder;
+    builder.writeU8(PacketCodes::In::Speak);
+    builder.writeU32(0);
+    builder.writeString(name);
+    builder.writeU16(0);
+    builder.writeU8(Tibia::Message::PrivateFrom);
+    builder.writeString(message);
 
     // Send fake packet
-    PacketInterface* packet = builder->build();
-    sender_->sendToClient(QByteArray((const char*) packet->data(), packet->length()));
-
-    delete packet;
-    delete builder;
+    sender_->sendToClient(builder.build());
 }

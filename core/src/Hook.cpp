@@ -58,11 +58,14 @@ Hook::~Hook() {
     // Unload plugins
     plugins_.unload();
 
+    DetourManager::instance()->setServerBufferHandler(NULL);
+    DetourManager::instance()->setClientBufferHandler(NULL);
+
     // Delete objects
-    delete settings_;
-    delete sender_;
-    delete clientBufferHandler_;
     delete serverBufferHandler_;
+    delete clientBufferHandler_;
+    delete sender_;
+    delete settings_;
 }
 
 void Hook::addOutgoingProxy(quint8 type, ProxyInterface* proxy) {

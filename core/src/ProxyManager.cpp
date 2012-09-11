@@ -1,7 +1,7 @@
 #include "ProxyManager.h"
 
-template<>
-void TemplateableProxyManager<ReadOnlyProxyInterface, void>::handlePacket(PacketReaderInterface& reader) {
+/*template<>
+void TemplateableProxyManager<ReadOnlyProxyInterface, void>::handlePacket(PacketReader& reader) {
     quint8 type = reader.peekU8();
 
     // Iterate all proxies
@@ -12,7 +12,7 @@ void TemplateableProxyManager<ReadOnlyProxyInterface, void>::handlePacket(Packet
 }
 
 template<>
-bool TemplateableProxyManager<ProxyInterface, bool>::handlePacket(PacketReaderInterface& reader) {
+bool TemplateableProxyManager<ProxyInterface, bool>::handlePacket(PacketReader& reader) {
     quint8 type = reader.peekU8();
 
     // Iterate all proxies and stop when one returns false
@@ -23,4 +23,4 @@ bool TemplateableProxyManager<ProxyInterface, bool>::handlePacket(PacketReaderIn
         }
     }
     return true;
-}
+}*/

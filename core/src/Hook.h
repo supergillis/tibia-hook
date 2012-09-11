@@ -19,7 +19,7 @@
 #include <QList>
 
 #include <HookInterface.h>
-#include <PacketBuilderInterface.h>
+#include <PacketBuilder.h>
 #include <PluginInterface.h>
 #include <PluginManagerInterface.h>
 #include <ProxyInterface.h>

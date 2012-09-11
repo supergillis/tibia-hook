@@ -16,13 +16,13 @@
 #ifndef PROXYINTERFACE_H
 #define PROXYINTERFACE_H
 
-#include <PacketReaderInterface.h>
+#include <PacketReader.h>
 
 class ProxyInterface {
 public:
     virtual ~ProxyInterface() {}
 
-    virtual bool handlePacket(const PacketReaderInterface&) = 0;
+    virtual bool handlePacket(const PacketReader&) = 0;
 };
 
 #endif
