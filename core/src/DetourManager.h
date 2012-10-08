@@ -19,10 +19,12 @@
 #include <detours.h>
 
 #include "DataQueue.h"
+#include "Memory.h"
 
 #ifdef Q_WS_WIN
-#define LOOP_FUNCTION_RETURN_TYPE void
-#define LOOP_FUNCTION_RETURN(value) value
+
+#define LOOP_FUNCTION_RETURN_TYPE BOOL WINAPI
+#define LOOP_FUNCTION_RETURN(value) return value
 #define LOOP_FUNCTION_ARG_NAME1 lpMsg
 #define LOOP_FUNCTION_ARG_NAME2 hWnd
 #define LOOP_FUNCTION_ARG_NAME3 wMsgFilterMin
@@ -41,15 +43,17 @@
     UINT LOOP_FUNCTION_ARG_NAME4, \
     UINT LOOP_FUNCTION_ARG_NAME5
 
+/* Tibia 9.63 Adresses */
 #define SEND_BUFFER_ADDRESS 0x7b9d78
 #define SEND_BUFFER_LENGTH_ADDRESS 0x9d4588
 #define SEND_FUNCTION_ADDRESS 0x517df0
 
-#define PARSER_STREAM_ADDRESS 0x9d4574
-#define PARSER_FUNCTION_ADDRESS 0x466270
-#define PARSER_NEXT_FUNCTION_ADDRESS 0x82ff4a0
+#define PARSE_STREAM_ADDRESS 0x9d4574
+#define PARSE_FUNCTION_ADDRESS 0x466270
+#define PARSE_NEXT_FUNCTION_ADDRESS 0x5187e0
+
 #else
-/* Tibia 9.63 Adresses */
+
 #define LOOP_FUNCTION_ADDRESS 0x0804c8f4 // XPending
 #define LOOP_FUNCTION_RETURN_TYPE int
 #define LOOP_FUNCTION_RETURN(value) return value
@@ -57,14 +61,17 @@
 #define LOOP_FUNCTION_ARGUMENTS LOOP_FUNCTION_ARG_NAME1
 #define LOOP_FUNCTION_PARAMETERS Display* LOOP_FUNCTION_ARG_NAME1
 
+/* Tibia 9.63 Adresses */
 #define SEND_BUFFER_ADDRESS 0x85d4980
 #define SEND_BUFFER_LENGTH_ADDRESS 0x85d5188
 #define SEND_FUNCTION_ADDRESS 0x82f3e90
 
-#define PARSER_STREAM_ADDRESS 0x85d91b0
-#define PARSER_FUNCTION_ADDRESS 0x814c2d0
-#define PARSER_NEXT_FUNCTION_ADDRESS 0x82ff4a0
+#define PARSE_STREAM_ADDRESS 0x85d91b0
+#define PARSE_FUNCTION_ADDRESS 0x82ff4a0
+
 #endif
+
+#include <QDebug>
 
 class BufferHandler {
 public:
@@ -76,10 +83,10 @@ class DetourManager {
     typedef LOOP_FUNCTION_RETURN_TYPE LoopSignature(LOOP_FUNCTION_PARAMETERS);
 
     typedef void SendSignature(bool);
-    typedef void ParserSignature();
-    typedef int ParserNextSignature();
+    typedef void ParseSignature();
+    typedef int ParseNextSignature();
 
-    struct ParserStream {
+    struct ParseStream {
         quint8* buffer;
         quint32 size;
         quint32 position;
@@ -128,15 +135,19 @@ private:
         loopDetour_ = new MologieDetours::Detour<LoopSignature*>((LoopSignature*) LOOP_FUNCTION_ADDRESS, &DetourManager::onLoop);
 #endif
 
-        // Don't detour send and parse for now
-        return;
+        qDebug() << "SEND_BUFFER_ADDRESS" << hex << Memory::staticMapAddress(SEND_BUFFER_ADDRESS);
+        qDebug() << "SEND_BUFFER_LENGTH_ADDRESS" << hex << Memory::staticMapAddress(SEND_BUFFER_LENGTH_ADDRESS);
+        qDebug() << "PARSE_FUNCTION_ADDRESS" << hex << Memory::staticMapAddress(PARSE_FUNCTION_ADDRESS);
 
-        sendDetour_ = new MologieDetours::Detour<SendSignature*>((SendSignature*) SEND_FUNCTION_ADDRESS, &DetourManager::onSend);
-        parserNextDetour_ = new MologieDetours::Detour<ParserNextSignature*>((ParserNextSignature*) PARSER_NEXT_FUNCTION_ADDRESS, &DetourManager::onParserNext);
+        sendDetour_ = new MologieDetours::Detour<SendSignature*>((SendSignature*) Memory::staticMapAddress(SEND_FUNCTION_ADDRESS), &DetourManager::onSend);
+        parseNextDetour_ = new MologieDetours::Detour<ParseNextSignature*>((ParseNextSignature*) Memory::staticMapAddress(PARSE_NEXT_FUNCTION_ADDRESS), &DetourManager::onParseNext);
+
+        parserStream_ = (ParseStream*) Memory::staticMapAddress(PARSE_STREAM_ADDRESS);
+        parserFunction_ = (ParseSignature*) Memory::staticMapAddress(PARSE_FUNCTION_ADDRESS);
     }
 
     static void destruct() {
-        delete parserNextDetour_;
+        delete parseNextDetour_;
         delete sendDetour_;
         delete loopDetour_;
     }
@@ -144,14 +155,14 @@ private:
     static LOOP_FUNCTION_RETURN_TYPE onLoop(LOOP_FUNCTION_PARAMETERS);
 
     static void onSend(bool);
-    static int onParserNext();
+    static int onParseNext();
 
     static MologieDetours::Detour<LoopSignature*>* loopDetour_;
     static MologieDetours::Detour<SendSignature*>* sendDetour_;
-    static MologieDetours::Detour<ParserNextSignature*>* parserNextDetour_;
+    static MologieDetours::Detour<ParseNextSignature*>* parseNextDetour_;
 
-    static ParserStream* parserStream_;
-    static ParserSignature* parserFunction_;
+    static ParseStream* parserStream_;
+    static ParseSignature* parserFunction_;
 };
 
 #endif

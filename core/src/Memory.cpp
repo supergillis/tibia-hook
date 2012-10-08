@@ -33,6 +33,10 @@ DWORD calculateModuleBase() {
 }
 
 MemoryLocation Memory::mapAddress(MemoryLocation address) const {
+    return staticMapAddress(address);
+}
+
+MemoryLocation Memory::staticMapAddress(MemoryLocation address) {
     static DWORD base = (DWORD) calculateModuleBase();
     static DWORD windowsXPBase = 0x400000;
     static MemoryLocation offset = (MemoryLocation) (base - windowsXPBase);

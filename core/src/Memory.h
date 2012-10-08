@@ -8,8 +8,6 @@
 
 class Memory: public MemoryInterface {
 public:
-    MemoryLocation mapAddress(MemoryLocation address) const;
-
     inline quint8 readUInt8(MemoryLocation location) const {
         return read<quint8>(location);
     }
@@ -33,6 +31,9 @@ public:
     inline QString readString(MemoryLocation location) const {
         return QString(readRawString(location));
     }
+
+    MemoryLocation mapAddress(MemoryLocation address) const;
+    static MemoryLocation staticMapAddress(MemoryLocation address);
 
 private:
     template <typename T>
