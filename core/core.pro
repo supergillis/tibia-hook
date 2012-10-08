@@ -1,9 +1,6 @@
 QT += core gui
-greaterThan(QT_MAJOR_VERSION, 4) {
-	QT += widgets
-}
 
-QMAKE_CXXFLAGS += -std=c++0x
+include(core.pri)
 
 TEMPLATE = lib
 TARGET = hook
@@ -11,25 +8,35 @@ TARGET = hook
 INCLUDEPATH += include ../lib/libdetours ../lib/libqtjson
 DESTDIR = ../bin
 
-LIBS += -L../lib
-LIBS += -ldetours -lqtjson
+LIBS += -L../lib \
+    -ldetours \
+    -lqtjson
 
-SOURCES = src/Application.cpp \
-	src/DetourManager.cpp \
-	src/Hook.cpp \
-	src/Main.cpp \
-	src/Settings.cpp \
+unix:LIBS += -lpthread
+
+SOURCES += src/Application.cpp \
+    src/DetourManager.cpp \
+    src/Hook.cpp \
+    src/Settings.cpp \
     src/UIManager.cpp \
     src/PluginManager.cpp \
-    src/ProxyManager.cpp \
-	src/Position.cpp
+    src/Memory.cpp
 
-HEADERS = src/Application.h \
-	src/DataQueue.h \
-	src/DetourManager.h \
-	src/DetourSender.h \
-	src/Hook.h \
-	src/Settings.h \
+HEADERS += src/Application.h \
+    src/DataQueue.h \
+    src/DetourManager.h \
+    src/DetourSender.h \
+    src/Hook.h \
+    src/Settings.h \
     src/UIManager.h \
     src/PluginManager.h \
-	src/ProxyManager.h \
+    src/ProxyManager.h \
+    src/Memory.h
+
+unix:SOURCES += src/UnixEntry.cpp
+win32:SOURCES += src/WindowsEntry.cpp
+
+# Qt5 support
+greaterThan(QT_MAJOR_VERSION, 4) {
+    QT += widgets
+}

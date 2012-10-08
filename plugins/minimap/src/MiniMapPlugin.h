@@ -16,14 +16,16 @@
 #ifndef MINIMAPPLUGIN_H
 #define MINIMAPPLUGIN_H
 
-#include "MiniMapFloor.h"
+#include <QDir>
+#include <QMap>
+#include <QObject>
 
 #include <HookInterface.h>
 #include <MiniMapPluginInterface.h>
+#include <MiniMapFloorInterface.h>
 #include <PluginInterface.h>
 
-#include <QObject>
-#include <QDir>
+#include "MiniMapFloor.h"
 
 class MiniMapPlugin: public QObject, public PluginInterface, public MiniMapPluginInterface {
 	Q_OBJECT

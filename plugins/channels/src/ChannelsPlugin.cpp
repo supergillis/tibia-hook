@@ -14,9 +14,11 @@
  */
 
 #include "ChannelsPlugin.h"
+#include "PacketBuilder.h"
 
 #include <Constants.h>
 #include <PacketCodes.h>
+#include <SenderInterface.h>
 
 #include <QApplication>
 

@@ -16,8 +16,7 @@
 #ifndef PROXYINTERFACE_H
 #define PROXYINTERFACE_H
 
-#include <PacketReader.h>
-
+class PacketReader;
 class ProxyInterface {
 public:
     virtual ~ProxyInterface() {}

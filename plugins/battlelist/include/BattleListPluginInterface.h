@@ -19,14 +19,15 @@
 #include <QtPlugin>
 
 #include <BattleList.h>
+#include <BattleListEntryInterface.h>
 
 class BattleListPluginInterface {
 public:
     virtual ~BattleListPluginInterface() {}
 
-    virtual const BattleList* entries() const = 0;
-    virtual const BattleListEntry* findById(const quint32 id) const = 0;
-    virtual const BattleListEntry* findByName(const QString& name) const = 0;
+    virtual QList<BattleListEntryInterface*> entries() const = 0;
+    virtual BattleListEntryInterface* findById(const quint32 id) const = 0;
+    virtual BattleListEntryInterface* findByName(const QString& name) const = 0;
 };
 
 Q_DECLARE_INTERFACE(BattleListPluginInterface, "BattleListPluginInterface")

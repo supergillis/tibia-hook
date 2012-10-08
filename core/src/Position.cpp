@@ -1,14 +1,18 @@
 #include <Position.h>
 #include <Direction.h>
 
-QDebug operator<< (QDebug debug, const Position& position) {
+QDebug operator<<(QDebug debug, const Position& position) {
     debug.nospace() << "[" << position.x << ", " << position.y << ", " << position.z << "]";
     return debug;
 }
 
-Position Position::operator+(const Direction& direction) const {
-    Position moved(this->x, this->y, this->z);
-    switch (direction) {
+Position operator+(const Position& lhs, const Position& rhs) {
+    return Position(lhs.x + rhs.x, lhs.y + rhs.y, lhs.z + rhs.z);
+}
+
+Position operator+(const Position& lhs, const Direction& rhs) {
+    Position moved(lhs.x, lhs.y, lhs.z);
+    switch (rhs) {
     case NORTH: moved.y -= 1; break;
     case NORTHEAST: moved.y -= 1; moved.x += 1; break;
     case EAST: moved.x += 1; break;
@@ -21,14 +25,10 @@ Position Position::operator+(const Direction& direction) const {
     return moved;
 }
 
-Position Position::operator+(const Position& position) const {
-    return Position(this->x + position.x, this->y + position.y, this->z + position.z);
+bool operator!=(const Position& lhs, const Position& rhs) {
+    return lhs.x != rhs.x  || lhs.y != rhs.y || lhs.z != rhs.z;
 }
 
-bool Position::operator!=(const Position& position) const {
-    return this->x != position.x  || this->y != position.y || this->z != position.z;
-}
-
-bool Position::operator==(const Position& position) const {
-    return this->x == position.x  && this->y == position.y && this->z == position.z;
+bool operator==(const Position& lhs, const Position& rhs) {
+    return lhs.x == rhs.x  && lhs.y == rhs.y && lhs.z == rhs.z;
 }

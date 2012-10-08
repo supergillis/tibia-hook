@@ -115,19 +115,24 @@ void MiniMapView::mousePressEvent(QMouseEvent* event) {
         event->accept();
 
         QPointF mapped(mapToScene(event->pos()));
-        Position clicked;
-        clicked.x = (quint16) mapped.x();
-        clicked.y = (quint16) mapped.y();
-        clicked.z = floorIndex_;
-
-        MiniMapFloorGrid grid(minimap_->floor(floorIndex_));
+        Position end;
+        end.x = (quint16) mapped.x();
+        end.y = (quint16) mapped.y();
+        end.z = floorIndex_;
 
         // Find path from our position
         if (walker_ != NULL && tracker_ != NULL) {
-            Position position = tracker_->position();
-            QList<Direction> path = finder_->findPath(&grid, position.x, position.y, position.z, clicked.x, clicked.y, clicked.z);
+            Position start = tracker_->position();
+            MiniMapFloorGrid grid(minimap_->floor(floorIndex_));
 
-            walker_->walk(path);
+            //hpa_->addTemporaryPositions(position, clicked);
+            //QList<Position> path = finder_->findPath(hpa_, position, clicked);
+            //hpa_->removeTemporaryPositions();
+
+            DirectionPathBuilder builder;
+            if (finder_->findPath(grid, builder, start, end)) {
+                walker_->walk(builder.directions());
+            }
         }
     }
     else {

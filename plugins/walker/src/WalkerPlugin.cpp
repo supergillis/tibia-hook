@@ -16,9 +16,9 @@
 #include "WalkerPlugin.h"
 
 #include <PacketCodes.h>
+#include <PacketBuilder.h>
 #include <PluginLoader.h>
-
-#include <QDebug>
+#include <SenderInterface.h>
 
 #if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
 Q_EXPORT_PLUGIN2(be.gillis.walker, WalkerPlugin)

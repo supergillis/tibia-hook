@@ -6,7 +6,8 @@ DESTDIR = $${DESTDIR}/battlelist
 INCLUDEPATH += include
 
 SOURCES = src/BattleListPlugin.cpp
-HEADERS = src/BattleListPlugin.h
+HEADERS = src/BattleListPlugin.h \
+    src/BattleListEntry.h
 
 OTHER_FILES += \
 	meta.js \

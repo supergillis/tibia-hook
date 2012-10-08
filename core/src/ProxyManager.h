@@ -16,14 +16,14 @@
 #ifndef TEMPLATEABLEPROXYMANAGER_H
 #define TEMPLATEABLEPROXYMANAGER_H
 
-#include <PacketReader.h>
-#include <ProxyInterface.h>
-#include <ReadOnlyProxyInterface.h>
+#include <stdexcept>
 
 #include <QHash>
 #include <QList>
 
-#include <stdexcept>
+#include <PacketReader.h>
+#include <ProxyInterface.h>
+#include <ReadOnlyProxyInterface.h>
 
 template<class ProxyType>
 class TemplateableProxyManagerBase {
@@ -53,7 +53,7 @@ public:
         quint8 type = reader.peekU8();
 
         // Iterate all proxies
-        auto proxies = this->proxies_[type];
+        QList<ProxyType*> proxies = this->proxies_[type];
         foreach (ProxyType* proxy, proxies) {
             proxy->handlePacket(reader);
         }
@@ -67,7 +67,7 @@ public:
         quint8 type = reader.peekU8();
 
         // Iterate all proxies and stop when one returns false
-        auto proxies = this->proxies_[type];
+        QList<ProxyType*> proxies = this->proxies_[type];
         foreach (ProxyType* proxy, proxies) {
             if (!proxy->handlePacket(reader)) {
                 return false;

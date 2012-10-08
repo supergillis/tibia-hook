@@ -17,6 +17,7 @@
 #define MINIMAPVIEW_H
 
 #include <AStarGridInterface.h>
+#include <HpaStarGridInterface.h>
 #include <MiniMapFloorInterface.h>
 #include <MiniMapPluginInterface.h>
 #include <PathFinderPluginInterface.h>
@@ -39,25 +40,86 @@ public:
         floor_(floor) {
     }
 
-    void forEachNeighbour(quint16 x, quint16 y, quint8 z, std::function<void (quint16, quint16, quint8, quint8)> function) {
+    void forEachNeighbour(const Position& position, AStarVisitor& visitor) {
         static qint8 dx[8] = {1, -1, 0, 0, 1, -1, 1, -1};
         static qint8 dy[8] = {0, 0, 1, -1, 1, 1, -1, -1};
 
         // Only iterate [0, 3], ignore diagonal for now
         for (quint8 index = 0; index < 4; index++) {
-            quint16 nx = x + dx[index];
-            quint16 ny = y + dy[index];
+            quint16 nx = position.x + dx[index];
+            quint16 ny = position.y + dy[index];
 
             quint8 data = floor_->dataAt(nx, ny);
             if (data != 255) {
                 quint8 cost = (data * 100) / 120;
-                function(nx, ny, z, cost);
+                visitor.visitNeighbour(Position(nx, ny, position.z), cost);
             }
         }
     }
 
 private:
     MiniMapFloorInterface* floor_;
+};
+
+#define CLUSTER_WIDTH 32
+#define CLUSTER_HEIGHT 32
+
+#define MINIMAP_CHANGE_LEVEL 0xFFFFFF00
+
+class NopPathBuilder: public AStarPathBuilderInterface {
+public:
+    void rebuildPath(const AStarNodeInterface*) {
+        // Do nothing
+    }
+};
+
+class MiniMapHpaGrid: public HpaStarGridInterface {
+public:
+    MiniMapHpaGrid(PathFinderPluginInterface* finder, MiniMapPluginInterface* minimap):
+        finder_(finder),
+        minimap_(minimap) {
+    }
+	virtual ~MiniMapHpaGrid() {}
+
+    quint32 clusterWidth() const { return CLUSTER_WIDTH; }
+    quint32 clusterHeight() const { return CLUSTER_HEIGHT; }
+
+    bool blocking(const Position& position) const { return blocking(position.x, position.y, position.z); }
+    bool blocking(quint16 x, quint16 y, quint8 z) const { return minimap_->floor(z)->dataAt(x, y) == 255; }
+
+    bool floorChange(const Position& position) const { return blocking(position.x, position.y, position.z); }
+    bool floorChange(quint16 x, quint16 y, quint8 z) const { return minimap_->floor(z)->colorAt(x, y) == MINIMAP_CHANGE_LEVEL; }
+
+    void partition(HpaStarPartitioner& partitioner) {
+        QRect bounds;
+        for (int z = 7; z <= 7; ++z) {
+            MiniMapFloorInterface* floor = minimap_->floor(z);
+            bounds = bounds.united(floor->boundary());
+        }
+
+        for (int z = 7; z <= 7; ++z) {
+            for (int x = 0; x < bounds.width(); x += CLUSTER_WIDTH) {
+                for (int y = 0; y < bounds.height(); y += CLUSTER_HEIGHT) {
+                    partitioner.partition(x + bounds.x(), y + bounds.y(), z);
+                }
+            }
+        }
+    }
+
+    bool reachable(const Position& start, const Position& end, const QRect& boundary, quint32* cost = NULL) const {
+        if (start.z != end.z) {
+            return false;
+        }
+
+        MiniMapFloorInterface* floor = minimap_->floor(start.z);
+        MiniMapFloorGrid grid(floor);
+        NopPathBuilder builder;
+        return finder_->findPath(grid, builder, start, end, boundary, cost);
+    }
+
+private:
+    PathFinderPluginInterface* finder_;
+    MiniMapPluginInterface* minimap_;
 };
 
 class MiniMapUIPlugin;

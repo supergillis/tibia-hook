@@ -20,32 +20,32 @@
 
 namespace PacketCodes {
 
-enum In {
-    MapFull = 100,
-    MapTopRow = 101,
-    MapRightRow = 102,
-    MapBottomRow = 103,
-    MapLeftRow = 104,
+namespace In {
+const quint8 MapFull = 100,
+MapTopRow = 101,
+MapRightRow = 102,
+MapBottomRow = 103,
+MapLeftRow = 104,
 
-    FloorChangeUp = 190,
-    FloorChangeDown = 191,
+FloorChangeUp = 190,
+FloorChangeDown = 191,
 
-    Speak = 170,
-    ChannelList = 171,
-    ChannelOpen = 172,
-    ChannelOpenPrivate = 173,
-    ChannelClose = 179,
+Speak = 170,
+ChannelList = 171,
+ChannelOpen = 172,
+ChannelOpenPrivate = 173,
+ChannelClose = 179,
 
 
-    MoveNorth = 101,
-    MoveNorthEast = 106,
-    MoveEast = 102,
-    MoveSouthEast = 107,
-    MoveSouth = 103,
-    MoveSouthWest = 108,
-    MoveWest = 104,
-    MoveNorthWest = 109,
-};
+MoveNorth = 101,
+MoveNorthEast = 106,
+MoveEast = 102,
+MoveSouthEast = 107,
+MoveSouth = 103,
+MoveSouthWest = 108,
+MoveWest = 104,
+MoveNorthWest = 109;
+}
 
 }
 

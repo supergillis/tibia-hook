@@ -13,10 +13,7 @@
  * limitations under the License.
  */
 
-#include "PluginManager.h"
-#include "Settings.h"
-
-#include <PluginInterface.h>
+#include <stdexcept>
 
 #include <QApplication>
 #include <QDebug>
@@ -25,7 +22,16 @@
 #include <QMessageBox>
 #include <QPluginLoader>
 
-#include <stdexcept>
+#include <PluginInterface.h>
+
+#include "PluginManager.h"
+#include "Settings.h"
+
+#ifdef Q_OS_WIN
+#define PLUGIN_WILDCARD "*.dll"
+#else
+#define PLUGIN_WILDCARD "*.so"
+#endif
 
 PluginInfo* findPluginInfoByName(PluginInfo::List& list, const QString& name, quint16 version) {
     for (PluginInfo::List::iterator it = list.begin(); it != list.end(); ++it) {
@@ -110,22 +116,29 @@ void PluginManager::load(const QString& directory) {
         QPluginLoader loader(info->libraryPath());
         QObject* instance = loader.instance();
 
+        if (instance == 0) {
+            // TODO Error message
+            continue;
+        }
+
         // Check if it is a valid plugin
         PluginInterface* plugin = qobject_cast<PluginInterface*>(instance);
-        if (plugin != 0) {
-            qDebug() << "installing" << info->name();
-            try {
-                plugin->install(hook_, info->settings());
-                plugins_.insert(info, instance);
-            }
-            catch(std::exception& exception) {
-                QMessageBox message;
-                message.setWindowTitle(QApplication::applicationName());
-                message.setText("Could not load \"" + info->name() + "\" plugin!");
-                message.setDetailedText(exception.what());
-                message.setDefaultButton(QMessageBox::Ignore);
-                message.exec();
-            }
+        if (plugin == 0) {
+            // TODO Error message
+            continue;
+        }
+
+        try {
+            plugin->install(hook_, info->settings());
+            plugins_.insert(info, instance);
+        }
+        catch(std::exception& exception) {
+            QMessageBox message;
+            message.setWindowTitle(QApplication::applicationName());
+            message.setText("Could not load \"" + info->name() + "\" plugin!");
+            message.setDetailedText(exception.what());
+            message.setDefaultButton(QMessageBox::Ignore);
+            message.exec();
         }
     }
 }
@@ -182,7 +195,7 @@ PluginInfo* PluginManager::loadDirectory(const QString& directory) {
 PluginInfo::PluginInfo(const QString& directory):
     settings_(NULL) {
     QDir dir(directory);
-    QStringList candidates = dir.entryList(QStringList() << "*.so" << "*.dll", QDir::Files | QDir::NoDotAndDotDot);
+    QStringList candidates = dir.entryList(QStringList() << PLUGIN_WILDCARD, QDir::Files | QDir::NoDotAndDotDot);
     if (candidates.length() == 0) {
         throw std::runtime_error(("Could not load '" + directory + "': could not find shared library!").toStdString());
     }

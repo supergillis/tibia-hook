@@ -28,16 +28,16 @@ int BattleListModel::columnCount(const QModelIndex&) const {
 }
 
 int BattleListModel::rowCount(const QModelIndex&) const {
-    return BATTLELIST_LENGTH;
+    return battleList_->entries().size();
 }
 
 QVariant BattleListModel::data(const QModelIndex& index, int role) const {
     if(role == Qt::DisplayRole) {
-        BattleListEntry entry = battleList_->entries()->entries[index.row()];
+        BattleListEntryInterface* entry = battleList_->entries()[index.row()];
         if(index.column() == 0) {
-            return QVariant(entry.id);
+            return QVariant(entry->id());
         }
-        return QVariant((char*) entry.name);
+        return QVariant(entry->rawName());
     }
     return QVariant();
 }

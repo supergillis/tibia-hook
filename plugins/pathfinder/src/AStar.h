@@ -17,52 +17,17 @@
 #define ASTAR_H
 
 #include "PriorityQueue.h"
+#include "AStarNode.h"
 
 #include <AStarGridInterface.h>
 #include <AStarHeuristicInterface.h>
+#include <AStarPathBuilderInterface.h>
 
-#include <Direction.h>
+#include <Position.h>
 
 #include <QtGlobal>
 #include <QList>
-
-class AStarDefaultHeuristic: public AStarHeuristicInterface {
-public:
-    quint32 calculate(quint16 x, quint16 y, quint8 z, quint16 ex, quint16 ey, quint8 ez) {
-        return qAbs(x - ex) + qAbs(y - ey) + qAbs(z - ez) * 50;
-    }
-};
-
-class AStar;
-class AStarNode {
-public:
-    AStarNode(AStar* astar);
-    AStarNode(AStar* astar, AStarNode* parent, quint16 x, quint16 y, quint8 z, quint32 g, quint32 h);
-    ~AStarNode();
-
-    void update(AStarNode* parent, quint32 g, quint32 h);
-
-    AStarNode* parent() { return parent_; }
-
-    quint16 x() const { return x_; }
-    quint16 y() const { return y_; }
-    quint16 z() const { return z_; }
-
-    quint32 g() const { return g_; }
-    quint32 h() const { return h_; }
-    quint32 f() const { return g_ + h_; }
-
-private:
-    AStar* astar_;
-    AStarNode* parent_;
-
-    quint16 x_;
-    quint16 y_;
-    quint8 z_;
-
-    quint32 g_;
-    quint32 h_;
-};
+#include <QRect>
 
 class AStarNodeComparator {
 public:
@@ -71,23 +36,60 @@ public:
     }
 };
 
+class AStarDefaultHeuristic: public AStarHeuristicInterface {
+public:
+    quint32 calculate(const Position& start, const Position& end) {
+        return qAbs(start.x - end.x) + qAbs(start.y - end.y) + qAbs(start.z - end.z) * 50;
+    }
+};
+
+class AStar;
+class AStarDefaultVisitor: public AStarVisitor {
+public:
+    AStarDefaultVisitor(AStar* parent, const Position& end): parent_(parent), end_(end) {}
+
+    void visitNeighbour(const Position& position, quint8 cost);
+
+protected:
+    void setCurrentNode(AStarNode* node);
+
+    friend class AStar;
+
+private:
+    AStar* parent_;
+    AStarNode* node_;
+    Position end_;
+};
+
 class AStar {
 public:
-    AStar(AStarGridInterface* grid, AStarHeuristicInterface* heuristic);
+    AStar(AStarGridInterface& grid, AStarHeuristicInterface& heuristic);
     ~AStar();
 
-    QList<Direction> path(quint16 x, quint16 y, quint8 z, quint16 ex, quint16 ey, quint8 ez);
+    virtual bool path(AStarPathBuilderInterface& builder, const Position& start, const Position& end, quint32* cost = NULL);
+
+    AStarGridInterface& grid() { return grid_; }
+    AStarHeuristicInterface& heuristic() { return heuristic_; }
+
+    const QRect& boundary() { return bounds_; }
+    void setBoundary(const QRect& bounds) { bounds_ = bounds; }
+
+    PriorityQueue<AStarNode*, AStarNodeComparator>& openNodes() { return open_; }
+    const PriorityQueue<AStarNode*, AStarNodeComparator>& openNodes() const { return open_; }
 
 protected:
     QList<AStarNode*> nodes_;
 
+    AStarNode* nodeAt(const Position& position) const;
+
     friend class AStarNode;
+    friend class AStarDefaultVisitor;
 
 private:
-    AStarNode* nodeAt(quint16 x, quint16 y, quint8 z) const;
+    AStarGridInterface& grid_;
+    AStarHeuristicInterface& heuristic_;
 
-    AStarGridInterface* grid_;
-    AStarHeuristicInterface* heuristic_;
+    QRect bounds_;
 
     PriorityQueue<AStarNode*, AStarNodeComparator> open_;
 };

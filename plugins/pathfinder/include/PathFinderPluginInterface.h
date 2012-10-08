@@ -17,20 +17,20 @@
 #define PATHFINDERLUGININTERFACE_H
 
 #include <AStarGridInterface.h>
-#include <MiniMapPluginInterface.h>
+#include <AStarPathBuilderInterface.h>
 
-#include <Direction.h>
 #include <Position.h>
 
 #include <QtPlugin>
 #include <QList>
+#include <QRect>
 
 class PathInterface;
 class PathFinderPluginInterface {
 public:
     virtual ~PathFinderPluginInterface() {}
 
-    virtual QList<Direction> findPath(AStarGridInterface* grid, quint16 x, quint16 y, quint8 z, quint16 ex, quint16 ey, quint8 ez) const = 0;
+    virtual bool findPath(AStarGridInterface& grid, AStarPathBuilderInterface& builder, const Position& start, const Position& end, const QRect& boundary = QRect(), quint32* cost = NULL) const = 0;
 };
 
 Q_DECLARE_INTERFACE(PathFinderPluginInterface, "PathFinderPluginInterface")

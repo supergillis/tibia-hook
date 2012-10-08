@@ -29,11 +29,14 @@
  * @todo	Expand relative opcodes which can not be relocated
  * @todo	Other detour types, maybe use/write a mutation engine
  */
+#ifdef _MSVC_VER
+#pragma warning(disable:4244)
+#endif
 
 #ifndef INCLUDED_LIB_MOLOGIE_DETOURS_DETOURS_H
 #define INCLUDED_LIB_MOLOGIE_DETOURS_DETOURS_H
 
-#include <QtGlobal>
+#include <stdint.h>
 #include "hde.h"
 #include <stdexcept>
 #include <cstring>
@@ -73,9 +76,9 @@ namespace MologieDetours
 	 * @brief	Defines an alias representing type of an address.
 	 */
 #if defined(MOLOGIE_DETOURS_HDE_32)
-	typedef quint32 address_type;
+	typedef uint32_t address_type;
 #elif defined(MOLOGIE_DETOURS_HDE_64)
-	typedef quint64 address_type;
+	typedef uint64_t address_type;
 #endif
 
 	/**
@@ -84,9 +87,9 @@ namespace MologieDetours
 	 * @brief	Defines an alias representing type of a pointerto an address.
 	 */
 #if defined(MOLOGIE_DETOURS_HDE_32)
-	typedef quint32* address_pointer_type;
+	typedef uint32_t* address_pointer_type;
 #elif defined(MOLOGIE_DETOURS_HDE_64)
-	typedef quint64* address_pointer_type;
+	typedef uint64_t* address_pointer_type;
 #endif
 
 	/**
@@ -205,6 +208,23 @@ namespace MologieDetours
 		}
 #ifdef WIN32
 		/**
+		 * @fn	Detour::Detour(const char* moduleName, const char* lpProcName, function_type pDetour)
+		 *
+		 * @brief	Creates a new local detour on an exported function.
+		 *
+		 * @author	Kai Uwe Jesussek
+		 * @date	06.11.2011
+		 *
+		 * @param	moduleName  The Name of the module.
+		 * @param	lpProcName	Name of the pointer to a proc.
+		 * @param	pDetour   	The detour.
+		 */
+		Detour(const char* moduleName, const char* lpProcName, function_type pDetour)
+			: pSource_(reinterpret_cast<function_type>(GetProcAddress(GetModuleHandle(moduleName), lpProcName))), pDetour_(pDetour), instructionCount_(0)
+		{
+			CreateDetour();
+		}
+		/**
 		 * @fn	Detour::Detour(HMODULE module, const char* lpProcName, function_type pDetour)
 		 *
 		 * @brief	Creates a new local detour on an exported function.
@@ -236,14 +256,14 @@ namespace MologieDetours
 		 * @exception	DetourPageProtectionException	Thrown when the page protection of detour-related
 		 * 												memory can not be changed.
 		 */
-		~Detour()
+		virtual ~Detour()
 		{
 			try
 			{
 				// Attempt to revert
 				Revert();
 			}
-			catch(DetourException)
+			catch(DetourException &)
 			{
 				// Reverting failed, redirect trampoline to original code instead
 				*reinterpret_cast<address_pointer_type>(trampoline_ + 1) = backupOriginalCode_ - trampoline_ - MOLOGIE_DETOURS_DETOUR_SIZE;
@@ -337,20 +357,20 @@ namespace MologieDetours
 			MOLOGIE_DETOURS_MEMORY_WINDOWS_INIT(dwProt);
 
 			// Make things simple
-			quint8* targetFunction = reinterpret_cast<quint8*>(pSource_);
+			uint8_t* targetFunction = reinterpret_cast<uint8_t*>(pSource_);
 #ifdef WIN32
 			// Check whether the function starts with a relative short jump(- sizeof detour) and assume a hotpatched function
-			if(targetFunction[0] == 0xEB && static_cast<boost::int8_t>(targetFunction[1]) == - static_cast<boost::int8_t>(MOLOGIE_DETOURS_DETOUR_SIZE) - 2)
+			if(targetFunction[0] == 0xEB && static_cast<int8_t>(targetFunction[1]) == - static_cast<int8_t>(MOLOGIE_DETOURS_DETOUR_SIZE) - 2)
 			{
 				// Place our detour after the relative jmp
 				// This will result in the hotpatch being called first, however we won't break things here
 				// Use the DetourHotpatch class to create a hotpatch instead.
 				pSource_ = reinterpret_cast<function_type>(reinterpret_cast<address_type>(pSource_) + 2);
-				targetFunction = reinterpret_cast<quint8*>(pSource_);
+				targetFunction = reinterpret_cast<uint8_t*>(pSource_);
 			}
 #endif
 			// Used for finding the instruction count
-			quint8* pbCurOp = targetFunction;
+			uint8_t* pbCurOp = targetFunction;
 
 			// Find the required instruction count
 			while(instructionCount_ < MOLOGIE_DETOURS_DETOUR_SIZE)
@@ -372,14 +392,14 @@ namespace MologieDetours
 			}
 
 			// Backup the original code
-			backupOriginalCode_ = new quint8[instructionCount_ + MOLOGIE_DETOURS_DETOUR_SIZE];
+			backupOriginalCode_ = new uint8_t[instructionCount_ + MOLOGIE_DETOURS_DETOUR_SIZE];
 			memcpy(backupOriginalCode_, targetFunction, instructionCount_);
 
 			// Fix relative jmps to point to the correct location
 			RelocateCode(targetFunction, backupOriginalCode_, instructionCount_);
 
 			// Jump back to original function after executing replaced code
-			quint8* jmpBack = backupOriginalCode_ + instructionCount_;
+			uint8_t* jmpBack = backupOriginalCode_ + instructionCount_;
 			jmpBack[0] = 0xE9;
 			*reinterpret_cast<address_pointer_type>(jmpBack + 1) = reinterpret_cast<address_type>(pSource_) + instructionCount_ - reinterpret_cast<address_type>(jmpBack) - MOLOGIE_DETOURS_DETOUR_SIZE;
 
@@ -390,7 +410,7 @@ namespace MologieDetours
 			}
 
 			// Create a new trampoline which points at the detour
-			trampoline_ = new quint8[MOLOGIE_DETOURS_DETOUR_SIZE];
+			trampoline_ = new uint8_t[MOLOGIE_DETOURS_DETOUR_SIZE];
 			trampoline_[0] = 0xE9;
 			*reinterpret_cast<address_pointer_type>(trampoline_ + 1) = reinterpret_cast<address_type>(pDetour_) - reinterpret_cast<address_type>(trampoline_) - MOLOGIE_DETOURS_DETOUR_SIZE;
 
@@ -411,7 +431,7 @@ namespace MologieDetours
 			*reinterpret_cast<address_pointer_type>(targetFunction + 1) = reinterpret_cast<address_type>(trampoline_) - reinterpret_cast<address_type>(targetFunction) - MOLOGIE_DETOURS_DETOUR_SIZE;
 
 			// Create backup of detour
-			backupDetour_ = new quint8[MOLOGIE_DETOURS_DETOUR_SIZE];
+			backupDetour_ = new uint8_t[MOLOGIE_DETOURS_DETOUR_SIZE];
 			memcpy(backupDetour_, targetFunction, MOLOGIE_DETOURS_DETOUR_SIZE);
 
 			// Reprotect original function
@@ -422,7 +442,7 @@ namespace MologieDetours
 
 			// Flush instruction cache on Windows
 #ifdef WIN32
-			FlushInstructionCache(GetCurrentProcess(), pSource_, MOLOGIE_DETOURS_DETOUR_SIZE);
+			FlushInstructionCache(GetCurrentProcess(), (const void*) pSource_, MOLOGIE_DETOURS_DETOUR_SIZE);
 #endif
 		}
 
@@ -459,7 +479,7 @@ namespace MologieDetours
 			memcpy(reinterpret_cast<void*>(pSource_), backupOriginalCode_, MOLOGIE_DETOURS_DETOUR_SIZE);
 
 			// Fix relative jmps to point to the correct location
-			RelocateCode(backupOriginalCode_, reinterpret_cast<quint8*>(pSource_), instructionCount_);
+			RelocateCode(backupOriginalCode_, reinterpret_cast<uint8_t*>(pSource_), instructionCount_);
 
 			// Reprotect original function
 			if(!MOLOGIE_DETOURS_MEMORY_REPROTECT(pSource_, MOLOGIE_DETOURS_DETOUR_SIZE, dwProt))
@@ -473,7 +493,7 @@ namespace MologieDetours
 		}
 
 		/**
-		 * @fn	void Detour::RelocateCode(quint8* baseOld, quint8* baseNew, size_t size)
+		 * @fn	void Detour::RelocateCode(uint8_t* baseOld, uint8_t* baseNew, size_t size)
 		 *
 		 * @brief	This function relocates the copied code of another function. Only works with code
 		 * 			that HDE (or the custom disassembler backend) can actually parse.
@@ -487,19 +507,19 @@ namespace MologieDetours
 		 * @param [in,out]	baseNew	The new base.
 		 * @param	size		   	The code's size.
 		 */
-		void RelocateCode(quint8* baseOld, quint8* baseNew, size_t size)
+		void RelocateCode(uint8_t* baseOld, uint8_t* baseNew, size_t size)
 		{
-			quint8* pbCurOp = baseNew;
+			uint8_t* pbCurOp = baseNew;
 			address_type delta = baseOld - baseNew;
 
 			while(pbCurOp < baseNew + size)
 			{
 #if defined(MOLOGIE_DETOURS_HDE_32)
-                hde32s hs = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, { 0 }, { 0 }, 0 };
-				quint8 i = hde32_disasm(pbCurOp, &hs);
+				hde32s hs = { 0 };
+				uint8_t i = hde32_disasm(pbCurOp, &hs);
 #elif defined(MOLOGIE_DETOURS_HDE_64)
 				hde64s hs = { 0 };
-				quint8 i = hde64_disasm(pbCurOp, &hs);
+				uint8_t i = hde64_disasm(pbCurOp, &hs);
 #endif
 				if(i == 0)
 				{
@@ -510,9 +530,9 @@ namespace MologieDetours
 				if(hs.flags & F_RELATIVE)
 				{
 #if defined(MOLOGIE_DETOURS_HDE_32)
-					if(hs.flags & F_IMM8 || hs.flags & F_IMM16)
+					if((hs.flags & F_IMM8) || (hs.flags & F_IMM16))
 #elif defined(MOLOGIE_DETOURS_HDE64)
-					if(hs.flags & F_IMM8 || hs.flags & F_IMM16 || hs.flags & F_IMM32)
+					if((hs.flags & F_IMM8) || (hs.flags & F_IMM16) || (hs.flags & F_IMM32))
 #endif
 					{
 						// Oh noes! We shouldn't continue here.
@@ -523,13 +543,13 @@ namespace MologieDetours
 					if(hs.flags & F_IMM32)
 					{
 						unsigned char offset = (hs.opcode == 0x0F) ? 2 : 1;
-						*reinterpret_cast<quint32*>(pbCurOp + offset) += delta;
+						*reinterpret_cast<uint32_t*>(pbCurOp + offset) += delta;
 					}
 #elif defined(MOLOGIE_DETOURS_HDE_64)
 					if(hs.flags & F_IMM64)
 					{
 						unsigned char offset = (hs.opcode == 0x0F) ? 2 : 1;
-						*reinterpret_cast<quint64*>(pbCurOp + offset) += delta;
+						*reinterpret_cast<uint64_t*>(pbCurOp + offset) += delta;
 					}
 #endif
 				}
@@ -553,7 +573,7 @@ namespace MologieDetours
 		size_t GetInstructionSize(const void* code)
 		{
 #if defined(MOLOGIE_DETOURS_HDE_32)
-            hde32s hs = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, { 0 }, { 0 }, 0 };
+			hde32s hs = { 0 };
 			return hde32_disasm(code, &hs);
 #elif defined(MOLOGIE_DETOURS_HDE_64)
 			hde64s hs = { 0 };
@@ -563,9 +583,9 @@ namespace MologieDetours
 
 		function_type pSource_; // Pointer to target function
 		function_type pDetour_; // Pointer to detour function
-		quint8* backupOriginalCode_; // Pointer to the original code
-		quint8* backupDetour_; // Backup of the detour code for Revert()
-		quint8* trampoline_; // Trampoline which points to either the detour or the backed up code
+		uint8_t* backupOriginalCode_; // Pointer to the original code
+		uint8_t* backupDetour_; // Backup of the detour code for Revert()
+		uint8_t* trampoline_; // Trampoline which points to either the detour or the backed up code
 		size_t instructionCount_; // Size of code replaced
 #ifndef WIN32
 		long int pageSize_; // Size of a single memory page
@@ -733,12 +753,12 @@ namespace MologieDetours
 		 */
 		bool IsHotpatchable()
 		{
-			constquint8 movEdiEdi[] = { 0x8B, 0xFF };
+			const uint8_t movEdiEdi[] = { 0x8B, 0xFF };
 
 			bool haveNops = true;
-			bool haveSpace = (memcmp(reinterpret_cast<void*>(pSource_), movEdiEdi, sizeof(movEdiEdi)) == 0);
+			bool haveSpace = (memcmp(reinterpret_cast<void*>(this->pSource_), movEdiEdi, sizeof(movEdiEdi)) == 0);
 
-			quint8* pbCode = reinterpret_cast<quint8*>(pSource_) - MOLOGIE_DETOURS_DETOUR_SIZE;
+			uint8_t* pbCode = reinterpret_cast<uint8_t*>(this->pSource_) - MOLOGIE_DETOURS_DETOUR_SIZE;
 
 			for(size_t i = 0; i < MOLOGIE_DETOURS_DETOUR_SIZE; i++)
 			{

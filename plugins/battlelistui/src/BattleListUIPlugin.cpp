@@ -17,6 +17,7 @@
 #include "BattleListModel.h"
 
 #include <BattleListPluginInterface.h>
+#include <UIManagerInterface.h>
 
 #include <stdexcept>
 

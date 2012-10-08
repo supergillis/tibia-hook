@@ -16,15 +16,15 @@
 #ifndef PLUGINMANAGER_H
 #define PLUGINMANAGER_H
 
-#include "Settings.h"
-
-#include <HookInterface.h>
-#include <PluginManagerInterface.h>
-
 #include <QDir>
 #include <QList>
 #include <QObject>
 #include <QPair>
+
+#include <HookInterface.h>
+#include <PluginManagerInterface.h>
+
+#include "Settings.h"
 
 class PluginInfo {
 public:

@@ -16,10 +16,10 @@
 #ifndef BATTLELIST_H
 #define BATTLELIST_H
 
-#define BATTLELIST_LENGTH 250
+/*#define BATTLELIST_LENGTH 250
 #define BATTLELIST_NAME_LENGTH 32
 
-#include <QtGlobal>
+#include <QtGlobal>*/
 
 /**
   * Credits to DarkstaR
@@ -27,7 +27,7 @@
   * http://tpforums.org/forum/thread-7914-post-71664.html#pid71664
   */
 
-struct BattleListOutfit
+/*struct BattleListOutfit
 {
 	quint32 id;
 	quint32 colorHead;
@@ -73,13 +73,14 @@ struct BattleListEntry
 	quint32 skullIcon; //+152
 	quint32 partyIcon; //+156
 	quint32 unknown9; //+160
-	quint32 warIcon; //+164
-	quint32 isBlocking; //+168
+    quint32 warIcon; //+164
+    quint32 isBlocking; //+168
+    quint32 unkown10; //+172
 } __attribute__((packed));
 
 struct BattleList
 {
     BattleListEntry entries[BATTLELIST_LENGTH];
-} __attribute__((packed));
+} __attribute__((packed));*/
 
 #endif

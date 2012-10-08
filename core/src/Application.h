@@ -16,10 +16,9 @@
 #ifndef APPLICATION_H
 #define APPLICATION_H
 
-#include <HookInterface.h>
-
 #include <QApplication>
 
+class HookInterface;
 class Application: public QApplication {
 	static int argc_;
 

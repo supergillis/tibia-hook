@@ -48,7 +48,7 @@ public:
     QString readString() {
         quint16 length = readU16();
         if (!has(length)) {
-            qWarning() << PACKET_END_OF_FILE;
+			qWarning() << PACKET_END_OF_FILE;
             return QString();
         }
 
@@ -63,19 +63,19 @@ protected:
     quint16 position_;
 
 private:
-    template<typename T, int size>
+	template<typename T, int size>
     inline T peek() const {
-        if (!has(size)) {
-            qWarning() << PACKET_END_OF_FILE;
+		if (!has(size)) {
+			qWarning() << PACKET_END_OF_FILE;
             return 0;
         }
         return *((T*) (packet_.rawData() + position_));
     }
 
-    template<typename T, int size>
+	template<typename T, int size>
     inline T read() {
-        T value = peek<T, size>();
-        position_ += size;
+		T value = peek<T, size>();
+		position_ += size;
         return value;
     }
 };

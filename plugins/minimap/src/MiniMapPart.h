@@ -29,6 +29,7 @@ public:
     const QImage& image() const { return image_; }
     const QByteArray& data() const { return data_; }
 
+    QRgb colorAt(quint16 x, quint16 y) const { return image_.pixel(x, y); }
     quint8 dataAt(quint16 x, quint16 y) const { return data_[x * MINIMAP_FILE_WIDTH + y]; }
 
     quint16 width() const { return MINIMAP_FILE_WIDTH; }

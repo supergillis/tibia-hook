@@ -28,6 +28,7 @@
 #include <SettingsInterface.h>
 
 #include "DetourManager.h"
+#include "Memory.h"
 #include "PluginManager.h"
 #include "ProxyManager.h"
 #include "UIManager.h"
@@ -44,11 +45,12 @@ public:
     Hook();
     ~Hook();
 
-    UIManagerInterface* ui() { return &ui_; }
+	UIManagerInterface* ui() { return &ui_; }
     PluginManagerInterface* plugins() { return &plugins_; }
     SettingsInterface* settings() { return settings_; }
     SenderInterface* sender() { return sender_; }
     ReceiverInterface* receiver() { return this; }
+    MemoryInterface* memory() { return &memory_; }
 
     void addOutgoingProxy(quint8, ProxyInterface*);
     void removeOutgoingProxy(quint8, ProxyInterface*);
@@ -64,7 +66,8 @@ public:
 
 private:
     PluginManager plugins_;
-    UIManager ui_;
+	UIManager ui_;
+    Memory memory_;
 
     ClientBufferHandler* clientBufferHandler_;
     ServerBufferHandler* serverBufferHandler_;
@@ -80,6 +83,7 @@ private:
 class ClientBufferHandler: public BufferHandler {
 public:
     ClientBufferHandler(SenderInterface* sender, ReceiverInterface* receiver): sender_(sender), receiver_(receiver) {}
+	virtual ~ClientBufferHandler() {}
 
     inline void handle(const QByteArray& data) {
         if (receiver_->receiveOutgoingMessage(data)) {
@@ -95,6 +99,7 @@ private:
 class ServerBufferHandler: public BufferHandler {
 public:
     ServerBufferHandler(ReceiverInterface* receiver): receiver_(receiver) {}
+	virtual ~ServerBufferHandler() {}
 
     inline void handle(const QByteArray& data) {
         receiver_->receiveIncomingMessage(data);

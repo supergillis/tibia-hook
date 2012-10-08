@@ -16,8 +16,7 @@
 #ifndef READONLYPROXYINTERFACE_H
 #define READONLYPROXYINTERFACE_H
 
-#include <PacketReader.h>
-
+class PacketReader;
 class ReadOnlyProxyInterface {
 public:
     virtual ~ReadOnlyProxyInterface() {}

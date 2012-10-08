@@ -38,12 +38,12 @@ public:
     void install(HookInterface*, SettingsInterface*) throw(std::exception);
 	void uninstall();
 
-    const BattleList* entries() const;
-    const BattleListEntry* findById(const quint32 id) const;
-    const BattleListEntry* findByName(const QString& name) const;
+    QList<BattleListEntryInterface*> entries() const;
+    BattleListEntryInterface* findById(const quint32 id) const;
+    BattleListEntryInterface* findByName(const QString& name) const;
 
 private:
-    BattleList* list_;
+    QList<BattleListEntryInterface*> entries_;
 };
 
 #endif

@@ -11,12 +11,12 @@ INCLUDEPATH += ../minimap/include
 SOURCES = \
 	src/PathFinderPlugin.cpp \
 	src/AStar.cpp \
-	src/HpaStar.cpp
+        src/AStarNode.cpp
 HEADERS = \
 	src/PathFinderPlugin.h \
 	src/PriorityQueue.h \
-	src/AStar.h \
-	src/HpaStar.h
+        src/AStar.h \
+        src/AStarNode.h
 
 OTHER_FILES += \
 	meta.js \

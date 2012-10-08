@@ -13,10 +13,11 @@
  * limitations under the License.
  */
 
+#include <pthread.h>
+#include <vector> // Necessary to fix Qt errors on Windows
+
 #include "Application.h"
 #include "Hook.h"
-
-#include <pthread.h>
 
 pthread_t hook_id;
 Application* application = NULL;

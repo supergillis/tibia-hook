@@ -13,12 +13,12 @@
  * limitations under the License.
  */
 
-#include "Application.h"
-#include "Hook.h"
+#include <QMessageBox>
 
 #include <Position.h>
 
-#include <QMessageBox>
+#include "Application.h"
+#include "Hook.h"
 
 int Application::argc_ = 0;
 

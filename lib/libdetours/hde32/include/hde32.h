@@ -10,7 +10,7 @@
 #ifndef _HDE32_H_
 #define _HDE32_H_
 
-#include <QtGlobal>
+#include <stdint.h>
 
 #define F_MODRM         0x00000001
 #define F_SIB           0x00000002
@@ -51,33 +51,33 @@
 #pragma pack(push,1)
 
 typedef struct {
-	quint8 len;
-	quint8 p_rep;
-	quint8 p_lock;
-	quint8 p_seg;
-	quint8 p_66;
-	quint8 p_67;
-	quint8 opcode;
-	quint8 opcode2;
-	quint8 modrm;
-	quint8 modrm_mod;
-	quint8 modrm_reg;
-	quint8 modrm_rm;
-	quint8 sib;
-	quint8 sib_scale;
-	quint8 sib_index;
-	quint8 sib_base;
+	uint8_t len;
+	uint8_t p_rep;
+	uint8_t p_lock;
+	uint8_t p_seg;
+	uint8_t p_66;
+	uint8_t p_67;
+	uint8_t opcode;
+	uint8_t opcode2;
+	uint8_t modrm;
+	uint8_t modrm_mod;
+	uint8_t modrm_reg;
+	uint8_t modrm_rm;
+	uint8_t sib;
+	uint8_t sib_scale;
+	uint8_t sib_index;
+	uint8_t sib_base;
 	union {
-		quint8 imm8;
-		quint16 imm16;
-		quint32 imm32;
+		uint8_t imm8;
+		uint16_t imm16;
+		uint32_t imm32;
 	} imm;
 	union {
-		quint8 disp8;
-		quint16 disp16;
-		quint32 disp32;
+		uint8_t disp8;
+		uint16_t disp16;
+		uint32_t disp32;
 	} disp;
-	quint32 flags;
+	uint32_t flags;
 } hde32s;
 
 #pragma pack(pop)

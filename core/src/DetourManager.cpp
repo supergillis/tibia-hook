@@ -22,9 +22,10 @@ MologieDetours::Detour<DetourManager::LoopSignature*>* DetourManager::loopDetour
 MologieDetours::Detour<DetourManager::SendSignature*>* DetourManager::sendDetour_;
 MologieDetours::Detour<DetourManager::ParserNextSignature*>* DetourManager::parserNextDetour_;
 
+DetourManager::ParserStream* DetourManager::parserStream_ = (DetourManager::ParserStream*) PARSER_STREAM_ADDRESS;
+DetourManager::ParserSignature* DetourManager::parserFunction_ = (DetourManager::ParserSignature*) PARSER_FUNCTION_ADDRESS;
+
 DetourManager::DetourManager():
-	parserStream_((ParserStream*) PARSER_STREAM_ADDRESS),
-	parserFunction_((ParserSignature*) PARSER_FUNCTION_ADDRESS),
     sendingToClient_(false),
     clientHandler_(NULL),
     serverHandler_(NULL) {
@@ -41,7 +42,7 @@ void DetourManager::setServerBufferHandler(BufferHandler* serverHandler) {
 /**
   * This function runs in the Tibia thread.
   */
-void DetourManager::onLoop(LOOP_FUNCTION_PARAMETERS) {
+LOOP_FUNCTION_RETURN_TYPE DetourManager::onLoop(LOOP_FUNCTION_PARAMETERS) {
 	DataQueue* clientQueue = instance_->clientQueue();
 	DataQueue* serverQueue = instance_->serverQueue();
 
@@ -70,7 +71,7 @@ void DetourManager::onLoop(LOOP_FUNCTION_PARAMETERS) {
 		*instance_->parserStream_ = recover;
 	}
 
-	loopDetour_->GetOriginalFunction()(LOOP_FUNCTION_ARGUMENTS);
+    LOOP_FUNCTION_RETURN(loopDetour_->GetOriginalFunction()(LOOP_FUNCTION_ARGUMENTS));
 }
 
 /**

@@ -19,6 +19,7 @@
 #include <PathFinderPluginInterface.h>
 #include <PositionTrackerPluginInterface.h>
 #include <WalkerPluginInterface.h>
+#include <UIManagerInterface.h>
 
 #include <stdexcept>
 

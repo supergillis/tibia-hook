@@ -79,6 +79,16 @@ MiniMapFloor::~MiniMapFloor() {
     }
 }
 
+QRgb MiniMapFloor::colorAt(quint16 x, quint16 y) const {
+    foreach (const MiniMapPartInterface* part, parts_) {
+        QRect bounds(part->x(), part->y(), part->width(), part->height());
+        if (bounds.contains(x, y)) {
+            return part->colorAt(x - bounds.x(), y - bounds.y());
+        }
+    }
+    return 0;
+}
+
 quint8 MiniMapFloor::dataAt(quint16 x, quint16 y) const {
     foreach (const MiniMapPartInterface* part, parts_) {
         QRect bounds(part->x(), part->y(), part->width(), part->height());
@@ -86,5 +96,5 @@ quint8 MiniMapFloor::dataAt(quint16 x, quint16 y) const {
             return part->dataAt(x - bounds.x(), y - bounds.y());
         }
     }
-    return 0;
+    return 255;
 }

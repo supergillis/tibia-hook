@@ -17,16 +17,15 @@
 #define HOOKINTERFACE_H
 
 #include <QtGlobal>
-#include <QByteArray>
 
-#include <SettingsInterface.h>
-#include <SenderInterface.h>
-#include <PluginManagerInterface.h>
-#include <ProxyInterface.h>
-#include <ReceiverInterface.h>
-#include <ReadOnlyProxyInterface.h>
-#include <UIManagerInterface.h>
-
+class SettingsInterface;
+class SenderInterface;
+class PluginManagerInterface;
+class ProxyInterface;
+class ReceiverInterface;
+class ReadOnlyProxyInterface;
+class UIManagerInterface;
+class MemoryInterface;
 class HookInterface {
 public:
 	virtual ~HookInterface() {}
@@ -36,6 +35,7 @@ public:
     virtual ReceiverInterface* receiver() = 0;
     virtual PluginManagerInterface* plugins() = 0;
     virtual UIManagerInterface* ui() = 0;
+    virtual MemoryInterface* memory() = 0;
 
     virtual void addOutgoingProxy(quint8, ProxyInterface*) = 0;
     virtual void removeOutgoingProxy(quint8, ProxyInterface*) = 0;

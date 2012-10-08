@@ -18,9 +18,12 @@
 
 #include <QtGlobal>
 
+#include <AStarVisitor.h>
+#include <Position.h>
+
 class AStarGridInterface {
 public:
-    virtual void forEachNeighbour(quint16 x, quint16 y, quint8 z, std::function<void (quint16, quint16, quint8, quint8)> function) = 0;
+    virtual void forEachNeighbour(const Position& position, AStarVisitor& visitor) = 0;
 };
 
 #endif

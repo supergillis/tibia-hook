@@ -14,18 +14,16 @@
  */
 
 #include "PathFinderPlugin.h"
-#include "JumpPointSearch.h"
 #include "AStar.h"
-
-#include <MiniMapFloorInterface.h>
 
 #if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
 Q_EXPORT_PLUGIN2(be.gillis.pathfinder, PathFinderPlugin)
 #endif
 
-QList<Direction> PathFinderPlugin::findPath(AStarGridInterface* grid, quint16 x, quint16 y, quint8 z, quint16 ex, quint16 ey, quint8 ez) const {
+bool PathFinderPlugin::findPath(AStarGridInterface& grid, AStarPathBuilderInterface& builder, const Position& start, const Position& end, const QRect& boundary, quint32* cost) const {
     AStarDefaultHeuristic heuristic;
-    AStar astar(grid, &heuristic);
+    AStar astar(grid, heuristic);
+    astar.setBoundary(boundary);
 
-    return astar.path(x, y, z, ex, ey, ez);
+    return astar.path(builder, start, end, cost);
 }

@@ -13,11 +13,17 @@
  * limitations under the License.
  */
 
-#include "Settings.h"
+#include <stdexcept>
 
 #include <json.h>
 
-#include <stdexcept>
+#include "Settings.h"
+
+#ifdef Q_OS_WIN
+#define SETTING_PREFIX "win32:"
+#else
+#define SETTING_PREFIX "linux:"
+#endif
 
 Settings::Settings(const QString& json) throw (std::exception) {
 	bool parsed = true;
@@ -30,9 +36,16 @@ Settings::Settings(const QString& json) throw (std::exception) {
 }
 
 bool Settings::contains(const QString& key) const {
-    return values_.contains(key);
+    if (!values_.contains(key)) {
+        return values_.contains(SETTING_PREFIX + key);
+    }
+    return true;
 }
 
 QVariant Settings::value(const QString& key) const {
-	return values_.value(key);
+    QVariant result = values_.value(key);
+    if (result.isNull()) {
+        return values_.value(SETTING_PREFIX + key);
+    }
+    return result;
 }

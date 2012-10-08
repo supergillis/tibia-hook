@@ -14,10 +14,14 @@
  */
 
 #include "BattleListPlugin.h"
+#include "BattleListEntry.h"
 
-#include <stdexcept>
+#include <SettingsInterface.h>
 
 #include <QVariantMap>
+#include <QDebug>
+
+#include <stdexcept>
 
 #if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
 Q_EXPORT_PLUGIN2(be.gillis.battlelist, BattleListPlugin)
@@ -25,34 +29,44 @@ Q_EXPORT_PLUGIN2(be.gillis.battlelist, BattleListPlugin)
 
 #define SETTING_ADDRESS "address"
 
-void BattleListPlugin::install(HookInterface*, SettingsInterface* settings) throw(std::exception) {
-    if(!settings->value(SETTING_ADDRESS).isValid())
-        throw std::runtime_error("Could not load battlelist address!");
+#define BATTLELIST_SIZE 250
+#define BATTLELIST_ENTRY_SIZE 176
 
-    list_ = (BattleList*) settings->value(SETTING_ADDRESS).toUInt();
+void BattleListPlugin::install(HookInterface* hook, SettingsInterface* settings) throw(std::exception) {
+    if(!settings->value(SETTING_ADDRESS).isValid()) {
+        throw std::runtime_error("Could not load battlelist address!");
+    }
+
+    MemoryLocation base = hook->memory()->mapAddress(0x948008);
+    for (int offset = 0; offset < BATTLELIST_SIZE * BATTLELIST_ENTRY_SIZE; offset += BATTLELIST_ENTRY_SIZE) {
+        entries_.append(new BattleListEntry(hook->memory(), base + offset));
+    }
 }
 
 void BattleListPlugin::uninstall() {
-    list_ = NULL;
+    foreach (BattleListEntryInterface* entry, entries_) {
+        delete entry;
+    }
+    entries_.clear();
 }
 
-const BattleList* BattleListPlugin::entries() const {
-    return list_;
+QList<BattleListEntryInterface*> BattleListPlugin::entries() const {
+    return entries_;
 }
 
-const BattleListEntry* BattleListPlugin::findById(const quint32 id) const {
-    for(int index = 0; index < BATTLELIST_LENGTH; ++index) {
-        if(list_->entries[index].id == id) {
-            return &list_->entries[index];
+BattleListEntryInterface* BattleListPlugin::findById(const quint32 id) const {
+    foreach (BattleListEntryInterface* entry, entries_) {
+        if (entry->id() == id) {
+            return entry;
         }
     }
     return NULL;
 }
 
-const BattleListEntry* BattleListPlugin::findByName(const QString& name) const {
-    for(int index = 0; index < BATTLELIST_LENGTH; ++index) {
-        if(name.compare((char*) list_->entries[index].name) == 0) {
-            return &list_->entries[index];
+BattleListEntryInterface* BattleListPlugin::findByName(const QString& name) const {
+    foreach (BattleListEntryInterface* entry, entries_) {
+        if (name.compare(entry->rawName()) == 0) {
+            return entry;
         }
     }
     return NULL;

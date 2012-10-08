@@ -17,7 +17,7 @@
 #define PATHFINDERPLUGIN_H
 
 #include <AStarGridInterface.h>
-#include <MiniMapPluginInterface.h>
+#include <AStarPathBuilderInterface.h>
 #include <PathFinderPluginInterface.h>
 #include <PluginInterface.h>
 
@@ -38,7 +38,7 @@ public:
     void install(HookInterface*, SettingsInterface*) throw(std::exception) {}
     void uninstall() {}
 
-    QList<Direction> findPath(AStarGridInterface* grid, quint16 x, quint16 y, quint8 z, quint16 ex, quint16 ey, quint8 ez) const;
+    bool findPath(AStarGridInterface& grid, AStarPathBuilderInterface& builder, const Position& start, const Position& end, const QRect& boundary= QRect(), quint32* cost = NULL) const;
 };
 
 #endif

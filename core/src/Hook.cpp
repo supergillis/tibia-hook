@@ -13,6 +13,9 @@
  * limitations under the License.
  */
 
+#include <stdexcept>
+#include <vector> // Necessary to fix Qt errors on Windows
+
 #include "Hook.h"
 #include "DetourManager.h"
 #include "DetourSender.h"
@@ -21,8 +24,6 @@
 #include "PluginManager.h"
 #include "Settings.h"
 #include "UIManager.h"
-
-#include <stdexcept>
 
 #define SETTINGS_FILE "config.js"
 #define SETTING_PLUGINS_DIRECTORY "plugins"

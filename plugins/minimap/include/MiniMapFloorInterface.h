@@ -29,6 +29,7 @@ public:
     virtual const QRect& boundary() const = 0;
     virtual quint8 z() const = 0;
 
+    virtual QRgb colorAt(quint16 x, quint16 y) const = 0;
     virtual quint8 dataAt(quint16 x, quint16 y) const = 0;
 };
 

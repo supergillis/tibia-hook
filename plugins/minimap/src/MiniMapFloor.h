@@ -28,6 +28,7 @@ public:
     const QRect& boundary() const { return bounds_; }
     quint8 z() const { return z_; }
 
+    QRgb colorAt(quint16 x, quint16 y) const;
     quint8 dataAt(quint16 x, quint16 y) const;
 
 private:

@@ -16,6 +16,10 @@
 #include "MiniMapPlugin.h"
 #include "MiniMapFloor.h"
 
+#include <SettingsInterface.h>
+
+#include <QMessageBox>
+
 #include <stdexcept>
 
 #if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
@@ -25,11 +29,12 @@ Q_EXPORT_PLUGIN2(be.gillis.minimap, MiniMapPlugin)
 #define SETTING_FOLDER "folder"
 
 void MiniMapPlugin::install(HookInterface*, SettingsInterface* settings) throw(std::exception) {
-    if(!settings->value(SETTING_FOLDER).isValid()) {
+    QVariant folder(settings->value(SETTING_FOLDER));
+    if (!folder.isValid()) {
         throw std::runtime_error("Could not load minimap folder!");
     }
 
-    directory_ = settings->value(SETTING_FOLDER).toString();
+    directory_ = folder.toString();
 }
 
 void MiniMapPlugin::uninstall() {
