@@ -1,0 +1,6 @@
+[submodule "lib/libqtjson/src"]
+	path = lib/libqtjson/src
+	url = git://github.com/ereilin/qt-json.git
+[submodule "lib/libdetours/src"]
+	path = lib/libdetours/src
+	url = git://github.com/kimperator/MologieDetours.git

@@ -5,7 +5,7 @@ include(core.pri)
 TEMPLATE = lib
 TARGET = hook
 
-INCLUDEPATH += include ../lib/libdetours ../lib/libqtjson
+INCLUDEPATH += include ../lib/libdetours/src ../lib/libqtjson/src
 DESTDIR = ../bin
 
 LIBS += -L../lib \

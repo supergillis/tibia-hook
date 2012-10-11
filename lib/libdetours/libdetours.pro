@@ -3,8 +3,8 @@ include(../lib.pri)
 TARGET = detours
 
 HEADERS += \
-    hde.h \
-    detours.h
+    src/hde.h \
+    src/detours.h
 
 SOURCES += \
-    hde.cpp
+    src/hde.cpp
