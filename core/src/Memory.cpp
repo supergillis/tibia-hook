@@ -45,7 +45,11 @@ MemoryLocation Memory::staticMapAddress(MemoryLocation address) {
 
 #else
 
-MemoryLocation Memory::mapAddress(MemoryLocation address) {
+MemoryLocation Memory::mapAddress(MemoryLocation address) const {
+    return address;
+}
+
+MemoryLocation Memory::staticMapAddress(MemoryLocation address) {
     return address;
 }
 

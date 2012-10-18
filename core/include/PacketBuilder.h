@@ -34,6 +34,11 @@ public:
         return Packet((const quint8*) data_.constData(), length_);
     }
 
+    inline void skip(quint16 count) {
+        reserve(count);
+        position_ += count;
+    }
+
     inline void writeU8(quint8 value) {
         write<quint8, 1>(value);
     }

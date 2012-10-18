@@ -59,7 +59,7 @@
 #define LOOP_FUNCTION_RETURN(value) return value
 #define LOOP_FUNCTION_ARG_NAME1 display
 #define LOOP_FUNCTION_ARGUMENTS LOOP_FUNCTION_ARG_NAME1
-#define LOOP_FUNCTION_PARAMETERS Display* LOOP_FUNCTION_ARG_NAME1
+#define LOOP_FUNCTION_PARAMETERS void* LOOP_FUNCTION_ARG_NAME1
 
 /* Tibia 9.63 Adresses */
 #define SEND_BUFFER_ADDRESS 0x85d4980
@@ -67,11 +67,10 @@
 #define SEND_FUNCTION_ADDRESS 0x82f3e90
 
 #define PARSE_STREAM_ADDRESS 0x85d91b0
-#define PARSE_FUNCTION_ADDRESS 0x82ff4a0
+#define PARSE_FUNCTION_ADDRESS 0x814c2d0
+#define PARSE_NEXT_FUNCTION_ADDRESS 0x82ff4a0
 
 #endif
-
-#include <QDebug>
 
 class BufferHandler {
 public:
@@ -134,10 +133,6 @@ private:
 #else
         loopDetour_ = new MologieDetours::Detour<LoopSignature*>((LoopSignature*) LOOP_FUNCTION_ADDRESS, &DetourManager::onLoop);
 #endif
-
-        qDebug() << "SEND_BUFFER_ADDRESS" << hex << Memory::staticMapAddress(SEND_BUFFER_ADDRESS);
-        qDebug() << "SEND_BUFFER_LENGTH_ADDRESS" << hex << Memory::staticMapAddress(SEND_BUFFER_LENGTH_ADDRESS);
-        qDebug() << "PARSE_FUNCTION_ADDRESS" << hex << Memory::staticMapAddress(PARSE_FUNCTION_ADDRESS);
 
         sendDetour_ = new MologieDetours::Detour<SendSignature*>((SendSignature*) Memory::staticMapAddress(SEND_FUNCTION_ADDRESS), &DetourManager::onSend);
         parseNextDetour_ = new MologieDetours::Detour<ParseNextSignature*>((ParseNextSignature*) Memory::staticMapAddress(PARSE_NEXT_FUNCTION_ADDRESS), &DetourManager::onParseNext);
