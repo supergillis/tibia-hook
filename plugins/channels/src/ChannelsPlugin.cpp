@@ -70,7 +70,7 @@ void ChannelsPlugin::postMessage(quint16 channelId, const QString& message, cons
     builder.writeU32(0);
     builder.writeString(name);
     builder.writeU16(0);
-    builder.writeU8(Tibia::Message::Channel);
+    builder.writeU8(constants::TalkMode::Channel);
     builder.writeU16(channelId);
     builder.writeString(message);
 
@@ -93,7 +93,7 @@ void ChannelsPlugin::postPrivateMessage(const QString& name, const QString& mess
     builder.writeU32(0);
     builder.writeString(name);
     builder.writeU16(0);
-    builder.writeU8(Tibia::Message::PrivateFrom);
+    builder.writeU8(constants::TalkMode::PrivateFrom);
     builder.writeString(message);
 
     // Send fake packet

@@ -3,15 +3,17 @@ TARGET = packets
 
 QMAKE_CXXFLAGS += -std=c++0x
 
+win32 {
+    DEFINES += WIN32
+    DEFINES -= UNICODE
+    QMAKE_CXXFLAGS += -U__STRICT_ANSI__
+}
+
 INCLUDEPATH += ../core/include
 DESTDIR = ../bin
 
-SOURCES += \
-    src/Test.cpp
+SOURCES +=
 
 HEADERS += \
-    src/Serializer.h \
-	src/Serializeable.h \
-	src/Packets.h \
-	src/ServerPlayerSkills.h \
-	src/ServerTalk.h
+    src/ServerPlayerSkills.h \
+    src/ServerTalk.h
