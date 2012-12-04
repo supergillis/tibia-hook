@@ -13,71 +13,35 @@
  * limitations under the License.
  */
 
-#ifndef TEMPLATEABLEPROXYMANAGER_H
-#define TEMPLATEABLEPROXYMANAGER_H
+#ifndef PROXYMANAGER_H
+#define PROXYMANAGER_H
 
-#include <stdexcept>
-
-#include <QHash>
 #include <QList>
 
-#include <PacketReader.h>
-#include <ProxyInterface.h>
-#include <ReadOnlyProxyInterface.h>
+#include "ProxyManagerInterface.h"
 
-template<class ProxyType>
-class TemplateableProxyManagerBase {
+class ReadOnlyProxyInterface;
+class PacketReader;
+class ProxyInterface;
+
+class ProxyManager: public ProxyManagerInterface {
 public:
-    inline void append(quint8 type, ProxyType* proxy) {
-        this->proxies_[type].append(proxy);
-    }
+    bool handleOutgoingPacket(PacketReader& reader) const;
+    bool handleIncomingPacket(PacketReader& reader) const;
 
-    inline void remove(quint8 type, ProxyType* proxy) {
-        this->proxies_[type].removeAll(proxy);
-    }
+    void addOutgoingProxy(quint8, ProxyInterface*);
+    void removeOutgoingProxy(quint8, ProxyInterface*);
 
-protected:
-    QList<ProxyType*> proxies_[256];
+    void addOutgoingReadOnlyProxy(quint8, ReadOnlyProxyInterface*);
+    void removeOutgoingReadOnlyProxy(quint8, ReadOnlyProxyInterface*);
+
+    void addIncomingReadOnlyProxy(quint8, ReadOnlyProxyInterface*);
+    void removeIncomingReadOnlyProxy(quint8, ReadOnlyProxyInterface*);
+
+private:
+    QList<ProxyInterface*> outgoingProxies_[256];
+    QList<ReadOnlyProxyInterface*> outgoingReadOnlyProxies_[256];
+    QList<ReadOnlyProxyInterface*> incomingReadOnlyProxies_[256];
 };
-
-template<class ProxyType, class HandleType>
-class TemplateableProxyManager: public TemplateableProxyManagerBase<ProxyType> {
-public:
-    HandleType handlePacket(PacketReader& reader);
-};
-
-template<class ProxyType>
-class TemplateableProxyManager<ProxyType, void>: public TemplateableProxyManagerBase<ProxyType> {
-public:
-    void handlePacket(PacketReader& reader) {
-        quint8 type = reader.peekU8();
-
-        // Iterate all proxies
-        QList<ProxyType*> proxies = this->proxies_[type];
-        foreach (ProxyType* proxy, proxies) {
-            proxy->handlePacket(reader);
-        }
-    }
-};
-
-template<class ProxyType>
-class TemplateableProxyManager<ProxyType, bool>: public TemplateableProxyManagerBase<ProxyType> {
-public:
-    bool handlePacket(PacketReader& reader) {
-        quint8 type = reader.peekU8();
-
-        // Iterate all proxies and stop when one returns false
-        QList<ProxyType*> proxies = this->proxies_[type];
-        foreach (ProxyType* proxy, proxies) {
-            if (!proxy->handlePacket(reader)) {
-                return false;
-            }
-        }
-        return true;
-    }
-};
-
-typedef TemplateableProxyManager<ProxyInterface, bool> ProxyManager;
-typedef TemplateableProxyManager<ReadOnlyProxyInterface, void> ReadOnlyProxyManager;
 
 #endif

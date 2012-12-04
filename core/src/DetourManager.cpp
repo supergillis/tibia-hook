@@ -13,103 +13,118 @@
  * limitations under the License.
  */
 
+#include <detours.h>
+
 #include "DetourManager.h"
-#include "Application.h"
 
-#include <QDebug>
+void DetourManager::install(const Addresses& addresses) {
+#ifdef Q_OS_WIN
+    HMODULE user32 = ::GetModuleHandle("User32.dll");
+    FARPROC peekMessage = ::GetProcAddress(user32, "PeekMessageA");
 
-DetourManager* DetourManager::instance_ = NULL;
+    // Detour the peekMessage function
+    loopDetour_ = new MologieDetours::Detour<LoopSignature*>((LoopSignature*) peekMessage, &DetourManager::onLoop);
+#else
+    loopDetour_ = new MologieDetours::Detour<LoopSignature*>((LoopSignature*) LOOP_FUNCTION_ADDRESS, &DetourManager::onLoop);
+#endif
 
-MologieDetours::Detour<DetourManager::LoopSignature*>* DetourManager::loopDetour_;
-MologieDetours::Detour<DetourManager::SendSignature*>* DetourManager::sendDetour_;
-MologieDetours::Detour<DetourManager::ParseNextSignature*>* DetourManager::parseNextDetour_;
+    inNextFunctionDetour_ = new MologieDetours::Detour<IncomingNextFunctionSignature*>((IncomingNextFunctionSignature*) Memory::staticRebase(addresses.inNextFunction), &DetourManager::onIncomingNext);
+    inFunction_ = (IncomingFunctionSignature*) Memory::staticRebase(addresses.inFunction);
+    inStream_ = (ParseStream*) Memory::staticRebase(addresses.inStream);
 
-DetourManager::ParseStream* DetourManager::parserStream_ = NULL;
-DetourManager::ParseSignature* DetourManager::parserFunction_ = NULL;
-
-DetourManager::DetourManager():
-    sendingToClient_(false),
-    clientHandler_(NULL),
-    serverHandler_(NULL) {
+    outFunctionDetour_ = new MologieDetours::Detour<OutgoingFunctionSignature*>((OutgoingFunctionSignature*) Memory::staticRebase(addresses.outFunction), &DetourManager::onOutgoing);
+    outBufferLength_ = (quint32*) Memory::staticRebase(addresses.outBufferLength);
+    outBufferPacketChecksum_ = (quint8*) Memory::staticRebase(addresses.outBuffer);
+    outBufferPacketData_ = (quint8*) (Memory::staticRebase(addresses.outBuffer) + 8);
 }
 
-void DetourManager::setClientBufferHandler(BufferHandler* clientHandler) {
-    clientHandler_ = clientHandler;
-}
-
-void DetourManager::setServerBufferHandler(BufferHandler* serverHandler) {
-    serverHandler_ = serverHandler;
+void DetourManager::uninstall() {
+    delete inNextFunctionDetour_;
+    delete outFunctionDetour_;
+    delete loopDetour_;
 }
 
 /**
-  * This function runs in the Tibia thread.
+  * This function gets called in the Tibia thread.
   */
 LOOP_FUNCTION_RETURN_TYPE DetourManager::onLoop(LOOP_FUNCTION_PARAMETERS) {
-    DataQueue* clientQueue = instance_->clientQueue();
-    DataQueue* serverQueue = instance_->serverQueue();
+    if (!serverQueue_.empty()) {
+        // Replace outgoing buffer with new buffer
+        QByteArray buffer = serverQueue_.dequeue();
+        *outBufferLength_ = buffer.length() + 8;
+        memset(outBufferPacketChecksum_, 0, 8);
+        memcpy(outBufferPacketData_, buffer.constData(), buffer.length());
 
-    if (!serverQueue->empty()) {
-        // Replace send buffer with new buffer
-        QByteArray buffer = serverQueue->dequeue();
-        *((quint32*) Memory::staticMapAddress(SEND_BUFFER_LENGTH_ADDRESS)) = buffer.length() + 8;
-        memset((quint8*) Memory::staticMapAddress(SEND_BUFFER_ADDRESS), 0, 8);
-        memcpy((quint8*) Memory::staticMapAddress(SEND_BUFFER_ADDRESS) + 8, buffer.constData(), buffer.length());
-
-        // Call send function with modified buffer
-        sendDetour_->GetOriginalFunction()(true);
+        // Call outgoing function with modified buffer
+        outFunctionDetour_->GetOriginalFunction()(true);
     }
-    if (!clientQueue->empty()) {
+    if (!clientQueue_.empty()) {
         // Backup stream data
-        ParseStream recover = *instance_->parserStream_;
-        instance_->sendingToClient_ = true;
+        ParseStream recover = *inStream_;
+        sendingToClient_ = true;
 
         // Replace stream data with new stream data
-        QByteArray buffer = clientQueue->dequeue();
-        instance_->parserStream_->buffer = (quint8*) buffer.data();
-        instance_->parserStream_->position = 0;
-        instance_->parserStream_->size = buffer.length();
+        QByteArray buffer = clientQueue_.dequeue();
+        inStream_->buffer = (quint8*) buffer.data();
+        inStream_->position = 0;
+        inStream_->size = buffer.length();
 
         // Call parse function with modified stream
-        instance_->parserFunction_();
+        inFunction_();
 
         // Restore stream data
-        instance_->sendingToClient_ = false;
-        *instance_->parserStream_ = recover;
+        sendingToClient_ = false;
+        *inStream_ = recover;
     }
 
     LOOP_FUNCTION_RETURN(loopDetour_->GetOriginalFunction()(LOOP_FUNCTION_ARGUMENTS));
 }
 
 /**
-  * This function runs in the Tibia thread.
+  * This function gets called in the Tibia thread.
   */
-void DetourManager::onSend(bool encrypt) {
-    if (encrypt && instance_->clientHandler_ != NULL) {
-        quint8* buffer = (quint8*) (Memory::staticMapAddress(SEND_BUFFER_ADDRESS) + 8);
-        quint32 length = *((quint32*) Memory::staticMapAddress(SEND_BUFFER_LENGTH_ADDRESS)) - 8;
-
-        QByteArray data((char*) buffer, length);
-        instance_->clientHandler_->handle(data);
-        return;
-    }
-    sendDetour_->GetOriginalFunction()(encrypt);
-}
-
-/**
-  * This function runs in the Tibia thread.
-  */
-int DetourManager::onParseNext() {
-    if (!instance_->sendingToClient_ && instance_->serverHandler_ != NULL) {
-        int command = parseNextDetour_->GetOriginalFunction()();
+int DetourManager::onIncomingNext() {
+    if (!sendingToClient_ && serverHandler_ != NULL) {
+        int command = inNextFunctionDetour_->GetOriginalFunction()();
         if (command != -1) {
-            ParseStream* stream = instance_->parserStream_;
+            ParseStream* stream = inStream_;
             quint32 position = stream->position - 1;
             quint32 length = stream->size - position;
 
-            QByteArray data((char*) (stream->buffer + position), length);
-            instance_->serverHandler_->handle(data);
+            serverHandler_->handle((const char*) (stream->buffer + position), length);
         }
         return command;
     }
-    return parseNextDetour_->GetOriginalFunction()();
+    return inNextFunctionDetour_->GetOriginalFunction()();
 }
+
+/**
+  * This function gets called in the Tibia thread.
+  */
+void DetourManager::onOutgoing(bool encrypt) {
+    if (encrypt && clientHandler_ != NULL) {
+        clientHandler_->handle((const char*) outBufferPacketData_, (*outBufferLength_) - 8);
+        return;
+    }
+    outFunctionDetour_->GetOriginalFunction()(encrypt);
+}
+
+/* Initialize static variables */
+
+BufferHandler* DetourManager::clientHandler_ = NULL;
+BufferHandler* DetourManager::serverHandler_ = NULL;
+
+bool DetourManager::sendingToClient_ = false;
+DataQueue DetourManager::clientQueue_;
+DataQueue DetourManager::serverQueue_;
+
+MologieDetours::Detour<DetourManager::LoopSignature*>* DetourManager::loopDetour_;
+
+MologieDetours::Detour<DetourManager::IncomingNextFunctionSignature*>* DetourManager::inNextFunctionDetour_;
+DetourManager::IncomingFunctionSignature* DetourManager::inFunction_ = NULL;
+DetourManager::ParseStream* DetourManager::inStream_ = NULL;
+
+MologieDetours::Detour<DetourManager::OutgoingFunctionSignature*>* DetourManager::outFunctionDetour_;
+quint32* DetourManager::outBufferLength_ = NULL;
+quint8* DetourManager::outBufferPacketChecksum_ = NULL;
+quint8* DetourManager::outBufferPacketData_ = NULL;

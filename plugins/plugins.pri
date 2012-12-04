@@ -1,14 +1,9 @@
-QT += core gui
-
 include(../core/core.pri)
 
+QT += core gui
+
 TEMPLATE = lib
-CONFIG += plugin
+win32:CONFIG += dll
 
 INCLUDEPATH += ../../core/include
 DESTDIR = ../../bin/plugins
-
-# Qt5 support
-greaterThan(QT_MAJOR_VERSION, 4) {
-	QT += widgets
-}

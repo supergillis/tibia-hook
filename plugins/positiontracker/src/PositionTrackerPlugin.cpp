@@ -15,33 +15,35 @@
 
 #include "PositionTrackerPlugin.h"
 
+#include <HookInterface.h>
 #include <PacketCodes.h>
 #include <PacketReader.h>
+#include <ProxyManagerInterface.h>
 
 #if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
 Q_EXPORT_PLUGIN2(be.gillis.positiontracker, PositionTrackerPlugin)
 #endif
 
 void PositionTrackerPlugin::install(HookInterface* hook, SettingsInterface*) throw(std::exception) {
-    hook_ = hook;
-    hook_->addIncomingReadOnlyProxy(PacketCodes::In::MapFull, this);
-    hook_->addIncomingReadOnlyProxy(PacketCodes::In::MapTopRow, this);
-    hook_->addIncomingReadOnlyProxy(PacketCodes::In::MapRightRow, this);
-    hook_->addIncomingReadOnlyProxy(PacketCodes::In::MapBottomRow, this);
-    hook_->addIncomingReadOnlyProxy(PacketCodes::In::MapLeftRow, this);
-    hook_->addIncomingReadOnlyProxy(PacketCodes::In::FloorChangeUp, this);
-    hook_->addIncomingReadOnlyProxy(PacketCodes::In::FloorChangeDown, this);
+    proxies_ = hook->proxies();
+    proxies_->addIncomingReadOnlyProxy(PacketCodes::In::MapFull, this);
+    proxies_->addIncomingReadOnlyProxy(PacketCodes::In::MapTopRow, this);
+    proxies_->addIncomingReadOnlyProxy(PacketCodes::In::MapRightRow, this);
+    proxies_->addIncomingReadOnlyProxy(PacketCodes::In::MapBottomRow, this);
+    proxies_->addIncomingReadOnlyProxy(PacketCodes::In::MapLeftRow, this);
+    proxies_->addIncomingReadOnlyProxy(PacketCodes::In::FloorChangeUp, this);
+    proxies_->addIncomingReadOnlyProxy(PacketCodes::In::FloorChangeDown, this);
 }
 
 void PositionTrackerPlugin::uninstall() {
-    hook_->removeIncomingReadOnlyProxy(PacketCodes::In::FloorChangeDown, this);
-    hook_->removeIncomingReadOnlyProxy(PacketCodes::In::FloorChangeUp, this);
-    hook_->removeIncomingReadOnlyProxy(PacketCodes::In::MapLeftRow, this);
-    hook_->removeIncomingReadOnlyProxy(PacketCodes::In::MapBottomRow, this);
-    hook_->removeIncomingReadOnlyProxy(PacketCodes::In::MapRightRow, this);
-    hook_->removeIncomingReadOnlyProxy(PacketCodes::In::MapTopRow, this);
-    hook_->removeIncomingReadOnlyProxy(PacketCodes::In::MapFull, this);
-    hook_ = NULL;
+    proxies_->removeIncomingReadOnlyProxy(PacketCodes::In::FloorChangeDown, this);
+    proxies_->removeIncomingReadOnlyProxy(PacketCodes::In::FloorChangeUp, this);
+    proxies_->removeIncomingReadOnlyProxy(PacketCodes::In::MapLeftRow, this);
+    proxies_->removeIncomingReadOnlyProxy(PacketCodes::In::MapBottomRow, this);
+    proxies_->removeIncomingReadOnlyProxy(PacketCodes::In::MapRightRow, this);
+    proxies_->removeIncomingReadOnlyProxy(PacketCodes::In::MapTopRow, this);
+    proxies_->removeIncomingReadOnlyProxy(PacketCodes::In::MapFull, this);
+    proxies_ = NULL;
 }
 
 Position PositionTrackerPlugin::position() const {

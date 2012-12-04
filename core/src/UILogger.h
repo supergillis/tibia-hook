@@ -13,24 +13,24 @@
  * limitations under the License.
  */
 
-#ifndef MEMORYINTERFACE_H
-#define MEMORYINTERFACE_H
+#ifndef UILOGGER_H
+#define UILOGGER_H
 
-#include <QtGlobal>
+#include "ui_UILogger.h"
 
-typedef quintptr MemoryLocation;
+#include "Logger.h"
 
-class MemoryInterface {
+class UILogger: public QWidget, private Ui::UILogger {
+    Q_OBJECT
+
 public:
-    virtual MemoryLocation rebase(MemoryLocation address) const = 0;
+    UILogger(Logger*, QWidget* = 0);
 
-    virtual quint8 readUInt8(MemoryLocation location) const = 0;
-    virtual quint16 readUInt16(MemoryLocation location) const = 0;
-    virtual quint32 readUInt32(MemoryLocation location) const = 0;
-    virtual quint64 readUInt64(MemoryLocation location) const = 0;
+private slots:
+    void addLogMessage(const Logger::Entry&);
 
-    virtual const char* readRawString(MemoryLocation location) const = 0;
-    virtual QString readString(MemoryLocation location) const = 0;
+private:
+    Logger* logger_;
 };
 
 #endif

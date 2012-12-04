@@ -23,32 +23,27 @@
 
 class DetourSender: public SenderInterface {
 public:
-    DetourSender(DetourManager* manager):
-        SenderInterface(),
-        manager_(manager) {
-    }
+    DetourSender(): SenderInterface() {}
 
     inline void sendToClient(const QByteArray& data) {
-        manager_->clientQueue()->enqueue(data);
+        DetourManager::clientQueue()->enqueue(data);
     }
 
     inline void sendToClient(const Packet& packet) {
-        manager_->clientQueue()->enqueue(packet.data());
+        DetourManager::clientQueue()->enqueue(packet.data());
     }
 
     inline void sendToServer(const QByteArray& data) {
-        manager_->serverQueue()->enqueue(data);
+       DetourManager::serverQueue()->enqueue(data);
     }
 
     inline void sendToServer(const Packet& packet) {
-        manager_->serverQueue()->enqueue(packet.data());
+        DetourManager::serverQueue()->enqueue(packet.data());
     }
 
 private:
 	DetourSender(const DetourSender&);
-	DetourSender& operator=(const DetourSender&);
-
-	DetourManager* manager_;
+    DetourSender& operator=(const DetourSender&);
 };
 
 #endif

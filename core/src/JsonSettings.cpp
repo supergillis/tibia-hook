@@ -13,36 +13,34 @@
  * limitations under the License.
  */
 
-#include <stdexcept>
-
 #include <json.h>
 
-#include "Settings.h"
+#include "JsonSettings.h"
 
 #ifdef Q_OS_WIN
 #define SETTING_PREFIX "win32:"
 #else
-#define SETTING_PREFIX "linux:"
+#define SETTING_PREFIX "unix:"
 #endif
 
-Settings::Settings(const QString& json) throw (std::exception) {
+bool JsonSettings::parse(const QString& json) {
 	bool parsed = true;
     QVariant result = QtJson::Json::parse(json, parsed);
-    if (!parsed) {
-        throw std::runtime_error("Could not parse JSON string!");
+    if (parsed) {
+        values_ = result.toMap();
+        return true;
     }
-
-	values_ = result.toMap();
+    return false;
 }
 
-bool Settings::contains(const QString& key) const {
+bool JsonSettings::contains(const QString& key) const {
     if (!values_.contains(key)) {
         return values_.contains(SETTING_PREFIX + key);
     }
     return true;
 }
 
-QVariant Settings::value(const QString& key) const {
+QVariant JsonSettings::value(const QString& key) const {
     QVariant result = values_.value(key);
     if (result.isNull()) {
         return values_.value(SETTING_PREFIX + key);

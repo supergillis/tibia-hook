@@ -16,9 +16,9 @@
 #ifndef POSITION_H
 #define POSITION_H
 
-#include <Direction.h>
-
 #include <QMetaType>
+
+#include <Direction.h>
 
 struct Position {
     Position(): x(0), y(0), z(0) {}

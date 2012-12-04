@@ -1,2 +1,2 @@
 TEMPLATE = subdirs
-SUBDIRS = core plugins lib packets
+SUBDIRS = core plugins lib

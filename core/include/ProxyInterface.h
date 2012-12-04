@@ -17,6 +17,7 @@
 #define PROXYINTERFACE_H
 
 class PacketReader;
+
 class ProxyInterface {
 public:
     virtual ~ProxyInterface() {}

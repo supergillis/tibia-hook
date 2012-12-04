@@ -13,8 +13,6 @@
  * limitations under the License.
  */
 
-#include <stdexcept>
-
 #include <QApplication>
 #include <QDebug>
 #include <QDir>
@@ -22,10 +20,12 @@
 #include <QMessageBox>
 #include <QPluginLoader>
 
+#include <stdexcept>
+
 #include <PluginInterface.h>
 
 #include "PluginManager.h"
-#include "Settings.h"
+#include "JsonSettings.h"
 
 #ifdef Q_OS_WIN
 #define PLUGIN_WILDCARD "*.dll"
@@ -54,7 +54,7 @@ PluginManager::~PluginManager() {
 void PluginManager::load(const QString& directory) {
     QFileInfoList plugins = QDir(directory).entryInfoList(QStringList(), QDir::Dirs);
     foreach (const QFileInfo& plugin, plugins) {
-        PluginInfo* info = loadDirectory(plugin.absoluteFilePath());
+        PluginInfo* info = loadPluginInfo(plugin.absoluteFilePath());
         if (info != NULL) {
             pluginInfos_.append(info);
         }
@@ -182,7 +182,7 @@ QObject* PluginManager::findPluginByName(const QString& name, quint16 version) {
     return NULL;
 }
 
-PluginInfo* PluginManager::loadDirectory(const QString& directory) {
+PluginInfo* PluginManager::loadPluginInfo(const QString& directory) {
     try {
         return new PluginInfo(directory);
     }
@@ -192,8 +192,7 @@ PluginInfo* PluginManager::loadDirectory(const QString& directory) {
     return NULL;
 }
 
-PluginInfo::PluginInfo(const QString& directory):
-    settings_(NULL) {
+PluginInfo::PluginInfo(const QString& directory) {
     QDir dir(directory);
     QStringList candidates = dir.entryList(QStringList() << PLUGIN_WILDCARD, QDir::Files | QDir::NoDotAndDotDot);
     if (candidates.length() == 0) {
@@ -211,7 +210,10 @@ PluginInfo::PluginInfo(const QString& directory):
         throw std::runtime_error(("Could not open '" + metaPath + "'!").toStdString());
     }
 
-    Settings meta(metaFile.readAll());
+    JsonSettings meta;
+    if (!meta.parse(metaFile.readAll())) {
+        throw std::runtime_error(("Could not parse '" + metaPath + "'!").toStdString());
+    }
     if (!meta.contains("name")) {
         throw std::runtime_error(("Could not plugin name in '" + metaPath + "'!").toStdString());
     }
@@ -240,17 +242,13 @@ PluginInfo::PluginInfo(const QString& directory):
     if (!configFile.open(QIODevice::ReadOnly)) {
         throw std::runtime_error(("Could not open '" + configPath + "'!").toStdString());
     }
-    settings_ = new Settings(configFile.readAll());
-}
-
-PluginInfo::~PluginInfo() {
-    if(settings_ != NULL) {
-        delete settings_;
+    if (!settings_.parse(configFile.readAll())) {
+        throw std::runtime_error(("Could not parse '" + configPath + "'!").toStdString());
     }
 }
 
 SettingsInterface* PluginInfo::settings() {
-    return settings_;
+    return &settings_;
 }
 
 const PluginInfo::Dependencies& PluginInfo::dependencies() const {

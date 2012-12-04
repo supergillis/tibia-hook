@@ -16,7 +16,7 @@
 #ifndef RECEIVERINTERFACE_H
 #define RECEIVERINTERFACE_H
 
-#include <QByteArray>
+class QByteArray;
 
 class ReceiverInterface {
 public:

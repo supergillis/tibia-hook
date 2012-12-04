@@ -16,12 +16,14 @@
 #ifndef DETOURMANAGER_H
 #define DETOURMANAGER_H
 
-#include <detours.h>
+#include <QtGlobal>
 
 #include "DataQueue.h"
 #include "Memory.h"
 
 #ifdef Q_WS_WIN
+
+#include <windows.h>
 
 #define LOOP_FUNCTION_RETURN_TYPE BOOL WINAPI
 #define LOOP_FUNCTION_RETURN(value) return value
@@ -43,15 +45,6 @@
     UINT LOOP_FUNCTION_ARG_NAME4, \
     UINT LOOP_FUNCTION_ARG_NAME5
 
-/* Tibia 9.63 Adresses */
-#define SEND_BUFFER_ADDRESS 0x7b9d78
-#define SEND_BUFFER_LENGTH_ADDRESS 0x9d4588
-#define SEND_FUNCTION_ADDRESS 0x517df0
-
-#define PARSE_STREAM_ADDRESS 0x9d4574
-#define PARSE_FUNCTION_ADDRESS 0x466270
-#define PARSE_NEXT_FUNCTION_ADDRESS 0x5187e0
-
 #else
 
 #define LOOP_FUNCTION_ADDRESS 0x0804c8f4 // XPending
@@ -61,29 +54,24 @@
 #define LOOP_FUNCTION_ARGUMENTS LOOP_FUNCTION_ARG_NAME1
 #define LOOP_FUNCTION_PARAMETERS void* LOOP_FUNCTION_ARG_NAME1
 
-/* Tibia 9.63 Adresses */
-#define SEND_BUFFER_ADDRESS 0x85d4980
-#define SEND_BUFFER_LENGTH_ADDRESS 0x85d5188
-#define SEND_FUNCTION_ADDRESS 0x82f3e90
-
-#define PARSE_STREAM_ADDRESS 0x85d91b0
-#define PARSE_FUNCTION_ADDRESS 0x814c2d0
-#define PARSE_NEXT_FUNCTION_ADDRESS 0x82ff4a0
-
 #endif
+
+namespace MologieDetours {
+template <typename function_type> class Detour;
+}
 
 class BufferHandler {
 public:
-    virtual void handle(const QByteArray& data) = 0;
+    virtual void handle(const char* buffer, quint32 length) = 0;
 };
 
 class Hook;
 class DetourManager {
     typedef LOOP_FUNCTION_RETURN_TYPE LoopSignature(LOOP_FUNCTION_PARAMETERS);
 
-    typedef void SendSignature(bool);
-    typedef void ParseSignature();
-    typedef int ParseNextSignature();
+    typedef void OutgoingFunctionSignature(bool);
+    typedef void IncomingFunctionSignature();
+    typedef int IncomingNextFunctionSignature();
 
     struct ParseStream {
         quint8* buffer;
@@ -92,72 +80,60 @@ class DetourManager {
     } ((packed));
 
 public:
-    inline static DetourManager* instance() {
-        if(instance_ == NULL) {
-            instance_ = new DetourManager();
-            construct();
-        }
-        return instance_;
+    struct Addresses {
+        MemoryLocation inFunction;
+        MemoryLocation inNextFunction;
+        MemoryLocation inStream;
+
+        MemoryLocation outFunction;
+        MemoryLocation outBufferLength;
+        MemoryLocation outBuffer;
+    };
+
+    static void install(const Addresses& settings);
+    static void uninstall();
+
+    static void setClientBufferHandler(BufferHandler* clientHandler) {
+        clientHandler_ = clientHandler;
     }
 
-    inline DataQueue* clientQueue() {
+    static void setServerBufferHandler(BufferHandler* serverHandler) {
+        serverHandler_ = serverHandler;
+    }
+
+    static inline DataQueue* clientQueue() {
         return &clientQueue_;
     }
 
-    inline DataQueue* serverQueue() {
+    static inline DataQueue* serverQueue() {
         return &serverQueue_;
     }
 
-    void setClientBufferHandler(BufferHandler*);
-    void setServerBufferHandler(BufferHandler*);
-
 private:
     DetourManager();
+    ~DetourManager();
 
-    DataQueue clientQueue_;
-    DataQueue serverQueue_;
-    bool sendingToClient_;
+    static BufferHandler* clientHandler_;
+    static BufferHandler* serverHandler_;
 
-    BufferHandler* clientHandler_;
-    BufferHandler* serverHandler_;
-
-    static DetourManager* instance_;
-
-    static void construct() {
-#ifdef Q_OS_WIN
-        HMODULE user32 = ::GetModuleHandle("User32.dll");
-        FARPROC peekMessage = ::GetProcAddress(user32, "PeekMessageA");
-
-        // Detour the peekMessage function
-        loopDetour_ = new MologieDetours::Detour<LoopSignature*>((LoopSignature*) peekMessage, &DetourManager::onLoop);
-#else
-        loopDetour_ = new MologieDetours::Detour<LoopSignature*>((LoopSignature*) LOOP_FUNCTION_ADDRESS, &DetourManager::onLoop);
-#endif
-
-        sendDetour_ = new MologieDetours::Detour<SendSignature*>((SendSignature*) Memory::staticMapAddress(SEND_FUNCTION_ADDRESS), &DetourManager::onSend);
-        parseNextDetour_ = new MologieDetours::Detour<ParseNextSignature*>((ParseNextSignature*) Memory::staticMapAddress(PARSE_NEXT_FUNCTION_ADDRESS), &DetourManager::onParseNext);
-
-        parserStream_ = (ParseStream*) Memory::staticMapAddress(PARSE_STREAM_ADDRESS);
-        parserFunction_ = (ParseSignature*) Memory::staticMapAddress(PARSE_FUNCTION_ADDRESS);
-    }
-
-    static void destruct() {
-        delete parseNextDetour_;
-        delete sendDetour_;
-        delete loopDetour_;
-    }
-
-    static LOOP_FUNCTION_RETURN_TYPE onLoop(LOOP_FUNCTION_PARAMETERS);
-
-    static void onSend(bool);
-    static int onParseNext();
+    static bool sendingToClient_;
+    static DataQueue clientQueue_;
+    static DataQueue serverQueue_;
 
     static MologieDetours::Detour<LoopSignature*>* loopDetour_;
-    static MologieDetours::Detour<SendSignature*>* sendDetour_;
-    static MologieDetours::Detour<ParseNextSignature*>* parseNextDetour_;
 
-    static ParseStream* parserStream_;
-    static ParseSignature* parserFunction_;
+    static MologieDetours::Detour<IncomingNextFunctionSignature*>* inNextFunctionDetour_;
+    static IncomingFunctionSignature* inFunction_;
+    static ParseStream* inStream_;
+
+    static MologieDetours::Detour<OutgoingFunctionSignature*>* outFunctionDetour_;
+    static quint32* outBufferLength_;
+    static quint8* outBufferPacketChecksum_;
+    static quint8* outBufferPacketData_;
+
+    static LOOP_FUNCTION_RETURN_TYPE onLoop(LOOP_FUNCTION_PARAMETERS);
+    static void onOutgoing(bool);
+    static int onIncomingNext();
 };
 
 #endif

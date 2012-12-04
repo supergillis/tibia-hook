@@ -16,8 +16,10 @@
 #ifndef PLUGINMANAGERINTERFACE_H
 #define PLUGINMANAGERINTERFACE_H
 
-#include <QObject>
-#include <QString>
+#include <QtGlobal>
+
+class QObject;
+class QString;
 
 class PluginManagerInterface {
 public:

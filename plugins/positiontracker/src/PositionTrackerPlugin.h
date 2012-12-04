@@ -16,14 +16,18 @@
 #ifndef POSITIONTRACKERPLUGIN_H
 #define POSITIONTRACKERPLUGIN_H
 
-#include <HookInterface.h>
 #include <PluginInterface.h>
 #include <Position.h>
 #include <PositionTrackerPluginInterface.h>
 #include <ReadOnlyProxyInterface.h>
 
 #include <QtPlugin>
-#include <QObject>
+
+class HookInterface;
+class PacketReader;
+class ProxyManagerInterface;
+class SettingsInterface;
+class QObject;
 
 class PositionTrackerPlugin: public QObject, public PluginInterface, public PositionTrackerPluginInterface, public ReadOnlyProxyInterface {
 	Q_OBJECT
@@ -48,7 +52,7 @@ signals:
     void positionChanged(const Position& position);
 
 private:
-    HookInterface* hook_;
+    ProxyManagerInterface* proxies_;
 
     Position position_;
 };

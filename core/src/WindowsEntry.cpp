@@ -13,13 +13,10 @@
  * limitations under the License.
  */
 
-#include <vector> // Necessary to fix Qt errors on Windows
-
-#include "Application.h"
-#include "Hook.h"
-
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
+
+#include "Application.h"
 
 HANDLE thread_handle;
 DWORD thread_id;
@@ -32,6 +29,7 @@ Application* application = NULL;
 DWORD WINAPI hook_thread(LPVOID) {
 	// Create the application and enter the main event loop
     application = new Application();
+    application->initialize();
 	application->exec();
 
 	// When the application is done executing, clean up

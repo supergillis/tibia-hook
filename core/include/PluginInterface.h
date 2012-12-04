@@ -17,9 +17,9 @@
 #define PLUGININTERFACE_H
 
 #include <QtPlugin>
-#include <QString>
 
-#include <HookInterface.h>
+class HookInterface;
+class SettingsInterface;
 
 class PluginInterface {
 public:

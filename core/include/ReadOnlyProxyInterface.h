@@ -17,6 +17,7 @@
 #define READONLYPROXYINTERFACE_H
 
 class PacketReader;
+
 class ReadOnlyProxyInterface {
 public:
     virtual ~ReadOnlyProxyInterface() {}

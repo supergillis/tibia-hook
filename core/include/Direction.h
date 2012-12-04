@@ -16,8 +16,6 @@
 #ifndef DIRECTION_H
 #define DIRECTION_H
 
-#include <QtGlobal>
-
 enum Direction {
     NORTH = 0b0001,
     EAST  = 0b0010,

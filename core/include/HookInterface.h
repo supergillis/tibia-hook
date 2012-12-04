@@ -16,35 +16,27 @@
 #ifndef HOOKINTERFACE_H
 #define HOOKINTERFACE_H
 
-#include <QtGlobal>
-
-class SettingsInterface;
-class SenderInterface;
-class PluginManagerInterface;
-class ProxyInterface;
-class ReceiverInterface;
-class ReadOnlyProxyInterface;
-class UIManagerInterface;
+class LoggerInterface;
 class MemoryInterface;
+class SenderInterface;
+class SettingsInterface;
+class ReceiverInterface;
+class PluginManagerInterface;
+class ProxyManagerInterface;
+class UIManagerInterface;
+
 class HookInterface {
 public:
 	virtual ~HookInterface() {}
 
-	virtual SettingsInterface* settings() = 0;
-	virtual SenderInterface* sender() = 0;
-    virtual ReceiverInterface* receiver() = 0;
-    virtual PluginManagerInterface* plugins() = 0;
-    virtual UIManagerInterface* ui() = 0;
+    virtual LoggerInterface* logger() = 0;
     virtual MemoryInterface* memory() = 0;
-
-    virtual void addOutgoingProxy(quint8, ProxyInterface*) = 0;
-    virtual void removeOutgoingProxy(quint8, ProxyInterface*) = 0;
-
-    virtual void addOutgoingReadOnlyProxy(quint8, ReadOnlyProxyInterface*) = 0;
-    virtual void removeOutgoingReadOnlyProxy(quint8, ReadOnlyProxyInterface*) = 0;
-
-    virtual void addIncomingReadOnlyProxy(quint8, ReadOnlyProxyInterface*) = 0;
-    virtual void removeIncomingReadOnlyProxy(quint8, ReadOnlyProxyInterface*) = 0;
+    virtual PluginManagerInterface* plugins() = 0;
+    virtual ProxyManagerInterface* proxies() = 0;
+    virtual ReceiverInterface* receiver() = 0;
+    virtual SenderInterface* sender() = 0;
+    virtual SettingsInterface* settings() = 0;
+    virtual UIManagerInterface* ui() = 0;
 };
 
 #endif

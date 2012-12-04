@@ -13,17 +13,14 @@
  * limitations under the License.
  */
 
-#ifndef SETTINGS_H
-#define SETTINGS_H
-
-#include <QFile>
-#include <QString>
+#ifndef JSONSETTINGS_H
+#define JSONSETTINGS_H
 
 #include <SettingsInterface.h>
 
-class Settings: public SettingsInterface {
+class JsonSettings: public SettingsInterface {
 public:
-    Settings(const QString&) throw (std::exception);
+    bool parse(const QString&);
 
     bool contains(const QString&) const;
     QVariant value(const QString&) const;

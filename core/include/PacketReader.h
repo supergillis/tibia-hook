@@ -16,9 +16,13 @@
 #ifndef PACKETREADER_H
 #define PACKETREADER_H
 
-#include <Packet.h>
+#include <QtGlobal>
+#include <QByteArray>
+#include <QString>
 
-#include <QDebug>
+#include <assert.h>
+
+#include <Packet.h>
 
 #define PACKET_END_OF_FILE "reached the end of the buffer"
 
@@ -48,10 +52,7 @@ public:
 
     QString readString() {
         quint16 length = readU16();
-        if (!has(length)) {
-			qWarning() << PACKET_END_OF_FILE;
-            return QString();
-        }
+        assert(has(length) && PACKET_END_OF_FILE);
 
         // The data contains the raw ASCII string
         QString value = QString::fromAscii((const char*) (data_.data() + position_), length);
@@ -66,10 +67,7 @@ protected:
 private:
 	template<typename T, int size>
     inline T peek() const {
-		if (!has(size)) {
-			qWarning() << PACKET_END_OF_FILE;
-            return 0;
-        }
+        assert(has(size) && PACKET_END_OF_FILE);
         return *((T*) (data_.data() + position_));
     }
 

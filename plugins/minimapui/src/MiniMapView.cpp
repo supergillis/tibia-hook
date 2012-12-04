@@ -26,10 +26,10 @@ MiniMapView::MiniMapView(MiniMapUIPlugin* plugin, PluginManagerInterface* plugin
     scene_(new QGraphicsScene(this)),
     plugin_(plugin),
     floorIndex_(7) {
-    minimap_ = PluginLoader<MiniMapPluginInterface>(plugins)("minimap");
-    finder_ = PluginLoader<PathFinderPluginInterface>(plugins)("pathfinder");
-    tracker_ = PluginLoader<PositionTrackerPluginInterface>(plugins)("positiontracker");
-    walker_ = PluginLoader<WalkerPluginInterface>(plugins)("walker");
+    minimap_ = PluginLoader<MiniMapPluginInterface>::load(plugins, "minimap");
+    finder_ = PluginLoader<PathFinderPluginInterface>::load(plugins, "pathfinder");
+    tracker_ = PluginLoader<PositionTrackerPluginInterface>::load(plugins, "positiontracker");
+    walker_ = PluginLoader<WalkerPluginInterface>::load(plugins, "walker");
 
     scales_ << 0.25 << 0.35 << 0.50 << 0.75 << 1.00 << 1.25 << 1.50 << 2.00 << 2.50 << 3.00 << 4.00 << 6.00;
     scaleIndex_ = scales_.indexOf(1.00);

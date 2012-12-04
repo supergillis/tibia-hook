@@ -20,7 +20,7 @@
 
 BattleListModel::BattleListModel(PluginManagerInterface* plugins, QObject* parent):
     QAbstractTableModel(parent) {
-    battleList_ = PluginLoader<BattleListPluginInterface>(plugins)("battlelist");
+    battleList_ = PluginLoader<BattleListPluginInterface>::load(plugins, "battlelist");
 }
 
 int BattleListModel::columnCount(const QModelIndex&) const {

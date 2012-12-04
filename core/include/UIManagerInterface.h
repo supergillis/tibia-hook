@@ -16,7 +16,8 @@
 #ifndef UIMANAGERINTERFACE_H
 #define UIMANAGERINTERFACE_H
 
-#include <QWidget>
+class QWidget;
+class QString;
 
 class UIManagerInterface {
 public:

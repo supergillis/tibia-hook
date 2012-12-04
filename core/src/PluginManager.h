@@ -24,7 +24,7 @@
 #include <HookInterface.h>
 #include <PluginManagerInterface.h>
 
-#include "Settings.h"
+#include "JsonSettings.h"
 
 class PluginInfo {
 public:
@@ -35,7 +35,6 @@ public:
     typedef QList<Dependency> Dependencies;
 
     PluginInfo(const QString&);
-    ~PluginInfo();
 
     SettingsInterface* settings();
 
@@ -45,7 +44,7 @@ public:
     quint16 version() const;
 
 private:
-    Settings* settings_;
+    JsonSettings settings_;
 
     PluginInfo::Dependencies dependencies_;
     QString libraryPath_;
@@ -70,7 +69,7 @@ public:
     QObject* findPluginByName(const QString& name, quint16 version);
 
 private:
-    PluginInfo* loadDirectory(const QString& directory);
+    PluginInfo* loadPluginInfo(const QString& directory);
 
     HookInterface* hook_;
     QString directory_;

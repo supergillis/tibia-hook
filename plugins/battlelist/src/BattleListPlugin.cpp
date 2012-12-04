@@ -37,7 +37,7 @@ void BattleListPlugin::install(HookInterface* hook, SettingsInterface* settings)
         throw std::runtime_error("Could not load battlelist address!");
     }
 
-    MemoryLocation base = hook->memory()->mapAddress(0x948008);
+    MemoryLocation base = hook->memory()->rebase(0x948008);
     for (int offset = 0; offset < BATTLELIST_SIZE * BATTLELIST_ENTRY_SIZE; offset += BATTLELIST_ENTRY_SIZE) {
         entries_.append(new BattleListEntry(hook->memory(), base + offset));
     }

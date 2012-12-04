@@ -16,19 +16,22 @@
 #ifndef PACKETBUILDER_H
 #define PACKETBUILDER_H
 
-#include <Packet.h>
-
 #include <QByteArray>
 #include <QString>
+
+#include <Packet.h>
 
 #define DEFAULT_SIZE 64
 #define MIN_EXTEND_SIZE 32
 
-#define max(a, b) a > b ? a : b
+#define MAX(a, b) a > b ? a : b
 
 class PacketBuilder {
 public:
-    PacketBuilder(quint16 length = DEFAULT_SIZE): data_(length, 0), position_(0), length_(0) {}
+    PacketBuilder(quint16 length = DEFAULT_SIZE):
+        data_(length, 0),
+        position_(0),
+        length_(0) {}
 
     inline Packet build() const {
         return Packet((const quint8*) data_.constData(), length_);
@@ -68,7 +71,7 @@ public:
         // Write raw data to the buffer
         memcpy(data_.data() + position_, array.constData(), length);
         position_ += length;
-        length_ = max(length_, position_);
+        length_ = MAX(length_, position_);
     }
 
 private:
@@ -79,7 +82,7 @@ private:
     inline void reserve(quint16 size) {
         quint16 newSize = position_ + size;
         if (data_.length() < newSize) {
-            data_.resize(max(newSize, MIN_EXTEND_SIZE));
+            data_.resize(MAX(newSize, MIN_EXTEND_SIZE));
         }
     }
 
@@ -89,7 +92,7 @@ private:
 
         *(T*) (data_.data() + position_) = value;
         position_ += size;
-        length_ = max(length_, position_);
+        length_ = MAX(length_, position_);
     }
 };
 

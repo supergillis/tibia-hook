@@ -14,10 +14,8 @@
  */
 
 #include <pthread.h>
-#include <vector> // Necessary to fix Qt errors on Windows
 
 #include "Application.h"
-#include "Hook.h"
 
 pthread_t hook_id;
 Application* application = NULL;
@@ -56,6 +54,7 @@ void hook_constructor() {
 void* hook_thread(void*) {
     // Create the application and enter the main event loop
     application = new Application();
+    application->initialize();
     application->exec();
 
     // When the application is done executing, clean up

@@ -16,9 +16,8 @@
 #ifndef SENDERINTERFACE_H
 #define SENDERINTERFACE_H
 
-#include <PacketBuilder.h>
-
-#include <QByteArray>
+class Packet;
+class QByteArray;
 
 class SenderInterface {
 public:

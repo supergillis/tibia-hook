@@ -5,6 +5,8 @@
 
 class BattleListEntryInterface {
 public:
+    virtual ~BattleListEntryInterface() {}
+
     virtual quint32 id() const = 0;
 
     virtual const char* rawName() const = 0;

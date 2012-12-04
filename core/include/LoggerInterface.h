@@ -13,24 +13,30 @@
  * limitations under the License.
  */
 
-#ifndef MEMORYINTERFACE_H
-#define MEMORYINTERFACE_H
+#ifndef LOGGERINTERFACE_H
+#define LOGGERINTERFACE_H
 
-#include <QtGlobal>
+class QString;
 
-typedef quintptr MemoryLocation;
-
-class MemoryInterface {
+class LoggerInterface {
 public:
-    virtual MemoryLocation rebase(MemoryLocation address) const = 0;
+    enum Level {
+        Debug,
+        Error,
+        Info,
+        Verbose,
+        Warn
+    };
 
-    virtual quint8 readUInt8(MemoryLocation location) const = 0;
-    virtual quint16 readUInt16(MemoryLocation location) const = 0;
-    virtual quint32 readUInt32(MemoryLocation location) const = 0;
-    virtual quint64 readUInt64(MemoryLocation location) const = 0;
+    virtual ~LoggerInterface() {}
 
-    virtual const char* readRawString(MemoryLocation location) const = 0;
-    virtual QString readString(MemoryLocation location) const = 0;
+    virtual void log(Level level, const QString& tag, const QString& message) = 0;
+
+    virtual void d(const QString& tag, const QString& message) = 0;
+    virtual void e(const QString& tag, const QString& message) = 0;
+    virtual void i(const QString& tag, const QString& message) = 0;
+    virtual void v(const QString& tag, const QString& message) = 0;
+    virtual void w(const QString& tag, const QString& message) = 0;
 };
 
 #endif

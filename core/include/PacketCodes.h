@@ -36,7 +36,6 @@ ChannelOpen = 172,
 ChannelOpenPrivate = 173,
 ChannelClose = 179,
 
-
 MoveNorth = 101,
 MoveNorthEast = 106,
 MoveEast = 102,

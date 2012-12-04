@@ -31,7 +31,7 @@ WalkerPlugin::WalkerPlugin():
 
 void WalkerPlugin::install(HookInterface* hook, SettingsInterface*) throw(std::exception) {
     sender_ = hook->sender();
-    tracker_ = PluginLoader<PositionTrackerPluginInterface>(hook->plugins())("positiontracker");
+    tracker_ = PluginLoader<PositionTrackerPluginInterface>::load(hook->plugins(), "positiontracker");
 }
 
 void WalkerPlugin::uninstall() {

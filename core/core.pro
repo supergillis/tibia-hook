@@ -1,37 +1,39 @@
-QT += core gui
-
 include(core.pri)
 
-TEMPLATE = lib
 TARGET = hook
 
-INCLUDEPATH += include ../lib/libdetours/src ../lib/libqtjson/src
-DESTDIR = ../bin
+QT += core gui
 
-LIBS += -L../lib \
-    -ldetours \
-    -lqtjson
+TEMPLATE = lib
+win32:CONFIG += dll
+
+DESTDIR = ../bin
+INCLUDEPATH += include ../lib/libdetours/src ../lib/libqtjson/src
+
+LIBS += -L../lib -ldetours -lqtjson
 
 unix:LIBS += -lpthread
 
-SOURCES += src/Application.cpp \
+SOURCES += \
+    src/Application.cpp \
     src/DetourManager.cpp \
-    src/Hook.cpp \
-    src/Settings.cpp \
     src/UIManager.cpp \
     src/PluginManager.cpp \
-    src/Memory.cpp
+    src/ProxyManager.cpp \
+    src/JsonSettings.cpp \
+    src/UILogger.cpp
 
-HEADERS += src/Application.h \
+HEADERS += \
+    src/Application.h \
     src/DataQueue.h \
     src/DetourManager.h \
     src/DetourSender.h \
-    src/Hook.h \
-    src/Settings.h \
     src/UIManager.h \
     src/PluginManager.h \
     src/ProxyManager.h \
     src/Memory.h \
+    src/ProxyReceiver.h \
+    src/JsonSettings.h \
     include/UIManagerInterface.h \
     include/SettingsInterface.h \
     include/Serialization.h \
@@ -50,12 +52,26 @@ HEADERS += src/Application.h \
     include/MemoryInterface.h \
     include/HookInterface.h \
     include/Direction.h \
-    include/Constants.h
+    include/Constants.h \
+    include/ProxyManagerInterface.h \
+    include/LoggerInterface.h \
+    src/Logger.h \
+    src/UILogger.h
 
-unix:SOURCES += src/UnixEntry.cpp
-win32:SOURCES += src/WindowsEntry.cpp
+unix:SOURCES += \
+    src/UnixEntry.cpp \
+    src/UnixMemory.cpp
 
-# Qt5 support
-greaterThan(QT_MAJOR_VERSION, 4) {
-    QT += widgets
-}
+win32:SOURCES += \
+    src/WindowsEntry.cpp \
+    src/WindowsMemory.cpp
+
+OTHER_FILES += config.js
+
+settings.path = $${DESTDIR}
+settings.files = $${OTHER_FILES}
+
+INSTALLS += settings
+
+FORMS += \
+    src/UILogger.ui
